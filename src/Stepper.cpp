@@ -5,8 +5,6 @@
 
 #include <HardwareSerial.h>
 
-
-
 Stepper::Stepper(const int stepPin, const int dirPin, bool reverseDir, bool stepsActiveLow)
 	: current(0), v_pullIn(vPullIn_default), vMax(vMaxDefault), /*v(vDefault),*/ a(aDefault), position(0)	
 {
