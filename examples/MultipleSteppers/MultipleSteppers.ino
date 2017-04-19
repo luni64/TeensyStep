@@ -15,16 +15,15 @@
 
 #include <StepControl.h>
 
-Stepper motor_1(2, 3);
-Stepper motor_2(9,10);
-Stepper motor_3(14,15);
+Stepper motor_1(2, 3);   //STEP pin =  2, DIR pin = 3
+Stepper motor_2(9,10);   //STEP pin =  9, DIR pin = 10
+Stepper motor_3(14,15);  //STEP pin = 14, DIR pin = 15
 
 StepControl<> controller;
 
 void setup()
 {
-  // setup the used motors 
-
+  // setup the motors 
    motor_1
     .SetMaxSpeed(50000)       // steps/s
     .SetAcceleration(200000); // steps/s^2 
@@ -62,8 +61,8 @@ void loop()
   controller.move(motor_1, motor_2);
 
   // now move motor_2 together with motor_3
-  motor_2.SetTargetRel(300);
-  motor_3.SetTargetRel(-800);
+  motor_2.SetTargetRel(spr/3);
+  motor_3.SetTargetRel(-spr*2);
   controller.move(motor_2, motor_3);
 
   // move motor_1 and motor_3 back to their start positions
