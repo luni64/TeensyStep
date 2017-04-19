@@ -1,8 +1,8 @@
 # TeensyStep
 ## Problem to be solved 
-A lot of interesting projects require the movement of things. The most easy way to implement such a transport system is the use of stepper motors driven by readily available microstep drivers. Those drivers usally expect **step and direction signals** to move the motors. Due to the motor intertia they can not be started at full speed. Instead, steppers need a smooth **acceleration** or deceleration to the final speed. Otherwise the step counters of your application and the real motor positions can run out of sync (steploss errors).
+A lot of interesting projects require the movement of things. The most easy way to implement such a transport system is the use of stepper motors driven by readily available microstep drivers. Those drivers usally expect **step and direction signals** to move the motors. Due to the motor intertia they can not be started at full speed. Instead, steppers need a smooth **acceleration** or deceleration to the final speed. Otherwise the step counters of the application and the real motor positions can run out of sync (steploss errors).
 While Microstepping is great to reduce vibration at low motor speeds it requires  **high pulse rates** at even moderate motor speeds. Lets look at a typical example: 
-Assume we have a stepper with the usual resolution of 200 steps/rev and want to  run it at a max speed of 1200 rpm. If we want to drive it in 1/16 micro stepping mode we need a pulse rate *r* of: 
+Assume we have a stepper with the usual resolution of 200 steps/rev and we want to  run it at a max speed of 1200 rpm in 1/16 micro stepping mode. The required pulse rate *r* for this configuration can be calculated by: 
 
 &emsp;&emsp;&emsp; *r* = (16 * 200 stp/rev * 1'200 rev/min) / 60 s/min = **64'000 steps/s**
 
