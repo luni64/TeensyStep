@@ -11,7 +11,6 @@ public:
 class PIT
 {
 public:
-
 	bool begin(IPitHandler* handler);
 
 	inline void stop() { channel->TCTRL = 0; }
@@ -28,4 +27,3 @@ protected:
 
 	KINETISK_PIT_CHANNEL_t* channel = nullptr;
 };
-
