@@ -1,4 +1,4 @@
-//==========================================================================
+//========================================================================== 
 // Available timer modules for the Teensy XX boards. Please note that those 
 // timers are also used by the core libraries for PWM and AnalogWrite. 
 // Therefore, choose a timer which isn't attached to the pins you need for 
@@ -153,7 +153,7 @@ namespace TeensyDelay
 
     constexpr unsigned _timer_frequency = isFTM ? F_BUS : 16000000;  // FTM timers are clocked with F_BUS, the TPM timers are clocked with OSCERCLK (16MHz for all teensies)
 
-    // Choose prescaler such that one timer cycle corresponds to about 1µs
+    // Choose prescaler such that one timer cycle corresponds to about 1Âµs
     constexpr unsigned prescale = _timer_frequency > 120000000 ? 0b111 :
         _timer_frequency > 60000000 ? 0b110 :
         _timer_frequency > 30000000 ? 0b101 :
