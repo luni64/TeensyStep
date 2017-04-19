@@ -2,7 +2,6 @@
 #include "HardwareSerial.h"
 #include "Arduino.h"
 
-
 namespace
 {
 	IPitHandler* pitHandler[4];
