@@ -48,11 +48,11 @@ Stepper::Stepper(const int stepPin, const int dirPin, bool reverseDir, bool step
 	}
 }
 
-void Stepper::SetTargetAbs(int target)
+void Stepper::SetTargetAbs(int _target)
 {
     position += dirCw *current;	// update position from last move;
     current = 0; 
-    int delta = target - position;
+    int delta = _target - position;
 
     if (delta >= 0) {
         dirCw = 1;
