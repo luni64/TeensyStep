@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include <algorithm>
 
-//template<uint pw>class StepControl;
-//class StpCmp;
-
 class Stepper
 {
     static constexpr uint vPullIn_min = 50;            // smallest possible pullIn frequency  (steps/s)
@@ -22,7 +19,6 @@ public:
 
     inline Stepper& SetPullInSpeed(uint pullInFreq) { v_pullIn = std::max(vPullIn_min, pullInFreq); return *this; } // largest speed the motor starts without accelerating (steps/s)
     inline Stepper& SetMaxSpeed(uint speed) { vMax = std::min(vMaxMax, speed); return *this; }
- //   inline Stepper& SetSpeed(uint _v) { v = std::min(vMax, _v); return *this; }                                  // largest speed the motor can run without loosing steps(steps / s)
     inline Stepper& SetAcceleration(uint _a) { a = std::min(aMax, _a); return *this; }                           // acceleration (steps/s^2)
         
     void SetTargetAbs(int pos);			// Set target position 
@@ -30,6 +26,7 @@ public:
 
     inline void setStepPin() { *stepPinActiveReg = 1; }
     inline void clearStepPin() { *stepPinInactiveReg = 1; }
+    
     inline int32_t getPosition() const { return position + dirCw* current; }
 
     volatile int current;
@@ -37,7 +34,6 @@ public:
     int D;
     unsigned v_pullIn;
     unsigned vMax;
-//    unsigned v;
     unsigned a;
 
     static bool cmpDelta(const Stepper * a, const Stepper * b) { return a->target > b->target; }
@@ -52,11 +48,7 @@ private:
     volatile uint32_t* stepPinInactiveReg;
     volatile uint32_t* dirPinCwReg;
     volatile uint32_t* dirPinCcwReg;
-
     int dirCw;
-
-    //template<uint pw>
-    //friend StepControl<pw>;
 };
 
 
