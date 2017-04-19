@@ -1,18 +1,16 @@
 /*==========================================================================
- * This sketch shows how to move more than one motor in sync. 
+ * The sketch shows how to move more than one motor. 
  * 
- *  
+ * If more than one motor is moved by one controller all motors will arrive at 
+ * their targets at the same time. E.g., if the motors are part of a 
+ * x/y transport system, the transport move on a straight diagonal line to the
+ * target coordinates.
  * 
- * The target position is set to 1000 steps relative to the
- * current position. The move command of the controller 
- * moves the motor to the target position.  
- *  
- * Default parameters are 
- * Speed:          800 steps/s
- * Acceleration:  2500 steps/s^2
- * 
- * (slow, but good to start with since they will work on any normal stepper)
+ * The sketch also shows examples how the motor properties are set up
  *
+ * A 1/16 microstep driver is assumed. You probably want to adjust speed, 
+ * acceleration and distances if you are using a driver with another microstep 
+ * resolution.
  ===========================================================================*/
 
 #include <StepControl.h>
@@ -33,7 +31,7 @@ void setup()
   
   motor_2
     .SetMaxSpeed(50000)       // steps/s
-    .SetAcceleration(200000);  // steps/s^2 
+    .SetAcceleration(200000); // steps/s^2 
 
   motor_3
     .SetPullInSpeed(300)      // steps/s   
@@ -43,7 +41,7 @@ void setup()
 
 void loop() 
 {  
-  constexpr int spr = 3200;  // 16*200=3200 steps per revolution
+  constexpr int spr = 16*200;  // 3200 steps per revolution
   
   // lets shake    
   for(int i = 0; i < 5; i++)
