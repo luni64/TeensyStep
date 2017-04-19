@@ -8,7 +8,6 @@ public:
 	virtual void pitISR() = 0;
 };
 
-
 class PIT
 {
 public:
@@ -21,9 +20,6 @@ public:
 	inline void enableInterupt() { channel->TFLG = 1; channel->TCTRL |= PIT_TCTRL_TIE; }
 	inline void disableInterupt() { channel->TCTRL &= ~PIT_TCTRL_TIE; }
 	inline void setReloadValue(uint32_t val) { channel->TCTRL = 0; channel->LDVAL = val; channel->TCTRL = 3; }
-	//inline void setReloadValue(uint32_t val) { channel->TCTRL &= ~PIT_TCTRL_TEN; channel->LDVAL = val; channel->TCTRL |= PIT_TCTRL_TEN; }
-	//inline void setReloadValue(uint32_t val) { channel->LDVAL = val; }
-
 	inline bool isRunning() { return channel->TCTRL == (PIT_TCTRL_TEN | PIT_TCTRL_TIE); }
 
 protected:
