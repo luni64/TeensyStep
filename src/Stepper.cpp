@@ -12,9 +12,7 @@ Stepper::Stepper(const int stepPin, const int dirPin, bool reverseDir, bool step
 {
 	pinMode(stepPin, OUTPUT);
 	pinMode(dirPin, OUTPUT);       
-
-	
-    //==================================================================================================
+ 
 	// We use bitBanding to set/reset the step and dir pins. 	
 	//
 	// Step Pin ----------------------------------------------------------------------------------------
@@ -32,7 +30,7 @@ Stepper::Stepper(const int stepPin, const int dirPin, bool reverseDir, bool step
 		stepPinActiveReg = pinSetReg;
 		stepPinInactiveReg = pinClearReg;
 	}
-    clearStepPin(); // set step pin to inactive state
+    	clearStepPin(); // set step pin to inactive state
 
 
 	// Dir pin -----------------------------------------------------------------------------------------
@@ -51,7 +49,6 @@ Stepper::Stepper(const int stepPin, const int dirPin, bool reverseDir, bool step
 		dirPinCcwReg = pinClearReg;
 	}
 }
-
 
 void Stepper::SetTargetAbs(int target)
 {
@@ -87,5 +84,3 @@ void Stepper::SetTargetRel(int delta)
 		*dirPinCcwReg = 1;
 	}
 }
-
-
