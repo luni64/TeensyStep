@@ -1,39 +1,41 @@
 /*==========================================================================
- * This sketch shows how to move more than one motor in sync. 
+ * The sketch shows how to move more than one motor. 
  * 
- *  
+ * If more than one motor is moved by one controller all motors will arrive at 
+ * their targets at the same time. E.g., if the motors are part of a 
+ * x/y transport system, the transport move on a straight diagonal line to the
+ * target coordinates.
  * 
- * The target position is set to 1000 steps relative to the
- * current position. The move command of the controller 
- * moves the motor to the target position.  
- *  
- * Default parameters are 
- * Speed:          800 steps/s
- * Acceleration:  2500 steps/s^2
- * 
- * (slow, but good to start with since they will work on any normal stepper)
+ * The sketch also shows examples how the motor properties are set up
  *
+ * A 1/16 microstep driver is assumed. You probably want to adjust speed, 
+ * acceleration and distances if you are using a driver with another microstep 
+ * resolution.
  ===========================================================================*/
 
 #include <StepControl.h>
 
-Stepper motor_1(2, 3);
-Stepper motor_2(9,10);
-Stepper motor_3(14,15);
+Stepper motor_1(2, 3);   //STEP pin =  2, DIR pin = 3
+Stepper motor_2(9,10);   //STEP pin =  9, DIR pin = 10
+Stepper motor_3(14,15);  //STEP pin = 14, DIR pin = 15
 
 StepControl<> controller;
 
 void setup()
 {
-  // setup the used motors 
-
+  // setup the motors 
    motor_1
     .setMaxSpeed(50000)       // steps/s
     .setAcceleration(200000); // steps/s^2 
   
   motor_2
+<<<<<<< HEAD
     .setMaxSpeed(50000)       // steps/s
     .setAcceleration(200000); // steps/s^2 
+=======
+    .SetMaxSpeed(50000)       // steps/s
+    .SetAcceleration(200000); // steps/s^2 
+>>>>>>> origin/master
 
   motor_3
     .setPullInSpeed(300)      // steps/s   
@@ -44,7 +46,7 @@ void setup()
 
 void loop() 
 {  
-  constexpr int spr = 3200;  // 16*200=3200 steps per revolution
+  constexpr int spr = 16*200;  // 3200 steps per revolution
   
   // lets shake    
   for(int i = 0; i < 5; i++)
@@ -65,8 +67,13 @@ void loop()
   controller.move(motor_1, motor_2);
 
   // now move motor_2 together with motor_3
+<<<<<<< HEAD
   motor_2.setTargetRel(300);
   motor_3.setTargetRel(-800);
+=======
+  motor_2.SetTargetRel(spr/3);
+  motor_3.SetTargetRel(-spr*2);
+>>>>>>> origin/master
   controller.move(motor_2, motor_3);
 
   // move motor_1 and motor_3 back to their start positions
