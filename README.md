@@ -67,6 +67,7 @@ The stepper class also keeps track of the current position and accepts the setti
 TBD, meanwhile see examples
 
 ## Performance
+The following table shows some information about the performance of the library. To measure the time it takes for calculation of acceleration, Bresenham algorithm and handling the STEP and DIR signals, a digital pin was set to HIGH while the library was in the ISRs. The measured data was used to calculate the generated processor load for various conditions and processors. Summarizing a Teensy 3.6 will needs about 10% processor load for stepping one motor at 100kHz and 13% for 3 motors. A Teensy 3.2 requires 28% and 34% respectively. Numbers are linear in motor speed, i.e. double the speed means double the load. 
 
 ![Alt text](/media/load_calculation.PNG?raw=true "Load calculation")
 
