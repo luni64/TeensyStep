@@ -15,16 +15,14 @@ class Stepper
     static constexpr uint vMaxDefault = vMaxMax;
 
 public:
-    Stepper(const int StepPin, const int DirPin);
+    Stepper(const int StepPin, const int DirPin, bool reverseDir = false, bool StepActiveLow = false);
 
-    inline Stepper& setPullInSpeed(uint pullInFreq) { v_pullIn = std::max(vPullIn_min, pullInFreq); return *this; } // largest speed the motor starts without accelerating (steps/s)
-    inline Stepper& setMaxSpeed(uint speed) { vMax = std::min(vMaxMax, speed); return *this; }
-    inline Stepper& setAcceleration(uint _a) { a = std::min(aMax, _a); return *this; }                           // acceleration (steps/s^2)
-    Stepper& setStepPinPolarity(int p);
-    Stepper& setInverseRotation(bool b);
+    inline Stepper& SetPullInSpeed(uint pullInFreq) { v_pullIn = std::max(vPullIn_min, pullInFreq); return *this; } // largest speed the motor starts without accelerating (steps/s)
+    inline Stepper& SetMaxSpeed(uint speed) { vMax = std::min(vMaxMax, speed); return *this; }
+    inline Stepper& SetAcceleration(uint _a) { a = std::min(aMax, _a); return *this; }                           // acceleration (steps/s^2)
         
-    void setTargetAbs(int pos);			// Set target position 
-    void setTargetRel(int delta);		// Set target position relative to current position
+    void SetTargetAbs(int pos);			// Set target position 
+    void SetTargetRel(int delta);		// Set target position relative to current position
 
     inline void setStepPin() { *stepPinActiveReg = 1; }
     inline void clearStepPin() { *stepPinInactiveReg = 1; }
@@ -51,7 +49,6 @@ private:
     volatile uint32_t* dirPinCwReg;
     volatile uint32_t* dirPinCcwReg;
     int dirCw;
-    const int stepPin, dirPin;
 };
 
 

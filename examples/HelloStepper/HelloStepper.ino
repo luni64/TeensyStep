@@ -26,7 +26,7 @@ void setup(){
 
 void loop() 
 {
-  motor.setTargetRel(1000);
+  motor.SetTargetRel(1000);
   controller.move(motor);  
   delay(500);
 }
