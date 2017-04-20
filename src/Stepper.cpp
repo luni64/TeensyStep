@@ -5,7 +5,7 @@
 
 #include <HardwareSerial.h>
 
-Stepper::Stepper(const int _stepPin, const int _dirPin)
+Stepper::Stepper(const int _stepPin, const int _dirPin) 
 	: current(0), v_pullIn(vPullIn_default), vMax(vMaxDefault), a(aDefault), position(0), stepPin(_stepPin), dirPin(_dirPin)
 {
     setStepPinPolarity(HIGH);
@@ -32,6 +32,7 @@ Stepper& Stepper::setStepPinPolarity(int polarity)
         stepPinInactiveReg = pinClearReg;
     }
     clearStepPin(); // set step pin to inactive state
+    return *this;
 }
 
 Stepper& Stepper::setInverseRotation(bool reverse)
@@ -49,6 +50,7 @@ Stepper& Stepper::setInverseRotation(bool reverse)
         dirPinCwReg = pinSetReg;
         dirPinCcwReg = pinClearReg;
     }
+    return *this;
 }
 
 void Stepper::setTargetAbs(int _target)
