@@ -29,19 +29,13 @@ void setup()
     .setAcceleration(200000); // steps/s^2 
   
   motor_2
-<<<<<<< HEAD
     .setMaxSpeed(50000)       // steps/s
     .setAcceleration(200000); // steps/s^2 
-=======
-    .SetMaxSpeed(50000)       // steps/s
-    .SetAcceleration(200000); // steps/s^2 
->>>>>>> origin/master
-
   motor_3
     .setPullInSpeed(300)      // steps/s   
     .setMaxSpeed(10000)       // steps/s
     .setAcceleration(50000)   // steps/s^2     
-	.setStepPinPolarity(LOW); // driver expects active low pulses
+    .setStepPinPolarity(LOW); // driver expects active low pulses
 }
 
 void loop() 
@@ -67,13 +61,8 @@ void loop()
   controller.move(motor_1, motor_2);
 
   // now move motor_2 together with motor_3
-<<<<<<< HEAD
   motor_2.setTargetRel(300);
   motor_3.setTargetRel(-800);
-=======
-  motor_2.SetTargetRel(spr/3);
-  motor_3.SetTargetRel(-spr*2);
->>>>>>> origin/master
   controller.move(motor_2, motor_3);
 
   // move motor_1 and motor_3 back to their start positions
