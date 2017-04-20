@@ -58,7 +58,7 @@ void setup() {
 }
 ```
 The stepper class also keeps track of the current position and accepts the setting of a new target position. A new target position can be set absolutely or relative to the current position. 
-```C++
+```c++
 ...
 uint pos = motor_1.getPosition();   // get current position of the motor
 motor_1.setTargetAbs(pos + 100);    // sets the target position 100 steps ahead of the current position
@@ -67,7 +67,7 @@ motor_1.setTargetRel(100);          // does the same thing
 ```
 ### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
-```C++
+```c++
 ...
 StepControl<> controller;                     // construct a controller object
 
@@ -82,7 +82,7 @@ controller.move(motor_1, motor_2, motor_3);  // synchronously move motors back t
 ```
 The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors are moving you can use the *moveAsync* commands.
 
-```C++
+```c++
 ...
 controller.moveAsync(motor_1, motor_2);     // This will start the movement and return immediately
 doSomeWork();
@@ -93,7 +93,7 @@ while(controller.isRunning()){              // wait until the movement is finish
 ```
 
 The move amd moveAsync commands always move the motors synchronously. I.e., all motors will always reach their target positions at the same time. If you think of a x/y transport system, the movement will be on a straight line from the current coordinates to the target coordinates. If you need an independent motor movement you can use more than one *StepControl* objects
-```C++
+```c++
 ...
 StepControl<> controller_1;
 StepControl<> controller_2;
@@ -108,7 +108,7 @@ Each *StepControl* object requires **one PIT Timer** (aka IntervallTimer) and **
 
 
 
-```C++
+```c++
 StepControl<> cnt1;
 StepControl<> cnt2;
 StepControl<> cnt3;
