@@ -55,9 +55,8 @@ namespace TeensyDelay
 	}
 
 #endif // USE_CLASS_CALLBACK
-
-
 }
+
 //-------------------------------------------------------------------------------------------
 // Interupt service routine of the timer selected in config.h. 
 // The code doesn't touch the other FTM/TPM ISRs so they can still be used for other purposes
@@ -70,8 +69,6 @@ namespace TeensyDelay
 
 using namespace TeensyDelay;
 
-#ifdef USE_CLASS_CALLBACK
-
 #if USE_TIMER == TIMER_FTM0
 void ftm0_isr(void)
 #elif USE_TIMER == TIMER_FTM1
@@ -86,63 +83,31 @@ void tpm1_isr(void)
 void tpm2_isr(void)
 #endif
 {
-	uint32_t status = timer->STATUS & 0x0F;   // STATUS collects all channel event flags (bit0 = ch0, bit1 = ch1....) 
+    //digitalWriteFast(14, HIGH);
+    uint32_t status = timer->STATUS & 0x0F;   // STATUS collects all channel event flags (bit0 = ch0, bit1 = ch1....) 
 
-	unsigned i = 0;
-	while (status > 0) {
-		if (status & 0x01) {
-			if (isFTM) {                           // isFTM is a compiletime constant, compiler optimizes conditional and not valid branch completely away           
-				timer->CH[i].SC &= ~FTM_CSC_CHF;   // reset channel and interrupt enable (we only want one shot per trigger)	
-			}
-			else {
-				timer->CH[i].SC |= FTM_CSC_CHF;    // TPM needs inverse setting of the flags                
-			}
+    unsigned i = 0;
+    while (status > 0) {
+        if (status & 0x01) {
+            if (isFTM) {                           // isFTM is a compiletime constant, compiler optimizes conditional and not valid branch completely away           
+                timer->CH[i].SC &= ~FTM_CSC_CHF;   // reset channel and interrupt enable (we only want one shot per trigger)	
+            }
+            else {
+                timer->CH[i].SC |= FTM_CSC_CHF;    // TPM needs inverse setting of the flags                
+            }
 
-			if (timer->CH[i].SC & FTM_CSC_CHIE)    // Channel flags will be set each time the counter overflows the channel value. 
-			{									   // In case that the interupt was triggered by another channel we need to prevent
-				timer->CH[i].SC &= ~FTM_CSC_CHIE;  // the callback if this channel was not triggerd (CHIE of this channel not set)
+            if (timer->CH[i].SC & FTM_CSC_CHIE)    // Channel flags will be set each time the counter overflows the channel value. 
+            {									   // In case that the interupt was triggered by another channel we need to prevent
+                timer->CH[i].SC &= ~FTM_CSC_CHIE;  // the callback if this channel was not triggerd (CHIE of this channel not set)
 #ifdef  USE_CLASS_CALLBACK
-				callbacks[i]->delayISR(i);
+                callbacks[i]->delayISR(i);
 #else
-				callbacks[i]();				       // invoke callback function for the channel								                     
+                callbacks[i]();				       // invoke callback function for the channel								                     
 #endif //  USE_CLASS_CALLBACK
-			}
-		}
-		i++;
-		status >>= 1;
-	}
+            }
+        }
+        i++;
+        status >>= 1;
+    }
+    //digitalWriteFast(14, LOW);
 }
-#else
-#if USE_TIMER == TIMER_FTM0
-void ftm0_isr(void)
-#elif USE_TIMER == TIMER_FTM1
-void ftm1_isr(void)
-#elif USE_TIMER == TIMER_FTM2
-void ftm2_isr(void)
-#elif USE_TIMER == TIMER_FTM3
-void ftm3_isr(void)
-#elif USE_TIMER == TIMER_TPM1
-void tpm1_isr(void)
-#elif USE_TIMER == TIMER_TPM2
-void tpm2_isr(void)
-#endif
-{
-	uint32_t status = timer->STATUS & 0x0F;   // STATUS collects all channel event flags (bit0 = ch0, bit1 = ch1....) 
-
-	unsigned i = 0;
-	while (status > 0) {
-		if (status & 0x01) {
-			if (isFTM) {                                            // compiletime constant, compiler optimizes conditional and not valid branch completely away           
-				timer->CH[i].SC &= ~(FTM_CSC_CHF | FTM_CSC_CHIE);   // reset channel and interrupt enable (we only want one shot per trigger)
-			}
-			else {
-				timer->CH[i].SC |= FTM_CSC_CHF;                     // TPM needs inverse setting of the flags
-				timer->CH[i].SC &= ~FTM_CSC_CHIE;
-			}
-			callbacks[i]();				            // invoke callback function for the channel								                     
-		}
-		i++;
-		status >>= 1;
-	}
-}
-#endif
