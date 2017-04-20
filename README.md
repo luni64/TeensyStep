@@ -30,14 +30,14 @@ TeensyStep basically uses the following two classes to controll the steppers
 
 **Stepper Class**
 The Stepper class encapsulates the physical properties of a stepper motor and its driver:
-- The pin numbers the STEP and DIR signals are connected to.
-- The maximium speed and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
-- The step pulse polarity, i.e., if your driver requires active high or active low step pulses.
-- Inverted rotation
+- Pin numbers where the STEP and DIR signals are connected to.
+- Maximium speed and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
+- Step pulse polarity, i.e., if your driver requires active high or active low step pulses.
+- Setting for inverted rotation direction
 
-The stepper class also keeps track of the current position of the stepper and accepts setting of a new target position. A new target position can be set absolutely or relative to the current position. 
+The stepper class also keeps track of the current position and accepts the setting of a new target position. A new target position can be set absolutely or relative to the current position. 
 
-Here a snippet showing the use of the stepper class
+Here a snippet showing the usage of the stepper class
 ```c++
 ...
 // define a few motors
@@ -49,6 +49,7 @@ setup() {
     // Setup some motor properties
     motor_1.setMaxSpeed(64000);         // stp/s
     motor_1.setAcceleration(200000);    // stp/s^2
+    
     // you can also use the fluent interface of the class to set the properties
     motor_2
         .setMaxSpeed(30000)             // stp/s
