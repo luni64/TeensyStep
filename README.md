@@ -24,8 +24,7 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 ## Usage
 TeensyStep basically uses the following two classes to control the steppers
 
-**Stepper Class**
-
+### Stepper Class
 The *Stepper* class encapsulates the physical properties of a stepper motor and its driver:
 - Teensy pin numbers the STEP and DIR signals are connected to.
 - Maximium speed and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
@@ -66,7 +65,7 @@ motor_1.setTargetAbs(pos + 100);    // sets the target position 100 steps ahead 
 motor_1.setTargetRel(100);          // does the same thing
 ...
 ```
-**StepControl Class**
+### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
 ```C++
 ...
