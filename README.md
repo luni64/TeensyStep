@@ -80,7 +80,7 @@ motor_3.setTargetAbs(0);
 controller.move(motor_1, motor_2, motor_3);  // synchronously move motors back to the starting position
 ...
 ```
-The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors moving you can use the *moveAsync* commands.
+The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors are moving you can use the *moveAsync* commands.
 
 ```C++
 ...
@@ -92,8 +92,7 @@ while(controller.isRunning()){              // wait until the movement is finish
 }
 ```
 
-The move commands always move the motors synchronously. I.e. all motors will always reach their target positions at the same time. If you think of a x/y transport system, the movement will be on a straigth line from the current coordinates to the target coordinates. 
-If you need an independent movement of the motors you can use more than one *StepControl* objects
+The move amd moveAsync commands always move the motors synchronously. I.e., all motors will always reach their target positions at the same time. If you think of a x/y transport system, the movement will be on a straight line from the current coordinates to the target coordinates. If you need an independent motor movement you can use more than one *StepControl* objects
 ```C++
 ...
 StepControl<> controller_1;
