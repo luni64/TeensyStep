@@ -9,10 +9,10 @@ Assume we have a standard 1.8° stepper (200 steps/rev) and  want to  run it at 
 
 &emsp;&emsp;&emsp; *r* = (16 * 200 stp/rev * 1'200 rev/min) / (60 s/min) = **64'000 steps/s**
 
-There are a few Arduino stepper libraries available, e.g. the well known [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/),&ensp; the standard [Arduino Stepper Library](https://www.arduino.cc/en/Reference/Stepper) or [Laurentiu Badeas Stepper Driver](https://github.com/laurb9/StepperDriver) to name a few. However, I found none which is able to handle synchronous and asynchronous accelerated moves of more than one motor at the high pulse rates required for micro stepping drivers. 
+There are a some Arduino stepper libraries available, e.g. the well known [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/),&ensp; the standard [Arduino Stepper Library](https://www.arduino.cc/en/Reference/Stepper) or [Laurentiu Badeas Stepper Driver](https://github.com/laurb9/StepperDriver) to name a few. However, I found none which is able to handle synchronous and asynchronous accelerated moves of more than one motor at the high pulse rates required for micro stepping drivers. 
 
 ## Purpose of the Library
-**TeensyDelay** is a highly efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and asynchronous movement of steppers with pulse rates of up to 300'000 steps per second. The following table shows a brief summary of the library spec:
+**TeensyDelay** is a highly efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and asynchronous movement of steppers with pulse rates of up to 300'000 steps per second. The following table shows a brief summary of the **TeensyDelay** spec:
 
 | Description                                | Specification             |
 |:-------------------------------------------|--------------------------:|
@@ -35,7 +35,6 @@ The Stepper class encapsulates the physical properties of a stepper motor and it
 - Step pulse polarity, i.e., if your driver requires active high or active low step pulses.
 - Setting for inverted rotation direction
 
-The stepper class also keeps track of the current position and accepts the setting of a new target position. A new target position can be set absolutely or relative to the current position. 
 
 Here a snippet showing the usage of the stepper class
 ```c++
@@ -50,18 +49,19 @@ setup() {
     motor_1.setMaxSpeed(64000);         // stp/s
     motor_1.setAcceleration(200000);    // stp/s^2
     
-    // you can also use the fluent interface of the class to set the properties
+    // you can also use a 'fluent interface' to set the properties
     motor_2
         .setMaxSpeed(30000)             // stp/s
         .setPullInSpeed(800)            // stp/s
         .setAcceleration(150000);       // stp/s^2
     motor_3
         .setStepPulsePolarity(LOW)      //motor connected to an active low driver
+        .setInvertedDir(true)
         .setMaxSpeed(45000)             // stp/s
         .setAcceleration(200000);       // stp/s^2      .
 }
 ```
-
+The stepper class also keeps track of the current position and accepts the setting of a new target position. A new target position can be set absolutely or relative to the current position. 
 
 **Controller Class**
 
