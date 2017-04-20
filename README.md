@@ -125,7 +125,7 @@ You can define as many *Stepper* objects as you like. *Stepper* objects do not u
 TBD
 
 ## Performance
-The table in the figure below shows some information about the performance of the library. To  estimate the generated processor load we need to  know the time it takes for handling acceleration, Bresenham algorithm and switching the STEP and DIR signals. The experiment was done by setting a digital pin to HIGH when the processor enters the corresponding ISR and back to LOW when it leaves it. The actual times were measured with a logic analyzer, the processor load was then calculated for various conditions and processors. 
+The table in the figure below shows some information about the performance of the library. To  estimate the generated processor load we need to  know the time it takes for handling acceleration, Bresenham algorithm and switching the STEP and DIR signals. The experiment was done by setting a digital pin to HIGH when the processor enters the corresponding ISR and back to LOW when it leaves it. The actual times were measured with a logic analyzer, the processor load was calculated for various conditions and processors. (The .xls file can be downloaded  [here](/media/load_calculation.xls)).
 
 ![Alt text](/media/load_calculation.PNG?raw=true "Load calculation")
 
