@@ -29,14 +29,13 @@ namespace
 
 bool PIT::begin(IPitHandler* handler)
 {
-    if (!timer.begin(dummyISR, 1E6)) return false;	// try to reserve a timer
+    if (!timer.begin(dummyISR, 1E6)) return false;  // try to reserve a timer
 
-    setupChannel();									// find pit channel of reserved timer
-
+    setupChannel();                                 // find pit channel of reserved timer
     const int channelNr = channel - KINETISK_PIT_CHANNELS;
-    pitHandler[channelNr] = handler;				// store handler
-    timer.begin(dispatcher[channelNr], 1E6);		// attach an ISR which will call the stored handler
-    disableInterupt(); 								// don't clear TEN, we want to keep the IntervalTimer reserved
+    pitHandler[channelNr] = handler;                // store handler
+    timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler
+    disableInterupt();                              // don't clear TEN, we want to keep the IntervalTimer reserved
 
     return true;
 }
