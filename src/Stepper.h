@@ -53,5 +53,3 @@ private:
     int dirCw;
     const int stepPin, dirPin;
 };
-
-
