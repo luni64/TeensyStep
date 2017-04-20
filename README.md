@@ -103,9 +103,10 @@ controller_2.moveAsync(motor_1);           // starts independend movement of mot
 ...
 ```
 ## Used Ressources
-Each *StepControl* object requires one PIT Timer (aka IntervallTimer) and two channels of a FTM timer. Since all supported Teensies implement four PIT timers and a FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a PIT timer. 
+### StepControl
+Each *StepControl* object requires **one PIT** Timer (aka IntervallTimer) and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and a FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a PIT timer. 
 
-You can define as many *Stepper* objects as you like. They do not use any system ressources except 56 bytes of stack memory.
+
 
 ```C++
 StepControl<> cnt1;
@@ -116,9 +117,10 @@ if(!(cnt1.isOK() && cnt2.isOK() && cnt3.isOK()))
 {
     panic();
 }
-
 ```
-
+A *StepControl* object requires 96 bytes of stack memory.
+### Stepper
+You can define as many *Stepper* objects as you like. *Stepper* objects do not use any system ressources except 56 bytes of stack memory.
 ## Advanced Usage
 TBD
 
