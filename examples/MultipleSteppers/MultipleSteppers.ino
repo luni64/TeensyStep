@@ -65,10 +65,11 @@ void loop()
   motor_3.setTargetRel(-800);
   controller.move(motor_2, motor_3);
 
-  // move motor_1 and motor_3 back to their start positions
+  // move all motors back to their start positions
   motor_1.setTargetAbs(0);
+  motor_2.setTargetAbs(0);
   motor_3.setTargetAbs(0);
-  controller.move(motor_1, motor_3);
+  controller.move(motor_1, motor_2, motor_3);
  
   delay(1000);
 }
