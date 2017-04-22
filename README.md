@@ -128,7 +128,7 @@ StepControl<> controller;
 M1.setTargetAbs(targetY);
 M2.setTargetAbs(targetX);
 
-controller.move(M1, M1);        // Move M1 _and_ M2 to the target position 
+controller.move(M1, M2);        // Move M1 _and_ M2 to the target position 
 ...
 ```
 The resulting movement is shown in the figure below.
