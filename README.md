@@ -95,7 +95,8 @@ while(controller.isRunning()){              // wait until the movement is finish
 
 ## Movement Modes
 
-If want to control more than one motor there are three different posibilities to perform the movement. Lets assume the standard x/y belt drive transport setup shown in the figure below. There are two motors (M1 and M2) moving  a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
+If want to control more than one motor there are three different posibilities to do so. Lets assume the standard x/y belt drive transport setup shown in the figures below. There are two motors (M1 and M2) moving  a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
+
 ## Sequential Movement
 The simplest thing you can do is to move the motors one after the other:
 ```c++
@@ -114,8 +115,9 @@ The resulting movement is shown in the figure below.
 ![Sequential Movement](/media/seqMove.png?raw=true "Sequential Movement")
 
 ## Synchronous Movement
-If you want to move on a straight line between two positions you need to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses the [Bresenham algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
-Using synchronous movements is easy: StepControl accepts up to 10 motors in its move and moveAsync commands. All motors passsed will be moved synchronously.
+If you want to move on a straight line between two positions you need to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
+
+Using synchronous movements is easy: StepControl accepts up to 10 motors in its move and moveAsync commands. All motors passsed to the commands will be moved synchronously.
 
 ```c++
 ...
@@ -129,7 +131,7 @@ controller.move(M1, M1);        // Move M1 _and_ M2 to the target position
 ```
 The resulting movement is shown in the figure below.
 
-![Synchronous Movement](/media/syncMove.PNG?raw=true "Sequential Movement")
+![Synchronous Movement](/media/syncMove.png?raw=true "Sequential Movement")
 
 ## Independend Movement
 TBD
@@ -142,7 +144,7 @@ controller_2.moveAsync(motor_1);           // starts independend movement of mot
 ...
 ```
 
-
+![Independend Movement](/media/indMove.png?raw=true "Sequential Movement")
 
 ## Used Ressources
 ### StepControl
