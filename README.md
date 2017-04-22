@@ -80,22 +80,22 @@ motor_3.setTargetAbs(0);
 controller.move(motor_1, motor_2, motor_3);  // Move all motors back to the starting position
 ...
 ```
-The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors are moving you can use the non blocking *moveAsync* commands.
+The *move* command is blocking. I.e., it will not return until the movement is finished. If you need to do some work while the motors are moving you can use the non blocking *moveAsync* command.
 
 ```c++
 ...
 controller.moveAsync(motor_1, motor_2);     // This will start the movement and return immediately
 doSomeWork();
 
-while(controller.isRunning()){              // wait until the movement is finished. Do not start a
-    delay(10);                              // new movement while another one is still running
+while(controller.isRunning()){              // wait until the movement is finished
+    delay(10);                     
 }
 ```
 
 
 ## Movement Modes
 
-If want to control more than one motor there are three different posibilities to do so. Lets assume the standard x/y belt drive transport setup shown in the figures below. There are two motors (M1 and M2) moving  a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
+If you want to control more than one motor there are three different posibilities to do so. Lets assume the standard belt driven x/y transport shown in the figures below. There are two motors (M1 and M2) which move a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
 
 ## Sequential Movement
 The simplest thing you can do is to move the motors one after the other:
@@ -117,7 +117,7 @@ The resulting movement is shown in the figure below.
 
 
 ## Synchronous Movement
-If you want to move on a straight line between two positions you need to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
+If you want to move on a straight line between the two positions StepControl needs to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
 
 Using synchronous movements is easy: StepControl accepts up to 10 motors in its move and moveAsync commands. All motors passsed to the commands will be moved synchronously.
 
@@ -138,16 +138,23 @@ The resulting movement is shown in the figure below.
 
 
 ## Independend Movement
-TBD
+Sometimes it is necessary to move one or more motors independently but at the same time. Lets extend our example by another transport module (motor M3) which can move left / right only. This transport is supposed to bring fresh samples (red dot) to a transfer area on the right of the x/y transport. Independently of the the x/y transport which is still  moving around we want to bring a new sample to the transfer station. We can do this by creating a second controller:
 ```c++
 StepControl<> controller_1;
 StepControl<> controller_2;
 ...
-controller_1.moveAsync(motor_2, motor_3);  // starts synchronous movement of motor_2 and motor_3
-controller_2.moveAsync(motor_1);           // starts independend movement of motor_1
+controller_1.moveAsync(M1, M2);   // synchronous movement of M1 and M2
+// ... more controller_1 movements....
+
+M3.setTargetAbs(transferAreaPos);
+controller_2.moveAsync(motor_3);  // move M3 to the transfer station, independent of M1/M2 movements which run in parallel
+...
+while(controller_1.isRunning() || controller_2.isRunning()){  // wait until both controllers finished their movements
+    delay(10);
+}
+// do the sample transfer...
 ...
 ```
-
 
 ![Independend Movement](/media/indMove.png?raw=true "Sequential Movement")
 
