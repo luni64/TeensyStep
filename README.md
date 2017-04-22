@@ -161,9 +161,7 @@ while(controller_1.isRunning() || controller_2.isRunning()){  // wait until both
 
 ## Used Ressources
 ### StepControl
-Each *StepControl* object requires **one PIT Timer** (aka IntervallTimer) and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and a FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a PIT timer. 
-
-
+Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervallTimer. 
 
 ```c++
 StepControl<> cnt1;
@@ -178,8 +176,6 @@ if(!(cnt1.isOK() && cnt2.isOK() && cnt3.isOK()))
 A *StepControl* object requires 96 bytes of stack or static memory.
 ### Stepper
 You can define as many *Stepper* objects as you like. *Stepper* objects do not use any system ressources except 56 bytes of stack or static memory.
-## Advanced Usage
-TBD
 
 ## Performance
 The table in the figure below shows some information about the performance of the library. To  estimate the generated processor load we need to  know the time it takes for handling acceleration, Bresenham algorithm and switching the STEP and DIR signals. The experiment was done by setting a digital pin to HIGH when the processor enters the corresponding ISR and back to LOW when it leaves it. The actual times were measured with a logic analyzer, the processor load was calculated for various conditions and processors. (The .xlsx spreadsheet can be downloaded  [here](/media/load_calculation.xlsx)). 
