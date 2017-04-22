@@ -111,7 +111,7 @@ controller.move(M2);           // Move M2_to the target position (targetX)
 ```
 The resulting movement is shown in the figure below.
 
-![Sequential Movement](/media/seqMove.PNG?raw=true "Sequential Movement")
+![Sequential Movement](/media/seqMove.png?raw=true "Sequential Movement")
 
 ## Synchronous Movement
 If you want to move on a straight line between two positions you need to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses the [Bresenham algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
