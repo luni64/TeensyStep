@@ -138,7 +138,7 @@ The resulting movement is shown in the figure below.
 
 
 ## Independend Movement
-Sometimes it is necessary to move one or more motors independently but at the same time. Lets extend our example by another transport module (motor M3) which can move left / right only. This transport is supposed to bring fresh samples (red dot) to a transfer area on the right of the x/y transport. Independently of the the x/y transport which is still  moving around we want to bring a new sample to the transfer station. We can do this by creating a second controller:
+Sometimes it is necessary to move one or more motors independently but at the same time as the other motors. Lets extend our example by another transport module (motor M3) which can move left / right only. This transport is supposed to bring fresh samples (red dot) to a transfer area. This transport shall be done independently of the the x/y transport which is still  moving around. To accomplish this we need to create a second controller for motor M3.
 ```c++
 StepControl<> controller_1;
 StepControl<> controller_2;
