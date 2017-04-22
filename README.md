@@ -1,14 +1,14 @@
 # TeensyStep
 ## Problem to be solved 
-A lot of interesting projects require the movement of things. The most easy way to implement such a transport system is the use of stepper motors driven by readily available stepper drivers. Those drivers usally expect simple **step and direction signals** to move the motors. However, due to the motor intertia they can not be started at full speed but need a smooth **acceleration** or deceleration to the final velocity. Otherwise the step counters maintained by the application and the real motor positions can run out of sync (steploss errors). Practically all modern stepper drivers can operate in a so called **microstepping** mode where the mechanically fixed step positions (usually 200 per rev) are subdivided into a number of microsteps. While microstepping is great to reduce vibration at low velocity it requires  **high pulse rates** at even moderate motor speeds. 
+A lot of interesting projects require the movement of things. An easy way to implement such a transport system is the use of stepper motors driven by readily available stepper drivers. Those drivers usally expect simple **step and direction signals** to move the motors. However, due to the motor intertia they can not be started at full speed but need a smooth **acceleration** or deceleration to the final velocity. Otherwise the step counters maintained by the application and the real motor positions can run out of sync (steploss errors). Practically all modern stepper drivers can operate in a so called **microstepping** mode where the mechanically fixed step positions (usually 200 per rev) are subdivided into a number of microsteps. While microstepping is great to reduce vibration at low velocity it requires  **high pulse rates** at even moderate motor speeds. 
 Lets look at a typical example: Assume we have a standard 1.8° stepper (200 steps/rev) and  want to  run it at a speed of 1200 rpm in 1/16 micro stepping mode. The required pulse rate *r*  can be calculated by: 
 
 &emsp;&emsp;&emsp; *r* = (16 * 200 stp/rev * 1'200 rev/min) / (60 s/min) = **64'000 steps/s**
 
-Of course there are other Arduino stepper libraries available, e.g. the well known [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/),&ensp; the standard [Arduino Stepper Library](https://www.arduino.cc/en/Reference/Stepper) or [Laurentiu Badeas Stepper Driver](https://github.com/laurb9/StepperDriver) to name a few. However, I found none which is able to handle synchronous and asynchronous accelerated moves of more than one motor at the high pulse rates required for microstepping drivers. 
+Of course there are other Arduino stepper libraries available, e.g. the well known [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/),&ensp; the standard [Arduino Stepper Library](https://www.arduino.cc/en/Reference/Stepper) or [Laurentiu Badeas Stepper Driver](https://github.com/laurb9/StepperDriver) to name a few. However, I found none which is able to handle accelerated synchronous and independent moves of more than one motor at the high pulse rates required for microstepping drivers. 
 
 ## Purpose of the Library
-**TeensyDelay** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and asynchronous movement of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyDelay** specification:
+**TeensyDelay** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyDelay** specification:
 
 | Description                                | Specification             |
 |:-------------------------------------------|--------------------------:|
@@ -16,7 +16,7 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 | Acceleration                               | 0 - 500'000 stp/s^2       |
 | Pull in speed (speed up to which no acceleration is required)| 50-10'000 stp/s|
 | Synchronous movement of motors             | up to 10                  |
-| Asynchronous movement of motors            | 4 groups of 1 to 10 motors|
+| Independend movement of motors             | 4 groups of 1 to 10 motors|
 | Settable step pulse polarity               | Active high or low        |
 | Settable step pulse width                  | 1-100µs                   |
 | Settable direction signal polarity         | cw / ccw                  |
@@ -57,30 +57,30 @@ void setup() {
         ...
 }
 ```
-The stepper class also keeps track of the current position and accepts the setting of a new target position. A new target position can be set absolutely or relative to the current position. 
+The stepper class also keeps track of the current position and is used to set a new target position. Target positions can be set absolutely or relative to the current position. 
 ```c++
 ...
 uint pos = motor_1.getPosition();   // get current position of the motor
 motor_1.setTargetAbs(pos + 100);    // sets the target position 100 steps ahead of the current position
-motor_1.setTargetRel(100);          // does the same thing
+motor_1.setTargetRel(100);          // does the same thing directly
 ...
 ```
 ### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
 ```c++
 ...
-StepControl<> controller;                     // construct a controller object
+StepControl<> controller;                    // construct a controller object
 
 controller.move(motor_1);                    // This will move motor_1 to its target position
-controller.move(motor_2, motor_3);           // Synchronously moves motor_2 and motor_3 to their target positions
+controller.move(motor_2, motor_3);           // Moves motor_2 and motor_3 to their target positions
 
 motor_1.setTargetAbs(0);
 motor_2.setTargetAbs(0);
 motor_3.setTargetAbs(0);
-controller.move(motor_1, motor_2, motor_3);  // synchronously move motors back to the starting position
+controller.move(motor_1, motor_2, motor_3);  // Move all motors back to the starting position
 ...
 ```
-The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors are moving you can use the *moveAsync* commands.
+The *move* commands are blocking, i.e., they will not return until the movement is finished. If you need to do some work while the motors are moving you can use the non blocking *moveAsync* commands.
 
 ```c++
 ...
@@ -92,9 +92,48 @@ while(controller.isRunning()){              // wait until the movement is finish
 }
 ```
 
-The move amd moveAsync commands always move the motors synchronously. I.e., all motors will always reach their target positions at the same time. If you think of a x/y transport system, the movement will be on a straight line from the current coordinates to the target coordinates. If you need an independent motor movement you can use more than one *StepControl* objects
+
+## Movement Modes
+
+If want to control more than one motor there are three different posibilities to perform the movement. Lets assume the standard x/y belt drive transport setup shown in the figure below. There are two motors (M1 and M2) moving  a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
+## Sequential Movement
+The simplest thing you can do is to move the motors one after the other:
 ```c++
 ...
+StepControl<> controller;               
+
+M1.setTargetAbs(targetY);
+M2.setTargetAbs(targetX);
+
+controller.move(M1);           // Move M1 to the target position (targetY)
+controller.move(M2);           // Move M2_to the target position (targetX) 
+...
+```
+The resulting movement is shown in the figure below.
+
+![Sequential Movement](/media/seqMove.PNG?raw=true "Sequential Movement")
+
+## Synchronous Movement
+If you want to move on a straight line between two positions you need to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses the [Bresenham algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
+Using synchronous movements is easy: StepControl accepts up to 10 motors in its move and moveAsync commands. All motors passsed will be moved synchronously.
+
+```c++
+...
+StepControl<> controller;               
+
+M1.setTargetAbs(targetY);
+M2.setTargetAbs(targetX);
+
+controller.move(M1, M1);        // Move M1 _and_ M2 to the target position 
+...
+```
+The resulting movement is shown in the figure below.
+
+![Synchronous Movement](/media/syncMove.PNG?raw=true "Sequential Movement")
+
+## Independend Movement
+TBD
+```c++
 StepControl<> controller_1;
 StepControl<> controller_2;
 ...
@@ -102,6 +141,9 @@ controller_1.moveAsync(motor_2, motor_3);  // starts synchronous movement of mot
 controller_2.moveAsync(motor_1);           // starts independend movement of motor_1
 ...
 ```
+
+
+
 ## Used Ressources
 ### StepControl
 Each *StepControl* object requires **one PIT Timer** (aka IntervallTimer) and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and a FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a PIT timer. 
