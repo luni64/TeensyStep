@@ -119,7 +119,7 @@ The resulting movement is shown in the figure below.
 ## Synchronous Movement
 If you want to move on a straight line between the two positions StepControl needs to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
 
-Using synchronous movements is easy: StepControl accepts up to 10 motors in its move and moveAsync commands. All motors passsed to the commands will be moved synchronously.
+Using synchronous movements is easy: the controller accepts up to 10 motors in its move and moveAsync commands. All motors passsed to the commands will be moved synchronously.
 
 ```c++
 ...
