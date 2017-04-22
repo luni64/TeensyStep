@@ -131,7 +131,7 @@ controller.move(M1, M1);        // Move M1 _and_ M2 to the target position
 ```
 The resulting movement is shown in the figure below.
 
-![Synchronous Movement](/media/syncMove.png?raw=true "Sequential Movement")
+![Synchronous Movement](/media/sycMove.png?raw=true "Sequential Movement")
 
 ## Independend Movement
 TBD
