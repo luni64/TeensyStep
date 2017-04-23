@@ -141,7 +141,10 @@ namespace TeensyDelay
         2,  // TPM2 
     };
 
-    constexpr volatile FTM_t* timer = (FTM_t*)TimerBaseAddr[(int)board][selTimer]; // base address for register block of selected timer
+    constexpr uint32_t timerAddr = TimerBaseAddr[(int)board][selTimer];
+    constexpr volatile FTM_t* timer = __builtin_constant_p((FTM_t*)timerAddr) ? (FTM_t*)timerAddr : (FTM_t*)timerAddr; // base address for register block of selected timer
+    
+    //constexpr volatile FTM_t* timer = (FTM_t*)TimerBaseAddr[(int)board][selTimer]; // base address for register block of selected timer
     constexpr unsigned irq = IRQ_Number[(int)board][selTimer];                     // IRQ number of selected timer
     constexpr unsigned maxChannel = _nrOfChannels[selTimer];                        // Number of channels for selected timer
 

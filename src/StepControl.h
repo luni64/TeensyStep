@@ -98,7 +98,7 @@ protected:
         }
         TeensyDelay::trigger(pulseWidth, pinResetDelayChannel); // start delay line to reset step pins  
 
-        if (motorList[0]->current < motorList[0]->target) {
+        if ((uint32_t) motorList[0]->current < motorList[0]->target) {  //CHECK: why is current an int not an uint????
             StepTimer.setReloadValue(AccParams.nextCnt);
         }
         else {
