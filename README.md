@@ -25,8 +25,8 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 TeensyStep basically uses the following two classes to control the steppers
 
 ### Stepper Class
-The *Stepper* class encapsulates the physical properties of a stepper motor and its driver:
-- Teensy pin numbers the STEP and DIR signals are connected to.
+The *Stepper* class encapsulates the following physical properties of a stepper motor and its driver:
+- Pin numbers of the STEP and DIR signals.
 - Maximium speed and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
 - Step pulse polarity, i.e., if your driver requires active high or active low step pulses.
 - Setting for inverted rotation direction
@@ -80,7 +80,7 @@ motor_3.setTargetAbs(0);
 controller.move(motor_1, motor_2, motor_3);  // Move all motors back to the starting position
 ...
 ```
-The *move* command is blocking. I.e., it will not return until the movement is finished. If you need to do some work while the motors are moving you can use the non blocking *moveAsync* command.
+The *move* command is blocking. I.e., it will not return until the movement is finished. If you need to do some work while the motors are rotating you can use the non blocking *moveAsync* command.
 
 ```c++
 ...
@@ -95,7 +95,7 @@ while(controller.isRunning()){              // wait until the movement is finish
 
 ## Movement Modes
 
-If you want to control more than one motor there are three different posibilities to do so. Lets assume the standard belt driven x/y transport shown in the figures below. There are two motors (M1 and M2) which move a load (symbolized by the blue ring) on linear guides. M1 moves the load in y-direction and M2 in x-direction. 
+If you want to control more than one motor there are three different posibilities to do so. Lets assume the standard belt driven x/y transport shown in the figures below. There are two motors (M1 and M2) which move a load (symbolized by the blue ring) on linear guides (pale blue). M1 moves the load in y-direction and M2 in x-direction. 
 
 ## Sequential Movement
 The simplest thing you can do is to move the motors one after the other:
@@ -117,9 +117,9 @@ The resulting movement is shown in the figure below.
 
 
 ## Synchronous Movement
-If you want to move on a straight line between the two positions StepControl needs to adjust the step rate of one of the motors depending on the other. Of course, this adjustment is necessary during the complete movement including acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
+If you want to move on a straight line between the two positions StepControl needs to adjust the step rate of one of the motors in relation to the other. Of course, this adjustment is necessary during the complete movement including the acceleration and deceleration phases. StepControl uses [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) to do this adjustment.
 
-Using synchronous movements is easy: the controller accepts up to 10 motors in its move and moveAsync commands. All motors passsed to the commands will be moved synchronously.
+Using synchronous movements with TeensyStep is easy: the controller accepts up to 10 motors in its move and moveAsync command. All motors which are passsed to the commands will be moved synchronously.
 
 ```c++
 ...
