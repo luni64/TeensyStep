@@ -1,4 +1,10 @@
 # TeensyStep
+
+## Content
+ - [Problem](#problem)
+ - [Purpose](#purpose-of-the-library)
+ - [Usage](#usage)
+
 ## Problem to be solved 
 A lot of interesting projects require the movement of things. An easy way to implement such a transport system is the use of stepper motors driven by readily available stepper drivers. Those drivers usually expect simple **step and direction signals** to move the motors. However, due to the motor inertia they can not be started at full speed but need a smooth **acceleration** or deceleration to the final velocity. Otherwise the step counters maintained by the application and the real motor positions can run out of sync (steploss errors). Practically all modern stepper drivers can operate in a so called **microstepping** mode where the mechanically fixed step positions (usually 200 per rev) are electronically subdivided into a number of microsteps. While microstepping is great to increase resolution and to reduce vibration at low velocity it requires  **high pulse rates** at even moderate motor speeds. 
 Lets look at a typical example: Assume we have a standard 1.8° stepper (200 steps/rev) and  want to  run it at a speed of 1200 rpm in 1/16 micro stepping mode. The required pulse rate *r*  can be calculated by: 
