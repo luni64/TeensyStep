@@ -4,7 +4,7 @@
  - [Problem](#problem)
  - [Purpose](#purpose-of-the-library)
  - [Usage](#usage)
- - [Movement Modes](#movement_modes)
+ - [Movement Modes](#movement-modes)
     - [Sequential Movements](#sequential-movement)
     - [Synchronous Movements](#synchronous-movement)
     - [Independend Movements](#independend-movement)
