@@ -214,15 +214,15 @@ protected:
 
                 uint32_t pos = motorList[0]->current;
 
-                if (pos < accelerationEnd)       // accelerating	
+                if (pos < accelerationEnd)        // accelerating	
                 {
                     StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(pos) + vMin);
                 }
-                else if (pos < decelerationStart) // constant speed			 
+                else if (pos < decelerationStart) // constant speed
                 {
                     StepTimer.channel->LDVAL = cMax;
                 }
-                else						      //decelerating	
+                else                             //decelerating	
                 {
                     StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(motorList[0]->target - pos - 1) + vMin);
                 }
