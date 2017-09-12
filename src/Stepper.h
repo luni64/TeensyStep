@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <algorithm>
 
+
 class Stepper
 {
     static constexpr unsigned vPullIn_min = 50;            // smallest possible pullIn frequency  (steps/s)
@@ -26,13 +27,14 @@ public:
     void setTargetAbs(int pos);			// Set target position 
     void setTargetRel(int delta);		// Set target position relative to current position
 
-    inline void setStepPin() { *stepPinActiveReg = 1; }
+	inline void doStep() { *stepPinActiveReg = 1; current++; }
     inline void clearStepPin() { *stepPinInactiveReg = 1; }
     
     inline int32_t getPosition() const { return position + dirCw* current; }
-
-    volatile int current;
-    unsigned target;
+    inline void setPosition(int32_t pos) { position = pos; current = 0;  }
+    
+    volatile uint32_t current;
+    volatile unsigned target;
     int D;
     unsigned v_pullIn;
     unsigned vMax;

@@ -1,18 +1,14 @@
-#include "Pit.h"
-#include "HardwareSerial.h"
-#include "Arduino.h"
-
+#include "PIT.h"
+ 
 
 namespace
 {
     IPitHandler* pitHandler[4];
 
-    template<const int n>
+    template<int n>
     void dispatchFunc()
-    {
-        //digitalWriteFast(14, HIGH);
-        pitHandler[n]->pitISR();
-        //digitalWriteFast(14, LOW);
+    {      
+        pitHandler[n]->pitISR();     
     }
 
     constexpr void(*dispatcher[])(void) =
@@ -34,8 +30,10 @@ bool PIT::begin(IPitHandler* handler)
     setupChannel();                                 // find pit channel of reserved timer
     const int channelNr = channel - KINETISK_PIT_CHANNELS;
     pitHandler[channelNr] = handler;                // store handler
+	timer.priority(32);
     timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler
-    disableInterupt();                              // don't clear TEN, we want to keep the IntervalTimer reserved
+													// don't clear TEN, we want to keep the IntervalTimer reserved
+    disableInterupt();     		
 
     return true;
 }
