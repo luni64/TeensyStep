@@ -30,7 +30,7 @@ public:
 	{
 		moveAsync(stepper, relSpeed);
 		while (isRunning())
-			delay(10);
+			delay(10); 
 	}
 
 	void move(Stepper& stepper1, Stepper& stepper2, float relSpeed = 1)
