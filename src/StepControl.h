@@ -9,7 +9,7 @@
 //unsigned short isqrt(unsigned long a);
 
 constexpr int MaxMotors = 10;
-constexpr uint64_t sqr(uint32_t x) { return (uint64_t)x*(uint64_t)x; }
+constexpr uint64_t sqr(uint32_t x) { return (uint64_t)x*(uint64_t)x; } 
 
 template<const uint pulseWidth = 5, uint accUpdatePeriod = 5000>
 class StepControl : IPitHandler, IDelayHandler
