@@ -206,7 +206,6 @@ protected:
 
 		if (channel == accLoopDelayChannel) // calculate new speed (i.e., timer reload value)
 		{
-			digitalWriteFast(5, 1);
 			if (StepTimer.isRunning())
 			{
 				cli();
@@ -216,24 +215,18 @@ protected:
 				uint32_t pos = motorList[0]->current;
 
 				if (pos < accelerationEnd)       // accelerating	
-				{
-					digitalWriteFast(4, 1);
+				{					
 					StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(pos) + vMin);
 				}
 				else if (pos < decelerationStart) // constant speed			 
-				{
-					digitalWriteFast(4, 0);
+				{				
 					StepTimer.channel->LDVAL = cMax;
 				}
 				else						      //decelerating	
-				{
-					digitalWriteFast(4, 1);
+				{				
 					StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(motorList[0]->target - pos - 1) + vMin);
 				}
 			}
-			else digitalWriteFast(4, 0);
-
-			digitalWriteFast(5, 0);
 		}
 	}
 
