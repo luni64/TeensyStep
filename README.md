@@ -33,8 +33,11 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
 [1] Depending on Teensy model
+
 [2] An acceleration of say 1200 stp/s^2 will accelerate the motor from 0 to 1200 stp/s in 1 second, or from 0 to 2400 stp/s in 2 seconds...
+
 [3] This is the speed up to which the motor can start without acceleration. 
+
 ## Usage
 TeensyStep basically uses the following two classes to control the steppers
 
