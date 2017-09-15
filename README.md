@@ -1,4 +1,4 @@
-# TeensyStep
+# TeensyStep - Fast Stepper Library for PJRC Teensy boards
 
 ## Content
  - [Problem](#problem)
@@ -12,36 +12,36 @@
  - [Performance](#performance)
 
 ## Problem to be solved 
-A lot of interesting projects require the movement of things. An easy way to implement such a transport system is the use of stepper motors driven by readily available stepper drivers. Those drivers usually expect simple **step and direction signals** to move the motors. However, due to the motor inertia they can not be started at full speed but need a smooth **acceleration** or deceleration to the final velocity. Otherwise the step counters maintained by the application and the real motor positions can run out of sync (steploss errors). Practically all modern stepper drivers can operate in a so called **microstepping** mode where the mechanically fixed step positions (usually 200 per rev) are electronically subdivided into a number of microsteps. While microstepping is great to increase resolution and to reduce vibration at low velocity it requires  **high pulse rates** at even moderate motor speeds. 
-Lets look at a typical example: Assume we have a standard 1.8° stepper (200 steps/rev) and  want to  run it at a speed of 1200 rpm in 1/16 micro stepping mode. The required pulse rate *r*  can be calculated by: 
+A lot of interesting projects require the movement of things. An easy way to implement such a transport system is the use of stepper motors driven by readily available stepper drivers. Those drivers usually expect simple **step and direction signals** to move the motors. However, due to the motor inertia they can not be started at full speed but need a smooth **acceleration** or deceleration to the final velocity. Otherwise the step counters maintained by the application and the real motor positions can run out of sync (steploss errors). Practically all modern stepper drivers can operate in a so called **microstepping** mode where the mechanically fixed step positions (usually 200 per rev) are electronically subdivided into a number of microsteps. While microstepping is great to increase resolution and to reduce vibration at low velocity it requires  **high pulse rates** at even moderate motor speeds. Lets look at a typical example: Assume we have a standard 1.8° stepper (200 steps/rev) and  want to  run it at a speed of 1200 rpm in 1/16 micro stepping mode. The required pulse rate *r*  can be calculated by: 
 
 &emsp;&emsp;&emsp; *r* = (16 * 200 stp/rev * 1'200 rev/min) / (60 s/min) = **64'000 stp/s**
 
 Of course there are other Arduino stepper libraries available, e.g. the well known [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/),&ensp; the standard [Arduino Stepper Library](https://www.arduino.cc/en/Reference/Stepper) or [Laurentiu Badeas Stepper Driver](https://github.com/laurb9/StepperDriver) to name a few. However, I found none which is able to handle accelerated synchronous and independent moves of more than one motor at the high pulse rates required for microstepping drivers. 
 
 ## Purpose of the Library
-**TeensyDelay** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
+**TeensyStep** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
 
-| Description                                | Specification             |
-|:-------------------------------------------|--------------------------:|
-| Motor speed / pulse rate                   | 1 - 300'000 stp/s         |
-| Acceleration                               | 0 - 500'000 stp/s^2       |
-| Pull in speed (speed up to which no acceleration is required)| 50-10'000 stp/s|
-| Synchronous movement of motors             | up to 10                  |
-| Independend movement of motors             | 4 groups of 1 to 10 motors|
-| Settable step pulse polarity               | Active high or low        |
-| Settable step pulse width                  | 1-100µs                   |
-| Settable direction signal polarity         | cw / ccw                  |
+| Description                                | Specification             | Default          |
+|:-------------------------------------------|:-------------------------:|:----------------:|
+| Motor speed / pulse rate (depending on Teensy model)|1 - 300'000 stp/s |   800 stp/s      |
+| Acceleration  1)                            | 0 - 500'000 stp/s^2       |   2500 stp/s^2   |
+| Pull in speed (speed up to which no acceleration is required)| 50-10'000 stp/s| 100 stp/s |
+| Synchronous movement of motors             | up to 10                  | -                |
+| Independend movement of motors             | 4 groups of 1 to 10 motors| -                |
+| Settable step pulse polarity               | Active HIGH or LOW        | Active HIGH      |
+| Settable step pulse width                  | 1-100µs                   | 5µs              |
+| Settable direction signal polarity         | cw / ccw                  | cw               |
 
+[1] An acceleration of say 1200 stp/s^2 will accelerate the motor from 0 to 1200 stp/s in 1 second, or from 0 to 2400 stp/s in 2 seconds...
 ## Usage
 TeensyStep basically uses the following two classes to control the steppers
 
 ### Stepper Class
 The *Stepper* class encapsulates the following physical properties of a stepper motor and its driver:
 - Pin numbers of the STEP and DIR signals.
-- Maximium speed and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
-- Step pulse polarity, i.e., if your driver requires active high or active low step pulses.
-- Setting for inverted rotation direction
+- Maximium and pull-in speed of the motor (pull-in speed is the speed up to which the motor can be started without the need for acceleration).
+- Step pulse polarity, i.e., does your driver require active high or active low step pulses.
+- Setting for inverted rotation direction 
 
 Here a short snippet showing the usage of the stepper class
 ```c++
@@ -79,6 +79,8 @@ motor_1.setTargetRel(100);          // does the same thing directly
 ```
 ### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
+
+#### Moving to targets
 ```c++
 ...
 StepControl<> controller;                    // construct a controller object
@@ -103,7 +105,34 @@ while(controller.isRunning()){              // wait until the movement is finish
     delay(10);                     
 }
 ```
+#### Stopping a movement
+You can stop the movement of the motors at any time with the stop() and stopAsync() commands. Both commands will  decellerate the motors in the normal way to avoid steploss. 
+```c++
+controller.stop()      // stops the movement and waits until all motors stand still
+controller.stopAsync() // initiates the stopping sequence and returns immediately
+```
+In case of an emergency you can immediately stop the movement at any time by calling 
+```c++
+controller.emergencyStop()  // stops the movement immediately
+```
+Since this command will stop the motor without proper decceleration a loss of steps is very likely. 
 
+#### Continous Rotation
+Instead of moving to a fixed position you can initiate a synchronous rotation of one or more motors:
+```c++
+motor_1.setAcceleration(10000);
+motor_1.setMaxSpeed(50000);
+motor_2.setAcceleration(10000);
+motor_2.setMaxSpeed(150000);
+
+controller.rotateAsync(motor_1, motor_2);   // start rotation of both motors
+
+delay(5000);
+controller.stop()                           // stop rotation after 5s
+```
+The motors will  rotate synchroniously with the given step frequencies. The synchronicity of the movement is also kept during acceleration and decelaration. 
+
+Negative values of the setMaxSpeed parameter will rotate the motor in the other direction.
 
 ## Movement Modes
 
