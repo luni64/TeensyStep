@@ -38,6 +38,10 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 
 [3] This is the speed up to which the motor can start without acceleration. 
 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Fzt75I_Zi14
+" target="_blank"><img src="http://img.youtube.com/vi/Fzt75I_Zi14/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
 ## Usage
 TeensyStep basically uses the following two classes to control the steppers
 
