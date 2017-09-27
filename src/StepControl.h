@@ -9,7 +9,7 @@
 
 constexpr int MaxMotors = 10;
 
-template<unsigned pulseWidth = 5, unsigned accUpdatePeriod = 000>
+template<unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class StepControl : IPitHandler, IDelayHandler
 {
 public:
