@@ -305,7 +305,8 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
     {
         accelerationEnd = 0;
         decelerationStart = target;
-        StepTimer.channel->LDVAL = F_BUS / v;
+        cMax = (F_BUS / v);
+        StepTimer.channel->LDVAL = cMax;
     }
 
     pitISR(); // immediately make first step 
