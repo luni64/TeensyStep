@@ -117,7 +117,7 @@ while(controller.isRunning()){              // wait until the movement is finish
 }
 ```
 #### Stopping a movement
-You can stop the movement of the motors at any time with the stop() and stopAsync() commands. Both commands will  decellerate the motors in the normal way to avoid steploss. 
+You can stop the movement of the motors at any time with the stop() and stopAsync() commands. Both commands will  decelerate the motors in the normal way to avoid steploss. 
 ```c++
 controller.stop()      // stops the movement and waits until all motors stand still
 controller.stopAsync() // initiates the stopping sequence and returns immediately
@@ -126,10 +126,10 @@ In case of an emergency you can immediately stop the movement at any time by cal
 ```c++
 controller.emergencyStop()  // stops the movement immediately
 ```
-Since this command will stop the motor without proper decceleration a loss of steps is very likely. 
+Since this command will stop the motor without proper decelleration a loss of steps is very likely. 
 
 #### Continous Rotation
-Instead of moving to a fixed position you can initiate a synchronous rotation of one or more motors:
+Instead of moving to a fixed position you can also initiate a synchronous rotation of one or more motors:
 ```c++
 motor_1.setAcceleration(10000);
 motor_1.setMaxSpeed(50000);
@@ -147,7 +147,7 @@ Negative values of the setMaxSpeed parameter will rotate the motor in the other 
 
 ## Movement Modes
 
-If you want to control more than one motor there are three different posibilities to do so. Lets assume the standard belt driven x/y transport shown in the figures below. There are two motors (M1 and M2) which move a load (symbolized by the blue ring) on linear guides (pale blue). M1 moves the load in y-direction and M2 in x-direction. 
+If you want to control more than one motor there are three different possibilities to do so. Lets assume the standard belt driven x/y transport shown in the figures below. There are two motors (M1 and M2) which move a load (symbolized by the blue ring) on linear guides (pale blue). M1 moves the load in y-direction and M2 in x-direction. 
 
 ## Sequential Movement
 The simplest thing you can do is to move the motors one after the other:
@@ -213,7 +213,7 @@ while(controller_1.isRunning() || controller_2.isRunning()){  // wait until both
 
 ## Used Ressources
 ### StepControl
-Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyDelay** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervallTimer. 
+Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyStep** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervallTimer. 
 
 ```c++
 StepControl<> cnt1;
