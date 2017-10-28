@@ -48,6 +48,8 @@ public:
     inline int32_t getPosition() const { return position + dirCw* current; }
     inline void setPosition(int32_t pos) { position = pos; current = 0; }
 
+private:
+
     volatile uint32_t current;
     volatile unsigned target;
     uint32_t leadTarget;  // target of the lead motor
@@ -63,7 +65,6 @@ public:
     static bool cmpVpullIn(const Stepper* a, const Stepper*b) { return a->v_pullIn < b->v_pullIn; }
     static bool cmpV(const Stepper* a, const Stepper*b) { return a->vMax < b->vMax; }
 
-private:
     int32_t position;
 
     volatile uint32_t* stepPinActiveReg;
@@ -72,4 +73,6 @@ private:
     volatile uint32_t* dirPinCcwReg;
     int dirCw;
     const int stepPin, dirPin;
+
+    template<unsigned u, unsigned p> friend class StepControl;
 };
