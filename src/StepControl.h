@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "./PIT/PIT.h"
 #include "./TeensyDelay/TeensyDelay.h"
@@ -21,17 +21,19 @@ public:
     void move(Stepper& stepper0, float relSpeed = 1);
     void move(Stepper& stepper0, Stepper& stepper1, float relSpeed = 1);
     void move(Stepper& stepper0, Stepper& stepper1, Stepper& stepper2, float relSpeed = 1);
-    template<size_t N> void move(Stepper* (&motors)[N], float relSpeed = 1);
+    void move(Stepper **motors, int n, float relSpeed = 1);
 
     void moveAsync(Stepper& stepper0, float relSpeed = 1);
     void moveAsync(Stepper& stepper0, Stepper& stepper1, float relSpeed = 1);
     void moveAsync(Stepper& stepper0, Stepper& stepper1, Stepper& stepper2, float relSpeed = 1);
-    template<size_t N> void moveAsync(Stepper* (&motors)[N], float relSpeed = 1);
+    void moveAsync(Stepper **motors, int n, float relSpeed = 1);
 
     void rotateAsync(Stepper& stepper0, float relSpeed = 1);
     void rotateAsync(Stepper& stepper0, Stepper& stepper1, float relSpeed = 1);
     void rotateAsync(Stepper& stepper0, Stepper& stepper1, Stepper& stepper2, float relSpeed = 1);
-    template<size_t N> void rotateAsync(Stepper* (&motors)[N], float relSpeed = 1);
+    void rotateAsync(Stepper **motors, int n, float relSpeed = 1);
+
+    void remove(Stepper &motor);
 
     void stop();
     void stopAsync();
@@ -71,8 +73,8 @@ StepControl<p, u>::StepControl() : pinResetDelayChannel(TeensyDelay::addDelayCha
 template<unsigned p, unsigned u>
 void StepControl<p, u>::pitISR()
 {
-    Stepper** motor = motorList;   // move leading axis	
-    (*motor)->doStep();            // activate step pin 
+    Stepper** motor = motorList;   // move leading axis
+    (*motor)->doStep();            // activate step pin
 
     while (*(++motor) != nullptr)  // move slow axes if required (https://en.wikipedia.org/wiki/Bresenham)
     {
@@ -83,7 +85,7 @@ void StepControl<p, u>::pitISR()
         }
         (*motor)->D += (*motor)->target;
     }
-    TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins  
+    TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 
     if (motorList[0]->current >= motorList[0]->target)      // stop if we are at target
     {
@@ -121,7 +123,7 @@ void StepControl<p, u>::delayISR(unsigned channel)
             {
                 StepTimer.channel->LDVAL = cMax;
             }
-            else                             //decelerating	
+            else                             //decelerating
             {
                 StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(motorList[0]->target - pos - 1) + 0 * vMin / 2);
             }
@@ -153,10 +155,9 @@ void StepControl<p, u>::move(Stepper& stepper1, Stepper& stepper2, Stepper& step
 }
 
 template<unsigned p, unsigned u>
-template<size_t N>
-void StepControl<p, u>::move(Stepper *(&motors)[N], float relSpeed)
+inline void StepControl<p, u>::move(Stepper **motors, int n, float relSpeed)
 {
-    moveAsync(motors, relSpeed);
+    moveAsync(motors, n, relSpeed);
     while (isRunning()) delay(10);
 }
 
@@ -184,17 +185,15 @@ void StepControl<p, u>::moveAsync(Stepper& stepper0, Stepper& stepper1, Stepper&
 }
 
 template<unsigned p, unsigned u>
-template<size_t N>
-void StepControl<p, u>::moveAsync(Stepper* (&motors)[N], float relSpeed)  //move up to maxMotors motors synchronously
+void StepControl<p, u>::moveAsync(Stepper **motors, int n, float relSpeed)
 {
-    static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
-
-    for (unsigned i = 0; i < N; i++)
+    unsigned m = std::min(n, MaxMotors); // Prevent undefined behavior
+    for (unsigned i = 0; i < m; i++)
     {
-        motorList[i] = motors[i];
+        motorList[i] = *(motors + i);
     }
-    motorList[N] = nullptr;
-    doMove(N, relSpeed);
+    motorList[m] = nullptr;
+    doMove(m, relSpeed);
 }
 
 // ROTATE Commands -----------------------------------------------------------------------------------------------
@@ -221,17 +220,39 @@ void StepControl<p, u>::rotateAsync(Stepper& stepper0, Stepper& stepper1, Steppe
 }
 
 template<unsigned p, unsigned u>
-template<size_t N>
-inline void StepControl<p, u>::rotateAsync(Stepper *(&motors)[N], float relSpeed)
+inline void StepControl<p, u>::rotateAsync(Stepper **motors, int n, float relSpeed)
 {
-    static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
-
-    for (unsigned i = 0; i < N; i++) 
+    unsigned m = std::min(n, MaxMotors); // Prevent undefined behavior
+    for (unsigned i = 0; i < m; i++)
     {
-        motorList[i] = motors[i];
+        motorList[i] = *(motors + i);
     }
-    motorList[N] = nullptr;
-    doRotate(N, relSpeed);
+    motorList[m] = nullptr;
+    doRotate(m, relSpeed);
+}
+
+// REMOVE Command ------------------------------------------------------------------------------------------------
+
+template<unsigned p, unsigned u>
+void StepControl<p, u>::remove(Stepper &motor)
+{
+    unsigned i = 0;
+    while (motorList[i] != nullptr && motorList[i] != &motor)
+    {
+        i++;
+    }
+
+    while (motorList[i + 1] != nullptr)
+    {
+        motorList[i] = motorList[++i];
+    }
+
+    motorList[i] = motorList[i + 1];
+
+    if (motorList[0] == nullptr) 
+    {
+        emergencyStop();
+    }
 }
 
 // STOP Commands -------------------------------------------------------------------------------------------------
@@ -267,8 +288,8 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
 {
     relSpeed = std::max(0.0, std::min(1.0, relSpeed)); // limit relative speed to [0..1]
 
-    //Calculate Bresenham parameters ---------------------------------------------------------------- 
-    std::sort(motorList, motorList + N, Stepper::cmpDelta);	// The motor which does most steps leads the movement, move to top of list 
+    //Calculate Bresenham parameters ----------------------------------------------------------------
+    std::sort(motorList, motorList + N, Stepper::cmpDelta);	// The motor which does most steps leads the movement, move to top of list
     motorList[0]->current = 0;
     for (int i = 1; i < N; i++)
     {
@@ -309,12 +330,12 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
         StepTimer.channel->LDVAL = cMax;
     }
 
-    pitISR(); // immediately make first step 
+    pitISR(); // immediately make first step
 
     // Start timers
     StepTimer.clearTIF();
     StepTimer.start();
-    TeensyDelay::trigger(2, accLoopDelayChannel);   // start the acceleration update loop 
+    TeensyDelay::trigger(2, accLoopDelayChannel);   // start the acceleration update loop
 }
 
 template<unsigned p, unsigned u >
@@ -322,7 +343,7 @@ void StepControl<p, u>::doRotate(int N, float relSpeed)
 {
     uint32_t maxSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax;
     float fac = (float)std::numeric_limits<int32_t>::max() / maxSpeed;
-    
+
     for (int i = 0; i < N; i++)
     {
         motorList[i]->setTargetAbs(motorList[i]->vMax * fac * motorList[i]->direction);
@@ -330,4 +351,3 @@ void StepControl<p, u>::doRotate(int N, float relSpeed)
 
     doMove(N, relSpeed, false);
 }
-
