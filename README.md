@@ -7,7 +7,7 @@
  - [Movement Modes](#movement-modes)
     - [Sequential Movements](#sequential-movement)
     - [Synchronous Movements](#synchronous-movement)
-    - [Independend Movements](#independend-movement)
+    - [Independent Movements](#independent-movement)
  - [Used Ressources](#used-ressources)
  - [Performance](#performance)
 
@@ -27,7 +27,7 @@ Of course there are other Arduino stepper libraries available, e.g. the well kno
 | Acceleration  2)                           | 0 - 500'000 stp/s^2       |   2500 stp/s^2   |
 | Pull in speed 3)                           | 50-10'000 stp/s           | 100 stp/s |
 | Synchronous movement of motors             | up to 10                  | -                |
-| Independend movement of motors             | 4 groups of 1 to 10 motors| -                |
+| Independent movement of motors             | 4 groups of 1 to 10 motors| -                |
 | Settable step pulse polarity               | Active HIGH or LOW        | Active HIGH      |
 | Settable step pulse width                  | 1-100µs                   | 5µs              |
 | Settable direction signal polarity         | cw / ccw                  | cw               |
@@ -189,7 +189,7 @@ The resulting movement is shown in the figure below.
 ![Synchronous Movement](/media/sycMove.png?raw=true "Sequential Movement")
 
 
-## Independend Movement
+## Independent Movement
 Sometimes it is necessary to move one or more motors independently but at the same time as the other motors. Lets extend our example by another transport module (motor M3) which can move left / right only. This transport is supposed to bring fresh samples (red dot) to a transfer area. This transport shall be done independently of the the x/y transport which is still  moving around. To accomplish this we need to create a second controller for motor M3.
 ```c++
 StepControl<> controller_1;
