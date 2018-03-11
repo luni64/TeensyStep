@@ -121,7 +121,8 @@ void StepControl<p, u>::delayISR(unsigned channel)
             }
             else                             //decelerating	
             {
-                StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(motorList[0]->target - pos - 1) + 0 * vMin / 2);
+                unsigned arg = std::max(0, (int)motorList[0]->target - (int)pos);  // just to make sure 
+                StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(arg) + vMin);
             }
         }
     }
@@ -224,7 +225,7 @@ inline void StepControl<p, u>::rotateAsync(Stepper *(&motors)[N], float relSpeed
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
 
-    for (unsigned i = 0; i < N; i++) 
+    for (unsigned i = 0; i < N; i++)
     {
         motorList[i] = motors[i];
     }
@@ -307,7 +308,7 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
         cMax = (F_BUS / v);
         StepTimer.channel->LDVAL = cMax;
     }
-   
+
     // Start timers
     StepTimer.clearTIF();
     StepTimer.start();
@@ -318,10 +319,10 @@ template<unsigned p, unsigned u >
 void StepControl<p, u>::doRotate(int N, float relSpeed)
 {
     uint32_t maxSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax;
-    float fac = (float)std::numeric_limits<int32_t>::max()/2.0/ maxSpeed;
+    float fac = (float)std::numeric_limits<int32_t>::max() / 2.0 / maxSpeed;
 
     for (int i = 0; i < N; i++)
-    {    
+    {
         motorList[i]->setTargetRel(motorList[i]->vMax * fac * motorList[i]->direction);
     }
 
