@@ -116,6 +116,17 @@ while(controller.isRunning()){              // wait until the movement is finish
     delay(10);                     
 }
 ```
+#### Get/Set the step counter
+You can get manipulate the current step counter by getPostion and setPosition. The following code
+```c++
+...
+int pos = motor_1.getPosition();
+pos += 1000; 
+motor_1.setPostion(pos);
+}
+```
+would advance the internal stepcounter by 1000 steps without generating any movement. 
+
 #### Stopping a movement
 You can stop the movement of the motors at any time with the stop() and stopAsync() commands. Both commands will  decelerate the motors in the normal way to avoid steploss. 
 ```c++
