@@ -80,6 +80,8 @@ void setup() {
         ...
 }
 ```
+### Set Target Postions and the Internal Step Counter
+
 The stepper class also keeps track of the current position and is used to set a new target position. Target positions can be set absolutely or relative to the current position. 
 ```c++
 ...
@@ -88,16 +90,15 @@ motor_1.setTargetAbs(pos + 100);    // sets the target position 100 steps ahead 
 motor_1.setTargetRel(100);          // does the same thing directly
 ...
 ```
-
 Setting a new position:
 ```c++
 ...
-int pos = motor_1.getPosition();
-pos += 1000; 
-motor_1.setPostion(pos);
+int pos = motor_1.getPosition();     // get the current value of the step counter (position)
+pos += 1000;                         
+motor_1.setPostion(pos);             // set a new value of the step counter 
 ...
 ```
-would advance the internal step counter by 1000 steps without generating any movement. 
+This would advance the internal step counter by 1000 steps without generating any movement. 
 
 ### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
