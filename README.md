@@ -88,6 +88,17 @@ motor_1.setTargetAbs(pos + 100);    // sets the target position 100 steps ahead 
 motor_1.setTargetRel(100);          // does the same thing directly
 ...
 ```
+
+Setting a new position:
+```c++
+...
+int pos = motor_1.getPosition();
+pos += 1000; 
+motor_1.setPostion(pos);
+...
+```
+would advance the internal step counter by 1000 steps without generating any movement. 
+
 ### StepControl Class
 The *StepControl* class is responsible for actually moving the motors
 
@@ -116,16 +127,6 @@ while(controller.isRunning()){              // wait until the movement is finish
     delay(10);                     
 }
 ```
-#### Get/Set the step counter
-You can get manipulate the current step counter by getPostion() and setPosition(int). The following code
-```c++
-...
-int pos = motor_1.getPosition();
-pos += 1000; 
-motor_1.setPostion(pos);
-...
-```
-would advance the internal step counter by 1000 steps without generating any movement. 
 
 #### Stopping a movement
 You can stop the movement of the motors at any time with the stop() and stopAsync() commands. Both commands will  decelerate the motors in the normal way to avoid steploss. 
