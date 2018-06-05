@@ -12,12 +12,7 @@ The following serial commands are implemented
 Additionally a pin can be used to stop the motor
 
 ------------------------------------------------------------*/
-
-#include "Arduino.h"
 #include "StepControl.h"
-
-void handleCommands();
-void handlePins();
 
 // stepper and  controller
 constexpr int stpPin = 0, dirPin = 1;
