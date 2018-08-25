@@ -5,11 +5,9 @@
 #include "Stepper.h"
 #include <algorithm>
 
-#include "Arduino.h"
-
 constexpr int MaxMotors = 10;
 
-template<unsigned pulseWidth = 5, unsigned accUpdatePeriod = 000>
+template<unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class StepControl : IPitHandler, IDelayHandler
 {
 public:
@@ -123,7 +121,8 @@ void StepControl<p, u>::delayISR(unsigned channel)
             }
             else                             //decelerating	
             {
-                StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(motorList[0]->target - pos - 1) + 0 * vMin / 2);
+                unsigned arg = std::max(0, (int)motorList[0]->target - (int)pos);  // just to make sure 
+                StepTimer.channel->LDVAL = F_BUS / (sqrt_2a * sqrtf(arg) + vMin);
             }
         }
     }
@@ -226,7 +225,7 @@ inline void StepControl<p, u>::rotateAsync(Stepper *(&motors)[N], float relSpeed
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
 
-    for (unsigned i = 0; i < N; i++) 
+    for (unsigned i = 0; i < N; i++)
     {
         motorList[i] = motors[i];
     }
@@ -286,6 +285,7 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
     if (v == 0) return;
 
     uint32_t target = motorList[0]->target;
+    if (target == 0) return;
 
     if (v > vMin) // acceleration required
     {
@@ -305,10 +305,9 @@ void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
     {
         accelerationEnd = 0;
         decelerationStart = target;
-        StepTimer.channel->LDVAL = F_BUS / v;
+        cMax = (F_BUS / v);
+        StepTimer.channel->LDVAL = cMax;
     }
-
-    pitISR(); // immediately make first step 
 
     // Start timers
     StepTimer.clearTIF();
@@ -320,11 +319,11 @@ template<unsigned p, unsigned u >
 void StepControl<p, u>::doRotate(int N, float relSpeed)
 {
     uint32_t maxSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax;
-    float fac = (float)std::numeric_limits<int32_t>::max() / maxSpeed;
-    
+    float fac = (float)std::numeric_limits<int32_t>::max() / 2.0 / maxSpeed;
+
     for (int i = 0; i < N; i++)
     {
-        motorList[i]->setTargetAbs(motorList[i]->vMax * fac * motorList[i]->direction);
+        motorList[i]->setTargetRel(motorList[i]->vMax * fac * motorList[i]->direction);
     }
 
     doMove(N, relSpeed, false);
