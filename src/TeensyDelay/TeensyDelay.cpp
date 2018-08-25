@@ -3,11 +3,7 @@
 
 namespace TeensyDelay
 {
-#ifdef USE_CLASS_CALLBACK
 	IDelayHandler* callbacks[maxChannel];
-#else
-	void(*callbacks[maxChannel])(void);
-#endif
 
 	unsigned lastChannel = 0;
 
@@ -34,27 +30,19 @@ namespace TeensyDelay
 				timer->CH[i].SC |= FTM_CSC_CHF;     // TPM requires to clear flag by setting bit to 1
 			}
 			timer->CH[i].SC &= ~FTM_CSC_CHIE;       // Disable channel interupt
-            timer->CH[i].SC = FTM_CSC_MSA;
+			timer->CH[i].SC = FTM_CSC_MSA;
 			//timer->CH[i].SC = 0;                    // disable channel
 		}
 		timer->SC = FTM_SC_CLKS(0b01) | FTM_SC_PS(prescale);  // Start clock
 		NVIC_ENABLE_IRQ(irq);                        // Enable interrupt request for selected timer
 	}
 
-#ifdef USE_CLASS_CALLBACK
 	unsigned addDelayChannel(IDelayHandler* handler, const int channel)
 	{
 		unsigned ch = channel < 0 ? lastChannel++ : channel;
-		callbacks[ch] = handler;               //Just store the callback function, the rest is done in Trigger function
+		callbacks[ch] = handler;					//Just store the callback function, the rest is done in Trigger function
 		return ch;
 	}
-#else
-	void addDelayChannel(void(*callback)(void), const int channel = 0)
-	{
-		callbacks[channel] = callback;               //Just store the callback function, the rest is done in Trigger function
-	}
-
-#endif // USE_CLASS_CALLBACK
 }
 
 //-------------------------------------------------------------------------------------------
@@ -83,31 +71,12 @@ void tpm1_isr(void)
 void tpm2_isr(void)
 #endif
 {
-    //digitalWriteFast(14, HIGH);
-    uint32_t status = timer->STATUS & 0x0F;   // STATUS collects all channel event flags (bit0 = ch0, bit1 = ch1....) 
-
-    unsigned i = 0;
-    while (status > 0) {
-        if (status & 0x01) {
-            if (isFTM) {                           // isFTM is a compiletime constant, compiler optimizes conditional and not valid branch completely away           
-                timer->CH[i].SC &= ~FTM_CSC_CHF;   // reset channel and interrupt enable (we only want one shot per trigger)	
-            }
-            else {
-                timer->CH[i].SC |= FTM_CSC_CHF;    // TPM needs inverse setting of the flags                
-            }
-
-            if (timer->CH[i].SC & FTM_CSC_CHIE)    // Channel flags will be set each time the counter overflows the channel value. 
-            {									   // In case that the interupt was triggered by another channel we need to prevent
-                timer->CH[i].SC &= ~FTM_CSC_CHIE;  // the callback if this channel was not triggerd (CHIE of this channel not set)
-#ifdef  USE_CLASS_CALLBACK
-                callbacks[i]->delayISR(i);
-#else
-                callbacks[i]();				       // invoke callback function for the channel								                     
-#endif //  USE_CLASS_CALLBACK
-            }
-        }
-        i++;
-        status >>= 1;
-    }
-    //digitalWriteFast(14, LOW);
+	for (unsigned i = 0; i < maxChannel; i++)
+	{
+		if ((timer->CH[i].SC & (FTM_CSC_CHIE | FTM_CSC_CHF)) == (FTM_CSC_CHIE | FTM_CSC_CHF)) // only handle if channel is active (CHIE set) and overflowed (CHF set)
+		{
+			timer->CH[i].SC &= ~FTM_CSC_CHIE;  // We want one shot only. (Make sure to reset the CHF flag before re-activating interrupt in trigger function)
+			callbacks[i]->delayISR(i);		   // invoke callback function for the channel		
+		}
+	}
 }
