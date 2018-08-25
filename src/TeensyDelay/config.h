@@ -1,4 +1,4 @@
-//========================================================================== 
+﻿//========================================================================== 
 // Available timer modules for the Teensy XX boards. Please note that those 
 // timers are also used by the core libraries for PWM and AnalogWrite. 
 // Therefore, choose a timer which isn't attached to the pins you need for 
@@ -22,8 +22,6 @@
 #define USE_TIMER TIMER_DEFAULT
 
 
-#define USE_CLASS_CALLBACK 
- 
 
 //==========================================================================
 // Nothing to be changed below here 
