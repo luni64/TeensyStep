@@ -44,9 +44,6 @@ Here a short video showing two steppers running at 160000 steps/s.
 " target="_blank"><img src="http://img.youtube.com/vi/Fzt75I_Zi14/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/leQS2GS_BmE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
 ## Usage
 TeensyStep basically uses the following two classes to control the steppers
 
