@@ -74,7 +74,7 @@ void setup() {
         .setAcceleration(150000);       // stp/s^2
     motor_3
         .setStepPulsePolarity(LOW)      //motor connected to an active low driver
-        .setInvertedDir(true)
+        .setInverseRotation(true)
         .setMaxSpeed(45000)             // stp/s
         .setAcceleration(200000);       // stp/s^2      .
         ...
@@ -95,7 +95,7 @@ Setting a new position:
 ...
 int pos = motor_1.getPosition();     // get the current value of the step counter (position)
 pos += 1000;                         
-motor_1.setPostion(pos);             // set a new value of the step counter 
+motor_1.setPosition(pos);             // set a new value of the step counter 
 ...
 ```
 This would advance the internal step counter by 1000 steps without generating any movement. 
@@ -233,7 +233,7 @@ StepControl<> cnt1;
 StepControl<> cnt2;
 StepControl<> cnt3;
 
-if(!(cnt1.isOK() && cnt2.isOK() && cnt3.isOK()))
+if(!(cnt1.isOk() && cnt2.isOk() && cnt3.isOk()))
 {
     panic();
 }
