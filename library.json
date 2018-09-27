@@ -1,0 +1,21 @@
+{
+  "name": "TeensyStep",
+  "keywords": "teensy, stepper, motor, high-speed",
+  "description": "High speed stepper driver for teensy boards (T3.0 - T3.6)",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/luni64/TeensyStep"
+  },
+  "authors":
+  {
+    "name": "Lutz Niggl",
+    "email": "lutz.niggl@lunoptics.com",
+    "url": "https://github.com/luni64",
+    "maintainer": true
+  },
+ 
+  "version": "0.98",
+  "frameworks": "arduino",
+  "platforms": "Teensy"
+}
