@@ -35,6 +35,8 @@ public:
     void stopAsync();
     void emergencyStop() { StepTimer.disableInterupt(); }
 
+    void setCallback(void (*_callback)()){callback = _callback;}
+
 protected:
     void doRotate(int N, float relSpeed);
     void doMove(int N, float relSpeed, bool mode = true);
@@ -52,6 +54,8 @@ protected:
     const unsigned pinResetDelayChannel;
     const unsigned accLoopDelayChannel;
     Stepper* motorList[MaxMotors];
+
+    void (*callback)();
 };
 
 
@@ -60,6 +64,7 @@ protected:
 template<unsigned p, unsigned u >
 StepControl<p, u>::StepControl() : pinResetDelayChannel(TeensyDelay::addDelayChannel(this)), accLoopDelayChannel(TeensyDelay::addDelayChannel(this))
 {
+    callback = nullptr;
     OK = StepTimer.begin(this);
     TeensyDelay::begin();
 }
@@ -86,6 +91,7 @@ void StepControl<p, u>::pitISR()
     if (motorList[0]->current >= motorList[0]->target)      // stop if we are at target
     {
         StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE;         // disable timer interrupts
+        if(callback != nullptr) callback();
     }
 }
 
