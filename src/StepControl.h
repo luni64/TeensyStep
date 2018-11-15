@@ -264,7 +264,7 @@ void StepControl<p, u>::stopAsync()
 template<unsigned p, unsigned u >
 void StepControl<p, u>::doMove(int N, float relSpeed, bool move)
 {
-    relSpeed = std::max(0.0, std::min(1.0, relSpeed)); // limit relative speed to [0..1]
+    relSpeed = std::max(0.0f, std::min(1.0f, relSpeed)); // limit relative speed to [0..1]
 
     //Calculate Bresenham parameters ---------------------------------------------------------------- 
     std::sort(motorList, motorList + N, Stepper::cmpDelta);	// The motor which does most steps leads the movement, move to top of list 
@@ -319,7 +319,7 @@ template<unsigned p, unsigned u >
 void StepControl<p, u>::doRotate(int N, float relSpeed)
 {
     uint32_t maxSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax;
-    float fac = (float)std::numeric_limits<int32_t>::max() / 2.0 / maxSpeed;
+    float fac = (float)std::numeric_limits<int32_t>::max() / 2.0f / maxSpeed;
 
     for (int i = 0; i < N; i++)
     {
