@@ -74,5 +74,5 @@ private:
     int dirCw;
     const int stepPin, dirPin;
 
-    template<unsigned u, unsigned p> friend class StepControl;
+    template<unsigned u, unsigned p> friend class StepControlBase;
 };
