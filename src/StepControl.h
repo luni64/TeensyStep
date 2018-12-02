@@ -1,7 +1,12 @@
+#include <math.h>
 #include "StepControlBase.h"
 
-class StepControl : public StepControlBase<>
+template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
+class StepControl : public StepControlBase<pulseWidth,accUpdatePeriod>
 {
+    public:
+    StepControl();
+
   protected:
     uint32_t accelerationEnd;
     uint32_t decelerationStart;
@@ -13,7 +18,17 @@ class StepControl : public StepControlBase<>
     inline uint32_t initiateStopping(uint32_t currentPosition);
 };
 
-uint32_t StepControl::prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t a)
+
+// Implementation =====================================================================================================
+
+template <unsigned p, unsigned u>
+StepControl<p, u>::StepControl() : StepControlBase<p,u>()
+{      
+}
+
+
+template <unsigned p, unsigned u>
+uint32_t StepControl<p,u>::prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t a)
 {
     s_tgt = targetPos;
     v_tgt = targetSpeed;
@@ -37,7 +52,8 @@ uint32_t StepControl::prepareMovement(uint32_t targetPos, uint32_t targetSpeed, 
     }
 }
 
-uint32_t StepControl::updateSpeed(uint32_t currentPosition)
+template <unsigned p, unsigned u>
+uint32_t StepControl<p,u>::updateSpeed(uint32_t currentPosition)
 {
     // acceleration phase -------------------------------------
     if (currentPosition < accelerationEnd)
@@ -51,7 +67,8 @@ uint32_t StepControl::updateSpeed(uint32_t currentPosition)
     return sqrt_2a * sqrtf(s_tgt - currentPosition) + v_min;
 }
 
-uint32_t StepControl::initiateStopping(uint32_t s_cur)
+template <unsigned p, unsigned u>
+uint32_t StepControl<p,u>::initiateStopping(uint32_t s_cur)
 {
     if (s_cur <= decelerationStart)  // we are already decelerationg, nothing to change...
     {

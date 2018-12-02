@@ -75,4 +75,5 @@ private:
     const int stepPin, dirPin;
 
     template<unsigned u, unsigned p> friend class StepControlBase;
+    template<unsigned u, unsigned p> friend class RotateControlBase;
 };
