@@ -1,5 +1,5 @@
-#include <math.h>
 #include "StepControlBase.h"
+#include <math.h>
 
 template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class StepControl : public StepControlBase<pulseWidth,accUpdatePeriod>
@@ -13,7 +13,7 @@ class StepControl : public StepControlBase<pulseWidth,accUpdatePeriod>
     uint32_t sqrt_2a;
     uint32_t s_tgt, v_tgt, v_min;
 
-    inline uint32_t prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration);
+    inline uint32_t prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) ;
     inline uint32_t updateSpeed(uint32_t currentPosition);
     inline uint32_t initiateStopping(uint32_t currentPosition);
 };
@@ -28,7 +28,7 @@ StepControl<p, u>::StepControl() : StepControlBase<p,u>()
 
 
 template <unsigned p, unsigned u>
-uint32_t StepControl<p,u>::prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t a)
+uint32_t StepControl<p,u>::prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t a) 
 {
     s_tgt = targetPos;
     v_tgt = targetSpeed;

@@ -1,6 +1,6 @@
+#include "RotateControlBase.h"
 #include <math.h>
 #include <limits>
-#include "RotateControlBase.h"
 
 template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
