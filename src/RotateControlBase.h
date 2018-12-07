@@ -23,9 +23,10 @@ class RotateControlBase : public MotorControlBase
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
-    uint32_t virtual updateSpeed(uint32_t currentPosition) = 0;
+    int32_t virtual updateSpeed(uint32_t currentPosition) = 0;
+    uint32_t virtual updateSpeed2(Stepper *stepper) = 0;
     uint32_t virtual initiateStopping(uint32_t currentPosition) = 0;
-    uint32_t virtual prepareRotation(uint32_t currentPosition, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) = 0;
+    uint32_t virtual prepareRotation(uint32_t currentPosition, int32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) = 0;
 
     void doRotate(int N);
     void doMove(int N, bool mode = true);
@@ -60,13 +61,6 @@ void RotateControlBase<p, u>::pitISR()
         (*motor)->D += (*motor)->target;
     }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
-
-    // if motorList[0]->current >=   motorList[0]->target) // stop if we are at target
-    // {
-    //    StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
-    //     if (callback != nullptr)
-    //         callback();
-    // }
 }
 
 template <unsigned p, unsigned u>
@@ -85,14 +79,38 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
     // calculate new speed (i.e., timer reload value) -------------------
     if (channel == accLoopDelayChannel)
     {
-        if (StepTimer.isRunning())
-        {
-            cli();
-            TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
-            sei();
+        static int oldspeed = -1;
+        cli();
+        TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
+        sei();
 
-            uint32_t newSpeed = updateSpeed(motorList[0]->current);
-            StepTimer.channel->LDVAL = F_BUS / newSpeed;
+        // if (StepTimer.isRunning())
+        {
+            digitalWriteFast(2, HIGH);
+
+            int32_t newSpeed = updateSpeed(motorList[0]->current);
+            //uint32_t newSpeed = updateSpeed2(motorList[0]);
+            Serial.printf("%d\t%d\n",motorList[0]->current, newSpeed);
+            if (newSpeed != 0)
+            {
+                if (oldspeed != newSpeed)
+                {
+                    StepTimer.channel->LDVAL = F_BUS / newSpeed;
+                    if (oldspeed == 0)
+                    {
+                        StepTimer.clearTIF();
+                        StepTimer.start();
+                    }
+                    // TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
+                    oldspeed = newSpeed;
+                }
+            }
+            else
+            {
+                //  Serial.println("stop");
+                StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
+            }
+            digitalWriteFast(2, LOW);
         }
     }
 }
@@ -128,7 +146,7 @@ void RotateControlBase<p, u>::rotateAsync(Stepper &stepper0, Stepper &stepper1, 
 
 template <unsigned p, unsigned u>
 template <size_t N>
-inline void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N])
+void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N])
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
 
@@ -143,8 +161,8 @@ inline void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N])
 template <unsigned p, unsigned u>
 void RotateControlBase<p, u>::stopAsync()
 {
-    uint32_t newTarget = initiateStopping(motorList[0]->position);
-    motorList[0]->target = newTarget;
+    initiateStopping(motorList[0]->current);
+    // motorList[0]->target = newTarget;
 }
 
 // Protected -----------------------------------------------------------------------------------------------------
@@ -170,7 +188,10 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
         return;
 
     uint32_t vstart = prepareRotation(motorList[0]->position, targetSpeed, pullInSpeed, acceleration);
+
     StepTimer.channel->LDVAL = F_BUS / vstart;
+
+    //Serial.println(StepTimer.channel->LDVAL);
 
     // Start timers
     StepTimer.clearTIF();

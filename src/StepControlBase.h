@@ -8,17 +8,17 @@ template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class StepControlBase : public MotorControlBase
 {
   public:
-    void move(Stepper &stepper0, float relSpeed = 1) const;
-    void move(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) const;
-    void move(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1) const;
+    void move(Stepper &stepper0, float relSpeed = 1);
+    void move(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) ;
+    void move(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1) ;
     template <size_t N>
-    void move(Stepper *(&motors)[N], float relSpeed = 1)const;
+    void move(Stepper *(&motors)[N], float relSpeed = 1);
 
-    void moveAsync(Stepper &stepper0, float relSpeed = 1) const;
-    void moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) const;
-    void moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1)const ;
+    void moveAsync(Stepper &stepper0, float relSpeed = 1) ;
+    void moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) ;
+    void moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1) ;
     template <size_t N>
-    void moveAsync(Stepper *(&motors)[N], float relSpeed = 1) const;
+    void moveAsync(Stepper *(&motors)[N], float relSpeed = 1) ;
 
     void stopAsync();
 
@@ -106,7 +106,7 @@ void StepControlBase<p, u>::delayISR(unsigned channel)
 // MOVE Commands -------------------------------------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed) const
+void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed) 
 {
     moveAsync(stepper, relSpeed);
     while (isRunning())
@@ -114,7 +114,7 @@ void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed) const
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float relSpeed) const
+void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float relSpeed) 
 {
     moveAsync(stepper1, stepper2, relSpeed);
     while (isRunning())
@@ -122,7 +122,7 @@ void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float rel
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &stepper3, float relSpeed) const
+void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &stepper3, float relSpeed) 
 {
     moveAsync(stepper1, stepper2, stepper3, relSpeed);
     while (isRunning())
@@ -131,7 +131,7 @@ void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &
 
 template <unsigned p, unsigned u>
 template <size_t N>
-void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed) const
+void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed) 
 {
     moveAsync(motors, relSpeed);
     while (isRunning())
@@ -141,7 +141,7 @@ void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed) const
 // MOVE ASYNC Commands -------------------------------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed) const
+void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed) 
 {
     motorList[0] = &stepper;
     motorList[1] = nullptr;
@@ -149,7 +149,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed) const
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed) const
+void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed) 
 {
     motorList[0] = &stepper0;
     motorList[1] = &stepper1;
@@ -158,7 +158,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, floa
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed) const
+void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed) 
 {
     motorList[0] = &stepper0;
     motorList[1] = &stepper1;
@@ -169,7 +169,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Step
 
 template <unsigned p, unsigned u>
 template <size_t N>
-void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N], float relSpeed) const //move up to maxMotors motors synchronously
+void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N], float relSpeed)  //move up to maxMotors motors synchronously
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
 
