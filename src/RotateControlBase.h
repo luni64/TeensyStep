@@ -19,14 +19,13 @@ class RotateControlBase : public MotorControlBase
     void setCallback(void (*_callback)()) { callback = _callback; }
 
   protected:
-    RotateControlBase();
+    RotateControlBase() = default;
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
-    int32_t virtual updateSpeed(uint32_t currentPosition) = 0;
-    uint32_t virtual updateSpeed2(Stepper *stepper) = 0;
+    int32_t virtual updateSpeed(int32_t currentPosition) = 0;
     uint32_t virtual initiateStopping(uint32_t currentPosition) = 0;
-    uint32_t virtual prepareRotation(uint32_t currentPosition, int32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) = 0;
+    void virtual prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration) = 0;
 
     void doRotate(int N);
     void doMove(int N, bool mode = true);
@@ -34,15 +33,12 @@ class RotateControlBase : public MotorControlBase
     void pitISR();
     void delayISR(unsigned channel);
 
+    int leadingDirection;
+
     void (*callback)() = nullptr;
 };
 
 // Implementation *************************************************************************************************
-
-template <unsigned p, unsigned u>
-RotateControlBase<p, u>::RotateControlBase() : MotorControlBase()
-{
-}
 
 // ISR -----------------------------------------------------------------------------------------------------------
 template <unsigned p, unsigned u>
@@ -56,7 +52,7 @@ void RotateControlBase<p, u>::pitISR()
         if ((*motor)->D >= 0)
         {
             (*motor)->doStep();
-            (*motor)->D -= (*motor)->leadTarget; // do not use motorlist[0]->target since this will be changed by stop()
+            (*motor)->D -= (*motor)->leadTarget; // do not use leadMotor->target since this will be changed by stop()
         }
         (*motor)->D += (*motor)->target;
     }
@@ -75,47 +71,60 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
             (*motor++)->clearStepPin();
         }
     }
+   
 
     // calculate new speed (i.e., timer reload value) -------------------
     if (channel == accLoopDelayChannel)
     {
-        static int oldspeed = -1;
         cli();
         TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
         sei();
 
-        // if (StepTimer.isRunning())
-        {
-            digitalWriteFast(2, HIGH);
+        static int oldspeed = 0;
+       
 
-            int32_t newSpeed = updateSpeed(motorList[0]->current);
-            //uint32_t newSpeed = updateSpeed2(motorList[0]);
-            Serial.printf("%d\t%d\n",motorList[0]->current, newSpeed);
-            if (newSpeed != 0)
-            {
-                if (oldspeed != newSpeed)
-                {
-                    StepTimer.channel->LDVAL = F_BUS / newSpeed;
-                    if (oldspeed == 0)
-                    {
-                        StepTimer.clearTIF();
-                        StepTimer.start();
-                    }
-                    // TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
-                    oldspeed = newSpeed;
-                }
-            }
-            else
-            {
-                //  Serial.println("stop");
-                StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
-            }
+        digitalWriteFast(2, HIGH);
+
+        int32_t newSpeed = updateSpeed(leadMotor->current); // get new speed for the leading motor
+
+        if (oldspeed == newSpeed) // nothing changed, just keep running
+        {
             digitalWriteFast(2, LOW);
+            return;
         }
+
+        if (newSpeed == 0) // stop pulsing
+        {
+            StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
+            oldspeed = 0;
+            digitalWriteFast(2, LOW);
+            return;
+        }
+
+        int dir = newSpeed >= 0 ? 1 : -1;
+        if (dir != leadMotor->dir)
+        {
+            Stepper **motor = motorList;
+            while ((*motor) != nullptr)
+            {
+                (*motor++)->toggleDir();
+            }
+        }
+        
+        StepTimer.channel->LDVAL = (newSpeed > 0) ? F_BUS / newSpeed : -F_BUS / newSpeed; // speed changed, update LDVAL
+
+        if (oldspeed == 0) // PIT was off -> restart PIT
+        {         
+            StepTimer.clearTIF();
+            StepTimer.start();
+        }
+
+        oldspeed = newSpeed;
     }
+    digitalWriteFast(2, LOW);
 }
 
-// ROTATE Commands -----------------------------------------------------------------------------------------------
+// ROTATE Commands -------------- ------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
 void RotateControlBase<p, u>::rotateAsync(Stepper &stepper0)
@@ -158,44 +167,39 @@ void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N])
     doRotate(N);
 }
 
+// Protected -----------------------------------------------------------------------------------------------------
+
 template <unsigned p, unsigned u>
 void RotateControlBase<p, u>::stopAsync()
 {
-    initiateStopping(motorList[0]->current);
-    // motorList[0]->target = newTarget;
+    initiateStopping(leadMotor->current);    
 }
-
-// Protected -----------------------------------------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
 void RotateControlBase<p, u>::doMove(int N, bool move)
 {
     //Calculate Bresenham parameters ----------------------------------------------------------------
     std::sort(motorList, motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
-    motorList[0]->current = 0;
+    leadMotor = motorList[0];
+
+    leadMotor->current = 0;
     for (int i = 1; i < N; i++)
     {
         motorList[i]->current = 0;
-        motorList[i]->leadTarget = motorList[0]->target;
-        motorList[i]->D = 2 * motorList[i]->target - motorList[0]->target;
+        motorList[i]->leadTarget = leadMotor->target;
+        motorList[i]->D = 2 * motorList[i]->target - leadMotor->target;
     }
 
     // Rotation parameters --------------------------------------------------------------
-    uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a;           // use the lowest acceleration for the move
-    uint32_t pullInSpeed = (*std::min_element(motorList, motorList + N, Stepper::cmpVpullIn))->v_pullIn; // use the lowest pull in frequency for the move
-    uint32_t targetSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax;           // use the highest vMax for the move
+    uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
+                                                                                               // uint32_t pullInSpeed = (*std::min_element(motorList, motorList + N, Stepper::cmpVpullIn))->v_pullIn; // use the lowest pull in frequency for the move
+    uint32_t targetSpeed = (*std::max_element(motorList, motorList + N, Stepper::cmpV))->vMax; // use the highest vMax for the move
     if (targetSpeed == 0)
         return;
 
-    uint32_t vstart = prepareRotation(motorList[0]->position, targetSpeed, pullInSpeed, acceleration);
+    prepareRotation(leadMotor->position, targetSpeed, acceleration);
+  
 
-    StepTimer.channel->LDVAL = F_BUS / vstart;
-
-    //Serial.println(StepTimer.channel->LDVAL);
-
-    // Start timers
-    StepTimer.clearTIF();
-    StepTimer.start();
     TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
 }
 

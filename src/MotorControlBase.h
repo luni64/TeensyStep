@@ -41,4 +41,5 @@ class MotorControlBase : IPitHandler, IDelayHandler
     const unsigned pinResetDelayChannel;
     const unsigned accLoopDelayChannel;
     Stepper *motorList[MaxMotors];
+    Stepper *leadMotor;
 };
