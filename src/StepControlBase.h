@@ -9,16 +9,16 @@ class StepControlBase : public MotorControlBase
 {
   public:
     void move(Stepper &stepper0, float relSpeed = 1);
-    void move(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) ;
-    void move(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1) ;
+    void move(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1);
+    void move(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1);
     template <size_t N>
     void move(Stepper *(&motors)[N], float relSpeed = 1);
 
-    void moveAsync(Stepper &stepper0, float relSpeed = 1) ;
-    void moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1) ;
-    void moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1) ;
+    void moveAsync(Stepper &stepper0, float relSpeed = 1);
+    void moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed = 1);
+    void moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed = 1);
     template <size_t N>
-    void moveAsync(Stepper *(&motors)[N], float relSpeed = 1) ;
+    void moveAsync(Stepper *(&motors)[N], float relSpeed = 1);
 
     void stopAsync();
 
@@ -29,14 +29,13 @@ class StepControlBase : public MotorControlBase
     StepControlBase(const StepControlBase &) = delete;
     StepControlBase &operator=(const StepControlBase &) = delete;
 
-    uint32_t virtual prepareMovement(uint32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) = 0;
-    uint32_t virtual updateSpeed(uint32_t currentPosition) = 0;
-    uint32_t virtual initiateStopping(uint32_t currentPosition) = 0;
-
+    uint32_t virtual prepareMovement(int32_t targetPos, int32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration) = 0;
+    uint32_t virtual updateSpeed(int32_t currentPosition) = 0;
+    uint32_t virtual initiateStopping(int32_t currentPosition) = 0;
 
     void doMove(int N, float relSpeed, bool mode = true);
 
-    void pitISR() ;
+    void pitISR();
     void delayISR(unsigned channel);
 
     void (*callback)() = nullptr;
@@ -67,9 +66,9 @@ void StepControlBase<p, u>::pitISR()
     }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 
-    if (motorList[0]->current >= motorList[0]->target) // stop if we are at target
+    if (motorList[0]->current == motorList[0]->target) // stop if we are at target
     {
-        StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
+        StepTimer.stop(); 
         if (callback != nullptr)
             callback();
     }
@@ -96,9 +95,9 @@ void StepControlBase<p, u>::delayISR(unsigned channel)
             cli();
             TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
             sei();
-
-            uint32_t newSpeed = updateSpeed(motorList[0]->current);
-            StepTimer.channel->LDVAL = F_BUS / newSpeed;
+            digitalWriteFast(14, HIGH);           
+            StepTimer.setFrequency(updateSpeed(leadMotor->current));
+            digitalWriteFast(14, LOW);
         }
     }
 }
@@ -106,7 +105,7 @@ void StepControlBase<p, u>::delayISR(unsigned channel)
 // MOVE Commands -------------------------------------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed) 
+void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed)
 {
     moveAsync(stepper, relSpeed);
     while (isRunning())
@@ -114,7 +113,7 @@ void StepControlBase<p, u>::move(Stepper &stepper, float relSpeed)
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float relSpeed) 
+void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float relSpeed)
 {
     moveAsync(stepper1, stepper2, relSpeed);
     while (isRunning())
@@ -122,7 +121,7 @@ void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, float rel
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &stepper3, float relSpeed) 
+void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &stepper3, float relSpeed)
 {
     moveAsync(stepper1, stepper2, stepper3, relSpeed);
     while (isRunning())
@@ -131,7 +130,7 @@ void StepControlBase<p, u>::move(Stepper &stepper1, Stepper &stepper2, Stepper &
 
 template <unsigned p, unsigned u>
 template <size_t N>
-void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed) 
+void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed)
 {
     moveAsync(motors, relSpeed);
     while (isRunning())
@@ -141,7 +140,7 @@ void StepControlBase<p, u>::move(Stepper *(&motors)[N], float relSpeed)
 // MOVE ASYNC Commands -------------------------------------------------------------------------------------------
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed) 
+void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed)
 {
     motorList[0] = &stepper;
     motorList[1] = nullptr;
@@ -149,7 +148,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper, float relSpeed)
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed) 
+void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, float relSpeed)
 {
     motorList[0] = &stepper0;
     motorList[1] = &stepper1;
@@ -158,7 +157,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, floa
 }
 
 template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed) 
+void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2, float relSpeed)
 {
     motorList[0] = &stepper0;
     motorList[1] = &stepper1;
@@ -169,7 +168,7 @@ void StepControlBase<p, u>::moveAsync(Stepper &stepper0, Stepper &stepper1, Step
 
 template <unsigned p, unsigned u>
 template <size_t N>
-void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N], float relSpeed)  //move up to maxMotors motors synchronously
+void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N], float relSpeed) //move up to maxMotors motors synchronously
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used, please increase MaxMotors");
 
@@ -199,12 +198,14 @@ void StepControlBase<p, u>::doMove(int N, float relSpeed, bool move)
 
     //Calculate Bresenham parameters ----------------------------------------------------------------
     std::sort(motorList, motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
-    motorList[0]->current = 0;
+    leadMotor = motorList[0];
+
+    //leadMotor->current = 0;
     for (int i = 1; i < N; i++)
     {
-        motorList[i]->current = 0;
-        motorList[i]->leadTarget = motorList[0]->target;
-        motorList[i]->D = 2 * motorList[i]->target - motorList[0]->target;
+        //motorList[i]->current = 0;
+        motorList[i]->leadTarget = leadMotor->target;
+        motorList[i]->D = 2 * motorList[i]->target - leadMotor->target;
     }
 
     // //Calculate acceleration parameters --------------------------------------------------------------
@@ -214,18 +215,18 @@ void StepControlBase<p, u>::doMove(int N, float relSpeed, bool move)
     if (targetSpeed == 0)
         return;
 
-    uint32_t targetPos = motorList[0]->target;
-    if (targetPos == 0)
-        return;
+    // uint32_t targetPos = leadMotor->target;
+    // if (leadMotor->target == 0)
+    //     return;
 
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
 
-    uint32_t vstart = prepareMovement(targetPos, targetSpeed, pullInSpeed, acceleration);
+    uint32_t vstart = prepareMovement(leadMotor->target, targetSpeed, pullInSpeed, acceleration);
 
     StepTimer.channel->LDVAL = F_BUS / vstart;
 
     // Start timers
-    StepTimer.clearTIF();
+    // StepTimer.clearTIF();
     StepTimer.start();
     TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
 }

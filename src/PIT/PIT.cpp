@@ -31,9 +31,8 @@ bool PIT::begin(IPitHandler* handler)
     const int channelNr = channel - KINETISK_PIT_CHANNELS;
     pitHandler[channelNr] = handler;                // store handler
 	timer.priority(32);
-    timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler
-													// don't clear TEN, we want to keep the IntervalTimer reserved
-    disableInterupt();     		
+    timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler													
+    stop();        		                            // stop doesn't clear TEN, we want to keep the IntervalTimer reserved
 
     return true;
 }

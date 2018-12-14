@@ -12,7 +12,7 @@ class MotorControlBase : IPitHandler, IDelayHandler
   public:
     inline bool isOk() const { return OK; } 
     inline bool isRunning() const { return StepTimer.channel->TCTRL & PIT_TCTRL_TIE; }
-    inline void emergencyStop() const {StepTimer.disableInterupt(); }
+    inline void emergencyStop() const {StepTimer.stop(); }
     inline void const stop()
     {
         stopAsync();

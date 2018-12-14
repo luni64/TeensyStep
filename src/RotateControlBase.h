@@ -8,15 +8,38 @@ template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class RotateControlBase : public MotorControlBase
 {
   public:
+    //----------------------------------------------------------------------------
+    // Starts a  stopping sequence. The motors will be stopped using the normal
+    // decelleration. Synchronizity is kept during stopping.
     void stopAsync();
+
+    //----------------------------------------------------------------------------
+    // Pass in up to 3 stepper pointers and start synchronous rotation
+    // The relative speed of the motor is defined by the corresponding
+    // max speed setting
     void rotateAsync(Stepper &stepper0);
     void rotateAsync(Stepper &stepper0, Stepper &stepper1);
     void rotateAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2);
 
+    void moveAsync(Stepper &stepper0)
+    {
+        mode = Mode::moving;
+
+        motorList[0] = &stepper0;
+        motorList[1] = nullptr;
+        doMove(1);
+    }
+
+    //-----------------------------------------------------------------------------
+    // pass in n array of Stepper pointers without passing the size of the array and
+    // start synchronous rotation. The relative speed of the motor is defined by
+    // the max speed settings of the motors.
+    // Example:
+    // Stepper M1, M2, M3;
+    // Stepper* steppers[] = {&M1, &M2, &M3};
+    // rotateAsync(steppers);
     template <size_t N>
     void rotateAsync(Stepper *(&motors)[N]);
-
-    void setCallback(void (*_callback)()) { callback = _callback; }
 
   protected:
     RotateControlBase() = default;
@@ -24,8 +47,9 @@ class RotateControlBase : public MotorControlBase
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
     int32_t virtual updateSpeed(int32_t currentPosition) = 0;
-    uint32_t virtual initiateStopping(uint32_t currentPosition) = 0;
+    uint32_t virtual initiateStopping(int32_t currentPosition) = 0;
     void virtual prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration) = 0;
+    void virtual prepareMove(int32_t currentPosition, int32_t targetPosition, int32_t targetSpeed, uint32_t acceleration) = 0;
 
     void doRotate(int N);
     void doMove(int N, bool mode = true);
@@ -33,9 +57,11 @@ class RotateControlBase : public MotorControlBase
     void pitISR();
     void delayISR(unsigned channel);
 
-    int leadingDirection;
-
-    void (*callback)() = nullptr;
+    int oldSpeed = 0;
+    enum class Mode
+    {
+        moving, rotating
+    } mode;
 };
 
 // Implementation *************************************************************************************************
@@ -57,6 +83,11 @@ void RotateControlBase<p, u>::pitISR()
         (*motor)->D += (*motor)->target;
     }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
+
+    if(mode == Mode::moving && leadMotor->target == leadMotor->current)
+    {     
+        StepTimer.stop();     
+    }
 }
 
 template <unsigned p, unsigned u>
@@ -71,38 +102,33 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
             (*motor++)->clearStepPin();
         }
     }
-   
 
-    // calculate new speed (i.e., timer reload value) -------------------
+    // calculate new speed  ----------------------------------------------
     if (channel == accLoopDelayChannel)
     {
+
         cli();
         TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
         sei();
 
-        static int oldspeed = 0;
-       
-
-        digitalWriteFast(2, HIGH);
-
+        digitalWriteFast(14, HIGH);
         int32_t newSpeed = updateSpeed(leadMotor->current); // get new speed for the leading motor
 
-        if (oldspeed == newSpeed) // nothing changed, just keep running
+        if (oldSpeed == newSpeed) // nothing changed, just keep running
         {
-            digitalWriteFast(2, LOW);
+            digitalWriteFast(14, LOW);
             return;
         }
-
         if (newSpeed == 0) // stop pulsing
         {
-            StepTimer.channel->TCTRL &= ~PIT_TCTRL_TIE; // disable timer interrupts
-            oldspeed = 0;
-            digitalWriteFast(2, LOW);
+            StepTimer.stop();
+            oldSpeed = 0;
+            digitalWriteFast(14, LOW);
             return;
         }
 
         int dir = newSpeed >= 0 ? 1 : -1;
-        if (dir != leadMotor->dir)
+        if (dir != leadMotor->dir) // direction of lead motor changed, toggle direction of all slave motors
         {
             Stepper **motor = motorList;
             while ((*motor) != nullptr)
@@ -110,18 +136,17 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
                 (*motor++)->toggleDir();
             }
         }
-        
-        StepTimer.channel->LDVAL = (newSpeed > 0) ? F_BUS / newSpeed : -F_BUS / newSpeed; // speed changed, update LDVAL
 
-        if (oldspeed == 0) // PIT was off -> restart PIT
-        {         
-            StepTimer.clearTIF();
+        StepTimer.setFrequency(newSpeed > 0 ? newSpeed : -newSpeed); // speed changed, update timer
+
+        if (oldSpeed == 0) // timer was off -> restart timer
+        {
             StepTimer.start();
         }
 
-        oldspeed = newSpeed;
+        oldSpeed = newSpeed;
+        digitalWriteFast(14, LOW);
     }
-    digitalWriteFast(2, LOW);
 }
 
 // ROTATE Commands -------------- ------------------------------------------------------------------
@@ -172,7 +197,7 @@ void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N])
 template <unsigned p, unsigned u>
 void RotateControlBase<p, u>::stopAsync()
 {
-    initiateStopping(leadMotor->current);    
+    initiateStopping(leadMotor->current);
 }
 
 template <unsigned p, unsigned u>
@@ -182,10 +207,10 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
     std::sort(motorList, motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
     leadMotor = motorList[0];
 
-    leadMotor->current = 0;
+    //leadMotor->current = 0;
     for (int i = 1; i < N; i++)
     {
-        motorList[i]->current = 0;
+      //  motorList[i]->current = 0;
         motorList[i]->leadTarget = leadMotor->target;
         motorList[i]->D = 2 * motorList[i]->target - leadMotor->target;
     }
@@ -197,8 +222,8 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
     if (targetSpeed == 0)
         return;
 
-    prepareRotation(leadMotor->position, targetSpeed, acceleration);
-  
+    //prepareRotation(leadMotor->position, targetSpeed, acceleration);
+    prepareMove(leadMotor->position, leadMotor->target, targetSpeed, acceleration); 
 
     TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
 }

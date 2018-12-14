@@ -61,7 +61,7 @@ class Stepper
     inline int32_t getPosition() const { return current; }
     inline void setPosition(int32_t pos) { current = pos; }
 
-  private:
+ // private:
     volatile int32_t current;
     volatile int32_t target;
     int32_t leadTarget; // target of the lead motor
