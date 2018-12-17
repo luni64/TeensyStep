@@ -38,28 +38,20 @@ class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
     RotateControl(const RotateControl &) = delete;
     RotateControl &operator=(const RotateControl &) = delete;
 
-    void overrideSpeed(int32_t v)
+    void overrideSpeed(int32_t vv)
     {
         cli();
-        //    Serial.printf("os: %g --------------------------\n", fac);
 
-        v_tgt = v;
+        v_tgt = vv;
 
-        up = v_tgt > v ? 1 : -1;
+        int up = v_tgt > this->leadMotor->getSpeed() ? 1 : -1;
         two_a = 2 * acc * up;
 
-        if (v_tgt > 0)
-        {
-            st2 = v_tgt * v_tgt;
-        }
-        else
-        {
-            st2 = -(v_tgt * v_tgt);
-        }
+        st2 = (v_tgt > 0) ? v_tgt * v_tgt : -(v_tgt * v_tgt);
+
 
         sei();
     }
-
 
     void overrideSpeed(float fac)
     {
@@ -68,7 +60,7 @@ class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
 
         v_tgt = v_tgt_orig * fac;
 
-        up = v_tgt > v ? 1 : -1;
+        int up = v_tgt > this->leadMotor->getSpeed() ? 1 : -1;
         two_a = 2 * acc * up;
 
         if (v_tgt > 0)
@@ -90,20 +82,21 @@ class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
     // uint32_t decelerationStart;
     int32_t two_a;
     int64_t v2 = 0;
-    int32_t v = 0;
+   // int32_t v = 0;
     int64_t st2;
     int32_t v_tgt;
 
-    int up;
+    // int up;
 
     int32_t v_tgt_orig, v_min;
     int32_t acc;
     //  float fa;
 
-    //int32_t v2_tgt, v_min, v_cur;
     int32_t s_0;
     int32_t s_tgt;
     int32_t decStart;
+
+    bool decelerating;
 
     void prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration);
     int32_t updateSpeed(int32_t currentPosition);
@@ -119,7 +112,6 @@ void RotateControl<p, u>::prepareRotation(int32_t currentPosition, int32_t targe
 {
     v_tgt_orig = targetSpeed;
     acc = a;
-    
 
     s_0 = currentPosition;
     overrideSpeed(1.0f);
@@ -129,62 +121,67 @@ void RotateControl<p, u>::prepareRotation(int32_t currentPosition, int32_t targe
 }
 
 template <unsigned p, unsigned u>
-void RotateControl<p, u>::prepareMove(int32_t currentPosition, int32_t targetPosition, int32_t targetSpeed, uint32_t a)  
+void RotateControl<p, u>::prepareMove(int32_t currentPosition, int32_t targetPosition, int32_t targetSpeed, uint32_t a)
 {
-    prepareRotation(currentPosition, targetSpeed, a);
+    acc = a;
+    v_tgt_orig = targetSpeed;
     s_tgt = targetPosition;
-    
+    s_0 = currentPosition;
+    v_min = sqrtf(2.0 * a);
+    decelerating = false;
 
-   // float dv = std::abs(targetSpeed);// - sqrtf(400);
-    float ae = ((float)targetSpeed * targetSpeed - sqrtf(two_a))/ two_a; // length of acceleration phase (steps)
+    int32_t accLength = ((float)targetSpeed * targetSpeed) / (2.0f * a) - 1.0f; // s = (vt^2 - v0^2)/2a; v0^2 = 2a
 
-   
+    decStart = s_tgt - this->leadMotor->dir * accLength;
+    decelerating = false;
 
-    decStart =  s_tgt - (int32_t) ae;
-
-    Serial.printf("Prepare move cp:%d, tp:%d, ae:%f\n", currentPosition, targetPosition, ae);
-
+    Serial.printf("Prepare move cp:%d, tp:%d, ts:%d, al:%i, ds:%i\n", currentPosition, targetPosition, targetSpeed, accLength, decStart);
+    overrideSpeed(1.0f);
 }
 
 template <unsigned p, unsigned u>
 int32_t RotateControl<p, u>::updateSpeed(int32_t currentPosition)
 {
-   // Serial.printf("Update cp:%i s_tgt:%i v_tgt:%i \n", currentPosition, s_tgt, v_tgt);
-
-    if (currentPosition >= decStart && v_tgt != (int32_t)sqrtf(two_a))
-    {      
+    int dd = (currentPosition - decStart) * this->leadMotor->dir;
+    //Serial.printf("Update cp:%i, ds: %i, dir: %i, s_tgt:%i dd:%i \n", currentPosition, decStart, this->leadMotor->dir, s_tgt, dd);
+    if (decelerating == false && dd >= 0)
+    {
         digitalWriteFast(15, HIGH);
-        overrideSpeed((int32_t)sqrt(two_a));
-        delayMicroseconds(1);
+        decelerating = true;
+        s_0 = decStart;
+        Serial.printf("dec %i ------------------------\n", this->leadMotor->dir * (int32_t)sqrtf(2 * acc));
+        overrideSpeed(this->leadMotor->dir * v_min);
         digitalWriteFast(15, LOW);
+        //return v;
     }
 
-    if (v == v_tgt)
+    if (this->leadMotor->getSpeed()== v_tgt)
     {
+        Serial.println("v=vtgt");
         s_0 = currentPosition;
-        return v;
+        return v_tgt;
     }
-    if (v == 0) // Last speed was 0, target != zero -> start movment
+    if (this->leadMotor->getSpeed() == 0) // Last speed was 0, target != zero -> start movment
     {
+        Serial.println("v=0");
         s_0 = currentPosition;
         v2 = two_a;
-        v2 = (up == 1) ? std::min(v2, st2) : std::max(v2, st2);
-        v = v2 > 0 ? sqrtf(v2) : -sqrtf(-v2);
 
-        //Serial.printf("last zero, ret:%i\n", v);
-
-        return v;
+        //v2 = two_a > 0 ? std::min(st2, v2) : std::max(st2, v2);
+        //v2 = (up == 1) ? std::min(v2, st2) : std::max(v2, st2);
+        return v2 > 0 ? sqrtf(v2) : -sqrtf(-v2);
+        //Serial.printf("zeor, v:%i st2 %f twoa: %i \n", v,st2,two_a);
+        //return v;
     }
 
+    digitalWriteFast(16, HIGH);
     int32_t delta_s = std::abs(currentPosition - s_0);
     s_0 = currentPosition;
-
     v2 += (two_a * delta_s);
-    v2 = (up == 1) ? std::min(v2, st2) : std::max(v2, st2);
-
-    // v = v2 > 0 ? sqrtf(v2) : -sqrtf(-v2);
-    v = v2 > 0 ? SquareRootRounded(v2) : -SquareRootRounded(-v2);
-    //Serial.printf("std, v:%i \n", v);
+    v2 = two_a > 0 ? std::min(st2, v2) : std::max(st2, v2);
+    int32_t v = v2 > 0 ? SquareRootRounded(v2) : -SquareRootRounded(-v2);
+   // Serial.printf("std, v:%i ds:%i, st2:%g v2:%g \n", v, delta_s, (float)st2, (float)v2);
+    digitalWriteFast(16, LOW);
     return v;
 }
 

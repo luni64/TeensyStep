@@ -185,7 +185,7 @@ void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N], float relSpeed) //m
 template <unsigned p, unsigned u>
 void StepControlBase<p, u>::stopAsync()
 {
-    uint32_t newTarget = initiateStopping(motorList[0]->position);
+    uint32_t newTarget = initiateStopping(motorList[0]->current);
     motorList[0]->target = newTarget;
 }
 

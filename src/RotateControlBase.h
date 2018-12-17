@@ -57,10 +57,11 @@ class RotateControlBase : public MotorControlBase
     void pitISR();
     void delayISR(unsigned channel);
 
-    int oldSpeed = 0;
+    //int oldSpeed = 0;
     enum class Mode
     {
-        moving, rotating
+        moving,
+        rotating
     } mode;
 };
 
@@ -84,9 +85,13 @@ void RotateControlBase<p, u>::pitISR()
     }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 
-    if(mode == Mode::moving && leadMotor->target == leadMotor->current)
-    {     
-        StepTimer.stop();     
+    if (mode == Mode::moving && leadMotor->target == leadMotor->current)
+    {
+        digitalWriteFast(3, HIGH);
+        //leadMotor->currentSpeed = 0; 
+        
+        StepTimer.stop();        
+        digitalWriteFast(3, LOW);
     }
 }
 
@@ -106,15 +111,21 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
     // calculate new speed  ----------------------------------------------
     if (channel == accLoopDelayChannel)
     {
+        digitalWriteFast(14, HIGH);
 
         cli();
         TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
         sei();
 
-        digitalWriteFast(14, HIGH);
         int32_t newSpeed = updateSpeed(leadMotor->current); // get new speed for the leading motor
 
-        if (oldSpeed == newSpeed) // nothing changed, just keep running
+        // if(!StepTimer.isRunning() && leadMotor->currentSpeed != newSpeed)
+        // {
+        //     StepTimer.start();
+        // } 
+            
+
+        if (leadMotor->currentSpeed == newSpeed) // nothing changed, just keep running
         {
             digitalWriteFast(14, LOW);
             return;
@@ -122,7 +133,7 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
         if (newSpeed == 0) // stop pulsing
         {
             StepTimer.stop();
-            oldSpeed = 0;
+            leadMotor->currentSpeed = 0;
             digitalWriteFast(14, LOW);
             return;
         }
@@ -139,12 +150,12 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
 
         StepTimer.setFrequency(newSpeed > 0 ? newSpeed : -newSpeed); // speed changed, update timer
 
-        if (oldSpeed == 0) // timer was off -> restart timer
+        if (leadMotor->currentSpeed == 0) // timer was off -> restart timer
         {
             StepTimer.start();
         }
 
-        oldSpeed = newSpeed;
+        leadMotor->currentSpeed = newSpeed;
         digitalWriteFast(14, LOW);
     }
 }
@@ -210,7 +221,7 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
     //leadMotor->current = 0;
     for (int i = 1; i < N; i++)
     {
-      //  motorList[i]->current = 0;
+        //  motorList[i]->current = 0;
         motorList[i]->leadTarget = leadMotor->target;
         motorList[i]->D = 2 * motorList[i]->target - leadMotor->target;
     }
@@ -223,9 +234,10 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
         return;
 
     //prepareRotation(leadMotor->position, targetSpeed, acceleration);
-    prepareMove(leadMotor->position, leadMotor->target, targetSpeed, acceleration); 
+    prepareMove(leadMotor->current, leadMotor->target, targetSpeed*leadMotor->dir, acceleration);
 
     TeensyDelay::trigger(2, accLoopDelayChannel); // start the acceleration update loop
+    
 }
 
 template <unsigned p, unsigned u>
@@ -236,7 +248,7 @@ void RotateControlBase<p, u>::doRotate(int N)
 
     for (int i = 0; i < N; i++)
     {
-        motorList[i]->setTargetRel(motorList[i]->vMax * fac * motorList[i]->direction);
+        motorList[i]->setTargetRel(motorList[i]->vMax * fac * motorList[i]->dir);
     }
 
     doMove(N, false);

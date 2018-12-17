@@ -6,7 +6,7 @@
 class Stepper
 {
     static constexpr unsigned vPullIn_min = 50; // smallest possible pullIn frequency  (steps/s)
-    static constexpr unsigned vMaxMax = 500000; // largest speed possible (steps/s)
+    static constexpr int32_t vMaxMax = 300000; // largest speed possible (steps/s)
     static constexpr unsigned aMax = 500000;    // speed up to 500kHz within 1 s (steps/s^2)
 
     static constexpr unsigned vPullIn_default = 100; // should work with any motor
@@ -29,18 +29,10 @@ class Stepper
         return *this;
     } // acceleration (steps/s^2)
 
-    inline Stepper &setMaxSpeed(int speed)
+    inline Stepper &setMaxSpeed(int32_t speed)
     {
-        if (speed >= 0)
-        {
-            direction = 1;
-            vMax = std::min(vMaxMax, (unsigned)speed);
-        }
-        else
-        {
-            vMax = std::min(vMaxMax, (unsigned)-speed);
-            direction = -1;
-        }
+        dir = speed >= 0 ? 1 : -1;
+        vMax = std::min(vMaxMax, std::max(-vMaxMax, speed));       
         return *this;
     }
 
@@ -59,17 +51,19 @@ class Stepper
     inline void clearStepPin() { *stepPinInactiveReg = 1; }
 
     inline int32_t getPosition() const { return current; }
+    inline int32_t getSpeed() const { return currentSpeed; }
     inline void setPosition(int32_t pos) { current = pos; }
 
  // private:
     volatile int32_t current;
+    volatile int32_t currentSpeed;
     volatile int32_t target;
     int32_t leadTarget; // target of the lead motor
     int D;
     unsigned v_pullIn;
-    unsigned vMax;
+    int vMax;
     unsigned a;
-    int direction;
+    //int direction;
 
     inline void setDir(int d)
     {
@@ -95,7 +89,7 @@ class Stepper
     static bool cmpVpullIn(const Stepper *a, const Stepper *b) { return a->v_pullIn < b->v_pullIn; }
     static bool cmpV(const Stepper *a, const Stepper *b) { return a->vMax < b->vMax; }
 
-    int32_t position;
+    //int32_t position;
 
     volatile uint32_t *stepPinActiveReg;
     volatile uint32_t *stepPinInactiveReg;

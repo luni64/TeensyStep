@@ -2,7 +2,7 @@
 #include "core_pins.h"
 
 Stepper::Stepper(const int _stepPin, const int _dirPin)
-    : current(0), v_pullIn(vPullIn_default), vMax(vMaxDefault), a(aDefault), position(0), stepPin(_stepPin), dirPin(_dirPin)
+    : current(0), v_pullIn(vPullIn_default), vMax(vMaxDefault), a(aDefault), stepPin(_stepPin), dirPin(_dirPin)
 {
     setStepPinPolarity(HIGH);
     setInverseRotation(false);
@@ -56,7 +56,7 @@ Stepper &Stepper::setInverseRotation(bool reverse)
 void Stepper::setTargetAbs(int32_t target)
 {
     this->target = target;
-    setDir(target >= current);
+    setDir(target >= current ? 1 : -1);
 }
 
 void Stepper::setTargetRel(int32_t delta)
