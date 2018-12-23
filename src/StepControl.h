@@ -1,90 +1,78 @@
+#include <cmath>
 #include "StepControlBase.h"
-#include <math.h>
 
 template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class StepControl : public StepControlBase<pulseWidth, accUpdatePeriod>
-{
-  public:
-    StepControl();
+{  
+    int32_t s_0;
+    uint32_t delta_tgt;
+    uint32_t accEnd, decStart;
+    uint32_t two_a;
+    uint32_t v_tgt, v_min2;
 
-  protected:
-    int32_t accelerationEnd;
-    int32_t decelerationStart;
-    uint32_t sqrt_2a;
-    int32_t s_tgt, v_tgt, v_min;
-
-    uint32_t prepareMovement(int32_t targetPos, int32_t targetSpeed, uint32_t pullInSpeed, uint32_t acceleration);
-    uint32_t updateSpeed(int32_t currentPosition);
-    uint32_t initiateStopping(int32_t currentPosition);
+    inline uint32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t acceleration);
+    inline uint32_t updateSpeed(int32_t currentPos);
+    inline uint32_t initiateStopping(int32_t currentPos);
 };
 
-// Implementation =====================================================================================================
-
 template <unsigned p, unsigned u>
-StepControl<p, u>::StepControl() : StepControlBase<p, u>()
+uint32_t StepControl<p, u>::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a)
 {
-}
-
-template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::prepareMovement(int32_t targetPos, int32_t targetSpeed, uint32_t pullInSpeed, uint32_t a)
-{
-    s_tgt = targetPos;
+    s_0 = currentPos;
+    delta_tgt = std::abs(targetPos - currentPos);
     v_tgt = targetSpeed;
-    v_min = pullInSpeed;
+    two_a = v_min2 = 2 * a;                                 // v^2 - v0^2 = 2as -> v0^2 = 2as  (1)
+    uint32_t v_min = sqrtf(v_min2);
 
-    if (std::abs(v_tgt) > v_min) // target speed larger than pull in speed
-    {                  // -> acceleration required
-        float dv = std::abs(v_tgt) - v_min;
-        float ae = dv * dv / (2.0f * a); // length of acceleration phase (steps)
-        sqrt_2a = sqrtf(2.0f * a);       // precalc, needed during acceleration
-
-        accelerationEnd = std::min((int32_t)ae, s_tgt / 2); // limit acceleration phase to half of total steps
-        decelerationStart = s_tgt - accelerationEnd;
-
-        Serial.printf("Prepare s_tgt:%d, v_tgt:%d, ae:%d, ds:%d\n", s_tgt, v_tgt,accelerationEnd, decelerationStart);
-
-        return v_min; // start movment with the pull in speed
+    if (v_tgt > v_min)                                      // target speed larger than pull in speed -> acceleration required
+    {        
+        uint32_t ae = ((float)v_tgt * v_tgt)/two_a - 1.0f;  // length of acceleration phase (we use a float here to avoid overflow in v_tgt^2). Use (1) and vmin^2 = 2a
+        accEnd = std::min(ae, delta_tgt / 2);               // limit acceleration phase to half of total steps
+        decStart = delta_tgt - accEnd;       
+        return v_min;
     }
-    else // target speed smaller that pull in speed
-    {    // -> no acceleration necessary
-        accelerationEnd = 0;
-        decelerationStart = s_tgt;
+    else                                                    // target speed smaller than v_min in speed -> no acceleration necessary
+    {
+        accEnd = 0;
+        decStart = delta_tgt;
         return v_tgt;
     }
 }
 
 template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::updateSpeed(int32_t currentPosition)
+uint32_t StepControl<p, u>::updateSpeed(int32_t currentPos)
 {
-    // acceleration phase -------------------------------------
-    if (currentPosition < accelerationEnd)
-        return sqrt_2a * sqrtf(currentPosition) + v_min;
+    uint32_t delta = std::abs(s_0 - currentPos);
 
+    // acceleration phase -------------------------------------
+    if (delta < accEnd) return sqrtf(two_a * delta + v_min2);
+    
     // constant speed phase ------------------------------------
-    if (currentPosition < decelerationStart)
-        return v_tgt;
+    if (delta < decStart) return v_tgt;
 
     //deceleration phase --------------------------------------
-    return sqrt_2a * sqrtf(s_tgt - currentPosition) + v_min;
+    return sqrtf(two_a * ((delta < delta_tgt - 1) ? delta_tgt - delta - 2 : 0) + v_min2);
 }
 
 template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::initiateStopping(int32_t s_cur)
+uint32_t StepControl<p, u>::initiateStopping(int32_t currentPos)
 {
-    if (s_cur <= decelerationStart) // we are already decelerationg, nothing to change...
+    uint32_t delta = std::abs(delta_tgt - currentPos);
+
+    if (delta <= decStart) // we are already decelerationg, nothing to change...
     {
-        return s_tgt;
+        return delta_tgt;
     }
     else // accelerating or constant speed phase
     {
         uint32_t newTarget;
-        if (s_cur < accelerationEnd) // still accelerating
-            newTarget = s_cur * 2;   // will take the same distance to stop as we already traveled
-        else                         // constant speed phase
-            newTarget = s_cur + accelerationEnd;
+        if (delta < accEnd)           // still accelerating
+            newTarget = delta * 2;    // will take the same distance to stop as we already traveled
+        else                          // constant speed phase
+            newTarget = delta + accEnd;
 
-        accelerationEnd = 0;
-        decelerationStart = s_cur; // start decelerating now
+        accEnd = 0;
+        decStart = delta;             // start decelerating now
         return newTarget;
     }
 }

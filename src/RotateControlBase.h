@@ -74,15 +74,15 @@ void RotateControlBase<p, u>::pitISR()
     Stepper **motor = motorList; // move leading axis
     (*motor)->doStep();          // activate step pin
 
-    while (*(++motor) != nullptr) // move slow axes if required (https://en.wikipedia.org/wiki/Bresenham)
-    {
-        if ((*motor)->D >= 0)
-        {
-            (*motor)->doStep();
-            (*motor)->D -= (*motor)->leadTarget; // do not use leadMotor->target since this will be changed by stop()
-        }
-        (*motor)->D += (*motor)->target;
-    }
+    // while (*(++motor) != nullptr) // move slow axes if required (https://en.wikipedia.org/wiki/Bresenham)
+    // {
+    //     if ((*motor)->A >= 0)
+    //     {
+    //         (*motor)->doStep();
+    //         (*motor)->A -= (*motor)->B; // do not use leadMotor->target since this will be changed by stop()
+    //     }
+    //     (*motor)->A += (*motor)->target;
+    // }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 
     if (mode == Mode::moving && leadMotor->target == leadMotor->current)
@@ -217,14 +217,12 @@ void RotateControlBase<p, u>::doMove(int N, bool move)
     //Calculate Bresenham parameters ----------------------------------------------------------------
     std::sort(motorList, motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
     leadMotor = motorList[0];
-
-    //leadMotor->current = 0;
-    for (int i = 1; i < N; i++)
-    {
-        //  motorList[i]->current = 0;
-        motorList[i]->leadTarget = leadMotor->target;
-        motorList[i]->D = 2 * motorList[i]->target - leadMotor->target;
-    }
+    
+    // for (int i = 1; i < N; i++)
+    // {
+    //     motorList[i]->B = leadMotor->target;
+    //     motorList[i]->A = 2 * motorList[i]->target - motorList[i]->B;
+    // }
 
     // Rotation parameters --------------------------------------------------------------
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move

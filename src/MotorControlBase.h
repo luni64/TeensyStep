@@ -5,7 +5,7 @@
 
 class Stepper;
 
-constexpr int MaxMotors = 10;
+constexpr int MaxMotors = 4;
 
 class MotorControlBase : IPitHandler, IDelayHandler
 {
@@ -40,6 +40,6 @@ class MotorControlBase : IPitHandler, IDelayHandler
 
     const unsigned pinResetDelayChannel;
     const unsigned accLoopDelayChannel;
-    Stepper *motorList[MaxMotors];
+    Stepper *motorList[MaxMotors+1];
     Stepper *leadMotor;
 };
