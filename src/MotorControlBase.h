@@ -5,7 +5,7 @@
 
 class Stepper;
 
-constexpr int MaxMotors = 4;
+constexpr int MaxMotors = 10;
 
 class MotorControlBase : IPitHandler, IDelayHandler
 {
