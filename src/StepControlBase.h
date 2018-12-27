@@ -31,16 +31,15 @@ class StepControlBase : public MotorControlBase
     void stopAsync();
     void setCallback(void (*_callback)()) { callback = _callback; }
 
+  protected:
     // Construction
     StepControlBase() = default;
     StepControlBase(const StepControlBase &) = delete;
     StepControlBase &operator=(const StepControlBase &) = delete;
 
-  protected:
     void pitISR();
     void delayISR(unsigned channel);
-
-    unsigned mCnt = 0;
+  
     void (*callback)() = nullptr;
 
     void doMove(int N, bool mode = true);
@@ -60,13 +59,13 @@ void StepControlBase<p, u>::doMove(int N, bool move)
 
     for (int i = 1; i < N; i++)
     {
-        motorList[i]->B = 2 * motorList[i]->distance - leadMotor->distance;
+        motorList[i]->B = 2 * motorList[i]->A - leadMotor->A;
     }
 
     // Calculate acceleration parameters --------------------------------------------------------------
-    uint32_t targetSpeed = std::abs((*std::min_element(motorList, motorList + N, Stepper::cmpV))->vMax); // use the lowest max frequency for the move, scale by relSpeed
+    uint32_t targetSpeed = std::abs((*std::min_element(motorList, motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a;           // use the lowest acceleration for the move
-    if (leadMotor->distance == 0 || targetSpeed == 0) return;
+    if (leadMotor->A == 0 || targetSpeed == 0) return;
 
     // Start move---------------------------------------------------------------------------------------
     StepTimer.stop();
@@ -89,9 +88,9 @@ void StepControlBase<p, u>::pitISR()
         if ((*slave)->B >= 0)
         {
             (*slave)->doStep();
-            (*slave)->B -= leadMotor->distance;
+            (*slave)->B -= leadMotor->A;
         }
-        (*slave)->B += (*slave)->distance;
+        (*slave)->B += (*slave)->A;
     }
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 

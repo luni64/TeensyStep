@@ -38,67 +38,37 @@ class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
     RotateControl(const RotateControl &) = delete;
     RotateControl &operator=(const RotateControl &) = delete;
 
-    void overrideSpeed(int32_t vv)
-    {
-        cli();
-
-        v_tgt = vv;
-
-        int up = v_tgt > this->leadMotor->getSpeed() ? 1 : -1;
-        two_a = 2 * acc * up;
-
-        st2 = (v_tgt > 0) ? v_tgt * v_tgt : -(v_tgt * v_tgt);
-
-
-        sei();
-    }
-
     void overrideSpeed(float fac)
     {
-        cli();
-        //    Serial.printf("os: %g --------------------------\n", fac);
+        noInterrupts();
 
-        v_tgt = v_tgt_orig * fac;
+        v_tgt = std::round(v_tgt_orig * fac);
+        vstp_tgt = ((float)v_tgt * v_tgt) / two_a * (v_tgt > 0 ? 1.0f : -1.0f);
 
-        int up = v_tgt > this->leadMotor->getSpeed() ? 1 : -1;
-        two_a = 2 * acc * up;
+        s_0 = this->leadMotor->getPosition();
 
-        if (v_tgt > 0)
-        {
-            st2 = v_tgt * v_tgt;
-        }
-        else
-        {
-            st2 = -(v_tgt * v_tgt);
-        }
 
-        sei();
+        dir = vstp_tgt > vstp ? 1 : -1;
+
+        //Serial.printf("os: dir: %i vstp_tgt: %i vstp:%i\n", dir, vstp_tgt,vstp);
+        interrupts()
     }
 
   protected:
-    // uint32_t sqrt_2a;
-    // int32_t v02_2a;
+    int32_t a, two_a;
+    int32_t dir;
 
-    // uint32_t decelerationStart;
-    int32_t two_a;
-    int64_t v2 = 0;
-   // int32_t v = 0;
-    int64_t st2;
-    int32_t v_tgt;
+    int32_t v = 0;
+    int32_t vstp = 0;
 
-    // int up;
+    int32_t v_tgt, v_tgt_orig;
+    int32_t vstp_tgt;
 
-    int32_t v_tgt_orig, v_min;
-    int32_t acc;
-    //  float fa;
+    int32_t v_min, v_min_sqr;
 
     int32_t s_0;
-    int32_t s_tgt;
-    int32_t decStart;
 
-    bool decelerating;
-
-    void prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration);
+    int32_t prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration);
     int32_t updateSpeed(int32_t currentPosition);
     uint32_t initiateStopping(int32_t currentPosition);
 
@@ -107,89 +77,44 @@ class RotateControl : public RotateControlBase<pulseWidth, accUpdatePeriod>
 
 // Implementation =====================================================================================================
 
-template <unsigned p, unsigned u>
-void RotateControl<p, u>::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t a)
+float signed_sqrt(int32_t x) // signed square
 {
-    v_tgt_orig = targetSpeed;
-    acc = a;
-
-    s_0 = currentPosition;
-    overrideSpeed(1.0f);
-
-    // Serial.printf("Prepare cp:%d, ts:%d, a:%d v:%d two_a:%" PRIi64 "\n", currentPosition, targetSpeed, a, v, two_a);
-    // Serial.flush();
+    return x > 0 ? sqrtf(x) : -sqrtf(-x);
 }
 
 template <unsigned p, unsigned u>
-void RotateControl<p, u>::prepareMove(int32_t currentPosition, int32_t targetPosition, int32_t targetSpeed, uint32_t a)
+int32_t RotateControl<p, u>::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration)
 {
-    acc = a;
     v_tgt_orig = targetSpeed;
-    s_tgt = targetPosition;
-    s_0 = currentPosition;
-    v_min = sqrtf(2.0 * a);
-    decelerating = false;
-
-    int32_t accLength = ((float)targetSpeed * targetSpeed) / (2.0f * a) - 1.0f; // s = (vt^2 - v0^2)/2a; v0^2 = 2a
-
-    decStart = s_tgt - this->leadMotor->dir * accLength;
-    decelerating = false;
-
-    Serial.printf("Prepare move cp:%d, tp:%d, ts:%d, al:%i, ds:%i\n", currentPosition, targetPosition, targetSpeed, accLength, decStart);
+    a = acceleration;
+    two_a = 2 * a;
+    v_min_sqr = a;
+    v_min = sqrtf(v_min_sqr);
+    vstp = 0;
     overrideSpeed(1.0f);
+
+    //Serial.printf("%vtgt:%i vstp_tgt:%i  \n", v_tgt, vstp_tgt);
+    return v_min;
 }
 
 template <unsigned p, unsigned u>
 int32_t RotateControl<p, u>::updateSpeed(int32_t currentPosition)
 {
-    int dd = (currentPosition - decStart) * this->leadMotor->dir;
-    //Serial.printf("Update cp:%i, ds: %i, dir: %i, s_tgt:%i dd:%i \n", currentPosition, decStart, this->leadMotor->dir, s_tgt, dd);
-    if (decelerating == false && dd >= 0)
-    {
-        digitalWriteFast(15, HIGH);
-        decelerating = true;
-        s_0 = decStart;
-        Serial.printf("dec %i ------------------------\n", this->leadMotor->dir * (int32_t)sqrtf(2 * acc));
-        overrideSpeed(this->leadMotor->dir * v_min);
-        digitalWriteFast(15, LOW);
-        //return v;
-    }
-
-    if (this->leadMotor->getSpeed()== v_tgt)
-    {
-        Serial.println("v=vtgt");
-        s_0 = currentPosition;
+    if (vstp == vstp_tgt) // already at target, keep spinning with target frequency
+    {      
         return v_tgt;
     }
-    if (this->leadMotor->getSpeed() == 0) // Last speed was 0, target != zero -> start movment
-    {
-        Serial.println("v=0");
-        s_0 = currentPosition;
-        v2 = two_a;
+    vstp += std::abs(currentPosition - s_0) * dir;
+    vstp = dir == 1 ?  std::min(vstp_tgt, vstp) : std::max(vstp_tgt, vstp);  // clamp vstp to target
 
-        //v2 = two_a > 0 ? std::min(st2, v2) : std::max(st2, v2);
-        //v2 = (up == 1) ? std::min(v2, st2) : std::max(v2, st2);
-        return v2 > 0 ? sqrtf(v2) : -sqrtf(-v2);
-        //Serial.printf("zeor, v:%i st2 %f twoa: %i \n", v,st2,two_a);
-        //return v;
-    }
-
-    digitalWriteFast(16, HIGH);
-    int32_t delta_s = std::abs(currentPosition - s_0);
+    //Serial.printf("dir: %i, vstp_tgt:%i, vstp:%i, deltaS:%i\n", dir, vstp_tgt, vstp, deltaS);
     s_0 = currentPosition;
-    v2 += (two_a * delta_s);
-    v2 = two_a > 0 ? std::min(st2, v2) : std::max(st2, v2);
-    int32_t v = v2 > 0 ? SquareRootRounded(v2) : -SquareRootRounded(-v2);
-   // Serial.printf("std, v:%i ds:%i, st2:%g v2:%g \n", v, delta_s, (float)st2, (float)v2);
-    digitalWriteFast(16, LOW);
-    return v;
+    return signed_sqrt(two_a * (vstp-1) + v_min_sqr);    
 }
 
 template <unsigned p, unsigned u>
 uint32_t RotateControl<p, u>::initiateStopping(int32_t s_cur)
-{
-
-    //Serial.printf("stp %d\n", s_cur);
-    overrideSpeed(0.0f);
+{ 
+    overrideSpeed(0);
     return 0;
 }

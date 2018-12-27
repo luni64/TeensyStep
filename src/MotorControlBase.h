@@ -27,8 +27,9 @@ class MotorControlBase : IPitHandler, IDelayHandler
         : pinResetDelayChannel(TeensyDelay::addDelayChannel(this)),
           accLoopDelayChannel(TeensyDelay::addDelayChannel(this))
     {
+        mCnt = 0; 
         OK = StepTimer.begin(this);
-        TeensyDelay::begin();
+        TeensyDelay::begin();        
     }
 
     virtual void pitISR() = 0;
@@ -42,4 +43,5 @@ class MotorControlBase : IPitHandler, IDelayHandler
     const unsigned accLoopDelayChannel;
     Stepper *motorList[MaxMotors+1];
     Stepper *leadMotor;
+    unsigned mCnt;
 };
