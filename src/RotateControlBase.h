@@ -18,39 +18,21 @@ class RotateControlBase : public MotorControlBase
 
     void stopAsync();
 
-    // //----------------------------------------------------------------------------
-    // // Pass in up to 3 stepper pointers and start synchronous rotation
-    // // The relative speed of the motor is defined by the corresponding
-    // // max speed setting
-    // void rotateAsync(Stepper &stepper0);
-    // void rotateAsync(Stepper &stepper0, Stepper &stepper1);
-    // void rotateAsync(Stepper &stepper0, Stepper &stepper1, Stepper &stepper2);
-
-    // //-----------------------------------------------------------------------------
-    // // pass in n array of Stepper pointers without passing the size of the array and
-    // // start synchronous rotation. The relative speed of the motor is defined by
-    // // the max speed settings of the motors.
-    // // Example:
-    // // Stepper M1, M2, M3;
-    // // Stepper* steppers[] = {&M1, &M2, &M3};
-    // // rotateAsync(steppers);
-    // template <size_t N>
-    // void rotateAsync(Stepper *(&motors)[N]);
-
+   
   protected:
     RotateControlBase() = default;
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
-    void doRotate(int N);
-    void doMove(int N, bool mode = true);
+    void doRotate(int N, float speedFactor=1.0);
+  //  void doMove(int N, bool mode = true);
 
     void pitISR();
     void delayISR(unsigned channel);
 
     int32_t virtual updateSpeed(int32_t currentPosition) = 0;
     uint32_t virtual initiateStopping(int32_t currentPosition) = 0;
-    int32_t virtual prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration) = 0;    
+    int32_t virtual prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor=1.0) = 0;    
 };
 
 // Implementation *************************************************************************************************
@@ -171,7 +153,7 @@ void RotateControlBase<p, u>::stopAsync()
 }
 
 template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::doRotate(int N)
+void RotateControlBase<p, u>::doRotate(int N, float speedFactor)
 {
     std::sort(motorList, motorList + N, Stepper::cmpVmax);
     leadMotor = motorList[0];
@@ -188,7 +170,7 @@ void RotateControlBase<p, u>::doRotate(int N)
     }
 
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-    int32_t s = prepareRotation(leadMotor->current, leadMotor->vMax, acceleration);
+    int32_t s = prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
 
     StepTimer.setFrequency(s);
     pitISR();  
