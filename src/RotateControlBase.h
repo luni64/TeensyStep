@@ -4,7 +4,7 @@
 #include "Stepper.h"
 #include <algorithm>
 
-template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
+template <typename Accelerator, unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
 class RotateControlBase : public MotorControlBase
 {
   public:
@@ -17,29 +17,26 @@ class RotateControlBase : public MotorControlBase
     void rotateAsync(Stepper *(&motors)[N]);
 
     void stopAsync();
+    void overrideSpeed(float factor);
 
-   
-  protected:
     RotateControlBase() = default;
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
-    void doRotate(int N, float speedFactor=1.0);
-  //  void doMove(int N, bool mode = true);
+  protected:
+    Accelerator accelerator; 
+
+    void doRotate(int N, float speedFactor=1.0); 
 
     void pitISR();
     void delayISR(unsigned channel);
-
-    int32_t virtual updateSpeed(int32_t currentPosition) = 0;
-    uint32_t virtual initiateStopping(int32_t currentPosition) = 0;
-    int32_t virtual prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor=1.0) = 0;    
 };
 
 // Implementation *************************************************************************************************
 
 // ISR -----------------------------------------------------------------------------------------------------------
-template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::pitISR()
+template <typename a, unsigned p, unsigned u>
+void RotateControlBase<a, p, u>::pitISR()
 {
     Stepper **slave = motorList;
     leadMotor->doStep(); // move master motor
@@ -56,8 +53,8 @@ void RotateControlBase<p, u>::pitISR()
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 }
 
-template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::delayISR(unsigned channel)
+template <typename a, unsigned p, unsigned u>
+void RotateControlBase<a, p, u>::delayISR(unsigned channel)
 {
     //clear all step pins ----------------------------------------------
     if (channel == pinResetDelayChannel)
@@ -76,7 +73,7 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
         TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
         interrupts();
 
-        int32_t newSpeed = updateSpeed(leadMotor->current); // get new speed for the leading motor
+        int32_t newSpeed = accelerator.updateSpeed(leadMotor->current); // get new speed for the leading motor
 
         if (leadMotor->currentSpeed == newSpeed) // nothing changed, just keep running
         {
@@ -111,8 +108,8 @@ void RotateControlBase<p, u>::delayISR(unsigned channel)
 
 // ROTATE Commands -------------- ------------------------------------------------------------------
 
-template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::rotateAsync(Stepper &stepper)
+template <class a, unsigned p, unsigned u>
+void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper)
 {
     motorList[mCnt++] = &stepper;
     motorList[mCnt] = nullptr;
@@ -120,9 +117,9 @@ void RotateControlBase<p, u>::rotateAsync(Stepper &stepper)
     mCnt = 0;
 }
 
-template <unsigned p, unsigned u>
+template <typename a, unsigned p, unsigned u>
 template <typename... Steppers>
-void RotateControlBase<p, u>::rotateAsync(Stepper &stepper, Steppers &... steppers)
+void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper, Steppers &... steppers)
 {
     static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
 
@@ -130,9 +127,9 @@ void RotateControlBase<p, u>::rotateAsync(Stepper &stepper, Steppers &... steppe
     rotateAsync(steppers...);
 }
 
-template <unsigned p, unsigned u>
+template <typename a, unsigned p, unsigned u>
 template <size_t N>
-void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
+void RotateControlBase<a, p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
 
@@ -146,15 +143,24 @@ void RotateControlBase<p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to ma
 
 // Protected -----------------------------------------------------------------------------------------------------
 
-template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::stopAsync()
+
+template <typename a, unsigned p, unsigned u>
+void RotateControlBase<a,p,u>::overrideSpeed(float factor)
 {
-    initiateStopping(leadMotor->current);
+    accelerator.overrideSpeed(factor, leadMotor->current);
 }
 
-template <unsigned p, unsigned u>
-void RotateControlBase<p, u>::doRotate(int N, float speedFactor)
+template <typename a, unsigned p, unsigned u>
+void RotateControlBase<a, p, u>::stopAsync()
 {
+    accelerator.initiateStopping(leadMotor->current);
+}
+
+template <class Accelerator, unsigned p, unsigned u>
+void RotateControlBase<Accelerator, p, u>::doRotate(int N, float speedFactor)
+{
+    //Serial.println("doRotate");
+
     std::sort(motorList, motorList + N, Stepper::cmpVmax);
     leadMotor = motorList[0];
 
@@ -170,7 +176,7 @@ void RotateControlBase<p, u>::doRotate(int N, float speedFactor)
     }
 
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-    int32_t s = prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
+    int32_t s = accelerator.prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
 
     StepTimer.setFrequency(s);
     pitISR();  

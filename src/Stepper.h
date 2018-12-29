@@ -59,7 +59,7 @@ class Stepper
     template <unsigned u, unsigned p>
     friend class StepControlBase;
 
-    template <unsigned u, unsigned p>
+    template <class Accelerator, unsigned u, unsigned p>
     friend class RotateControlBase;
 };
 
