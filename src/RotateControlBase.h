@@ -4,10 +4,15 @@
 #include "Stepper.h"
 #include <algorithm>
 
-template <typename Accelerator, unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
-class RotateControlBase : public MotorControlBase
+#include "timer/teensy3/TimerField.h"
+
+template <typename Accelerator, typename Timer, unsigned pulseWidth, unsigned accUpdatePeriod>
+class RotateControlBase : public MotorControlBase, public TF_Handler
 {
   public:
+    RotateControlBase() { OK = timerField.begin(this); }
+    ~RotateControlBase() { timerField.end(); }
+
     void rotateAsync(Stepper &stepper);
 
     template <typename... Steppers>
@@ -17,26 +22,32 @@ class RotateControlBase : public MotorControlBase
     void rotateAsync(Stepper *(&motors)[N]);
 
     void stopAsync();
+    void stop();
+
     void overrideSpeed(float factor);
 
-    RotateControlBase() = default;
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 
   protected:
-    Accelerator accelerator; 
+    Accelerator accelerator;
+    Timer timerField;
 
-    void doRotate(int N, float speedFactor=1.0); 
+    void doRotate(int N, float speedFactor = 1.0);
 
-    void pitISR();
+    void stepTimerISR();
+    void accTimerISR() {}
+    void delayTimerISR() {}
+
     void delayISR(unsigned channel);
 };
 
 // Implementation *************************************************************************************************
 
 // ISR -----------------------------------------------------------------------------------------------------------
-template <typename a, unsigned p, unsigned u>
-void RotateControlBase<a, p, u>::pitISR()
+
+template <typename a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::stepTimerISR()
 {
     Stepper **slave = motorList;
     leadMotor->doStep(); // move master motor
@@ -53,8 +64,8 @@ void RotateControlBase<a, p, u>::pitISR()
     TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
 }
 
-template <typename a, unsigned p, unsigned u>
-void RotateControlBase<a, p, u>::delayISR(unsigned channel)
+template <typename a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::delayISR(unsigned channel)
 {
     //clear all step pins ----------------------------------------------
     if (channel == pinResetDelayChannel)
@@ -81,7 +92,8 @@ void RotateControlBase<a, p, u>::delayISR(unsigned channel)
         }
         if (newSpeed == 0) // stop pulsing
         {
-            StepTimer.stop();
+            // StepTimer.stop();
+            timerField.stepTimerStop();
             leadMotor->currentSpeed = 0;
             return;
         }
@@ -96,20 +108,20 @@ void RotateControlBase<a, p, u>::delayISR(unsigned channel)
             }
         }
 
-        StepTimer.setFrequency(std::abs(newSpeed)); // speed changed, update timer
+        timerField.stepTimerSetFrequency(std::abs(newSpeed)); // speed changed, update timer
 
         if (leadMotor->currentSpeed == 0) // timer was off -> restart
         {
-            StepTimer.start();
+            timerField.stepTimerStart(); // speed changed, update timer
         }
         leadMotor->currentSpeed = newSpeed;
     }
 }
 
-// ROTATE Commands -------------- ------------------------------------------------------------------
+// ROTATE Commands -------------------------------------------------------------------------------
 
-template <class a, unsigned p, unsigned u>
-void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper)
+template <class a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::rotateAsync(Stepper &stepper)
 {
     motorList[mCnt++] = &stepper;
     motorList[mCnt] = nullptr;
@@ -117,9 +129,9 @@ void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper)
     mCnt = 0;
 }
 
-template <typename a, unsigned p, unsigned u>
+template <typename a, typename t, unsigned p, unsigned u>
 template <typename... Steppers>
-void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper, Steppers &... steppers)
+void RotateControlBase<a, t, p, u>::rotateAsync(Stepper &stepper, Steppers &... steppers)
 {
     static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
 
@@ -127,9 +139,9 @@ void RotateControlBase<a, p, u>::rotateAsync(Stepper &stepper, Steppers &... ste
     rotateAsync(steppers...);
 }
 
-template <typename a, unsigned p, unsigned u>
+template <typename a, typename t, unsigned p, unsigned u>
 template <size_t N>
-void RotateControlBase<a, p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
+void RotateControlBase<a, t, p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
 {
     static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
 
@@ -143,24 +155,31 @@ void RotateControlBase<a, p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to
 
 // Protected -----------------------------------------------------------------------------------------------------
 
-
-template <typename a, unsigned p, unsigned u>
-void RotateControlBase<a,p,u>::overrideSpeed(float factor)
+template <typename a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::overrideSpeed(float factor)
 {
     accelerator.overrideSpeed(factor, leadMotor->current);
 }
 
-template <typename a, unsigned p, unsigned u>
-void RotateControlBase<a, p, u>::stopAsync()
+template <typename a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::stopAsync()
 {
     accelerator.initiateStopping(leadMotor->current);
 }
 
-template <class Accelerator, unsigned p, unsigned u>
-void RotateControlBase<Accelerator, p, u>::doRotate(int N, float speedFactor)
+template <typename a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::stop()
 {
-    //Serial.println("doRotate");
+    stopAsync();
+    while (timerField.stepTimerIsRunning())
+    {
+        delay(1);
+    }
+}
 
+template <class a, typename t, unsigned p, unsigned u>
+void RotateControlBase<a, t, p, u>::doRotate(int N, float speedFactor)
+{
     std::sort(motorList, motorList + N, Stepper::cmpVmax);
     leadMotor = motorList[0];
 
@@ -176,9 +195,9 @@ void RotateControlBase<Accelerator, p, u>::doRotate(int N, float speedFactor)
     }
 
     uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-    int32_t s = accelerator.prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
+    int32_t f = accelerator.prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
 
-    StepTimer.setFrequency(s);
-    pitISR();  
+    timerField.stepTimerSetFrequency(f);
+    stepTimerISR();
     delayISR(accLoopDelayChannel);
 }
