@@ -56,7 +56,7 @@ class Stepper
     const int stepPin, dirPin;
 
     // Friends
-    template <unsigned u, unsigned p>
+    template <typename Accelerator, unsigned u, unsigned p>
     friend class StepControlBase;
 
     template <class Accelerator, unsigned u, unsigned p>

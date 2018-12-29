@@ -1,22 +1,43 @@
-#include <cmath>
-#include "StepControlBase.h"
+#pragma once
 
-template <unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000>
-class StepControl : public StepControlBase<pulseWidth, accUpdatePeriod>
+#include "wiring.h"
+
+#include <cmath>
+#include <cstdint>
+#include <algorithm>
+
+class LinStepAccelerator
 {
+  public:
+    //inline int32_t prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor = 1.0);
+    inline int32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a);
+    inline int32_t updateSpeed(int32_t currentPosition);
+    inline int32_t initiateStopping(int32_t currentPosition);
+    inline void overrideSpeed(float fac, int32_t currentPosition);
+
+    LinStepAccelerator() = default;
+
+  protected:
+    LinStepAccelerator(const LinStepAccelerator &) = delete;
+    LinStepAccelerator &operator=(const LinStepAccelerator &) = delete;
+
     int32_t s_0;
     uint32_t delta_tgt;
     uint32_t accEnd, decStart;
     uint32_t two_a;
     uint32_t v_tgt, v_min2;
 
-    inline uint32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t acceleration);
-    inline uint32_t updateSpeed(int32_t currentPos);
-    inline uint32_t initiateStopping(int32_t currentPos);
+    inline float signed_sqrt(int32_t x) // signed square root
+    {
+        return x > 0 ? sqrtf(x) : -sqrtf(-x);
+    }
 };
 
-template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a)
+
+
+// Inline Implementation =====================================================================================================
+
+int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a)
 {
     s_0 = currentPos;
     delta_tgt = std::abs(targetPos - currentPos);
@@ -32,10 +53,9 @@ uint32_t StepControl<p, u>::prepareMovement(int32_t currentPos, int32_t targetPo
     return accEnd == 0 ? v_tgt : (uint32_t)sqrtf(v_min2);
 }
 
-template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::updateSpeed(int32_t currentPos)
+int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 {
-    uint32_t delta = std::abs(s_0 - currentPos);
+    uint32_t delta = std::abs(s_0 - curPos);
 
     // acceleration phase -------------------------------------
     if (delta < accEnd)
@@ -49,10 +69,9 @@ uint32_t StepControl<p, u>::updateSpeed(int32_t currentPos)
     return sqrtf(two_a * ((delta < delta_tgt - 1) ? delta_tgt - delta - 2 : 0) + v_min2);
 }
 
-template <unsigned p, unsigned u>
-uint32_t StepControl<p, u>::initiateStopping(int32_t currentPos)
+int32_t LinStepAccelerator::initiateStopping(int32_t curPos)
 {
-    uint32_t delta = std::abs(delta_tgt - currentPos);
+    uint32_t delta = std::abs(delta_tgt - curPos);
 
     if (delta <= decStart) // we are already decelerationg, nothing to change...
     {
