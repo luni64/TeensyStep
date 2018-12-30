@@ -49,7 +49,7 @@ namespace TeensyDelay
 // Interupt service routine of the timer selected in config.h. 
 // The code doesn't touch the other FTM/TPM ISRs so they can still be used for other purposes
 //
-// Unfortunately we can not inline the ISR because inlinig will generate a "weak" function. 
+// Unfortunately we can not inline the ISR because inlinig will generate a "weak" function?. 
 // Since the original ISR (dummy_isr) is also defined weak the linker
 // is allowed to choose any of them. In this case it desided to use dummy_isr :-(
 // Using a "strong" (not inlined) function overrides the week dummy_isr

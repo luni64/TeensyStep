@@ -8,8 +8,7 @@
 
 class LinStepAccelerator
 {
-  public:
-    //inline int32_t prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor = 1.0);
+  public:    
     inline int32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a);
     inline int32_t updateSpeed(int32_t currentPosition);
     inline int32_t initiateStopping(int32_t currentPosition);
@@ -32,7 +31,6 @@ class LinStepAccelerator
         return x > 0 ? sqrtf(x) : -sqrtf(-x);
     }
 };
-
 
 
 // Inline Implementation =====================================================================================================

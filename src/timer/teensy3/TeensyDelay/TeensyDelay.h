@@ -1,6 +1,8 @@
 #pragma once
 #include "config.h"
 
+#include "Arduino.h"
+
 class IDelayHandler
 {
 public:
@@ -15,6 +17,8 @@ namespace TeensyDelay
 
 	inline void trigger(const float delay, const int channel = 0)
 	{
+		//Serial.printf("chn: %d, tdt: %d\n", channel, microsToReload(delay));
+
 		timer->SC = 0;                                                 // Remove clock to immediately write new channel value
 		timer->CH[channel].CV = timer->CNT + microsToReload(delay);    // Update channel value
 		timer->SC = FTM_SC_CLKS(0b01) | FTM_SC_PS(prescale);           // Reattach clock       

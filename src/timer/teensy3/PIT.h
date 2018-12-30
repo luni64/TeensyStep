@@ -12,8 +12,7 @@ class TF_Handler;
 
 class PIT
 {
-public:
-	bool begin(IPitHandler* handler);
+public:	
 	bool begin(TF_Handler*);
 
 	inline void end() const { channel->TCTRL = 0; }

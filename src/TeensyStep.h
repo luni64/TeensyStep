@@ -8,7 +8,7 @@
 
 #include "Accelerators/SinRotAccelerator.h"
 
-constexpr unsigned defPW = 5;
+constexpr unsigned defPW = 1;
 constexpr unsigned defAP = 5000;
 
 // TEENSY 3.0 - Teensy 3.6 ==================================================================================

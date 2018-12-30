@@ -1,36 +1,15 @@
 #include "PIT.h"
  
- #include "TimerField.h"
+ #include "../TF_Handler.h"
 
 namespace
 {
-
-    TF_Handler* tf_Handler[4];
-
-    template<int n>
-    void tf_dispatchFunc()
-    {      
-        tf_Handler[n]->stepTimerISR();     
-    }
-
-    constexpr void(*tf_dispatcher[])(void) =
-    {
-        tf_dispatchFunc<0>,
-        tf_dispatchFunc<1>,
-        tf_dispatchFunc<2>,
-        tf_dispatchFunc<3>
-    };
-
-
-
-
-
-    IPitHandler* pitHandler[4];
+    TF_Handler* Handler[4];
 
     template<int n>
     void dispatchFunc()
     {      
-        pitHandler[n]->pitISR();     
+        Handler[n]->stepTimerISR();     
     }
 
     constexpr void(*dispatcher[])(void) =
@@ -44,30 +23,15 @@ namespace
     void dummyISR(void) {}
 }
 
-
-bool PIT::begin(IPitHandler* handler)
-{
-    if (!timer.begin(dummyISR, 1E6)) return false;  // try to reserve a timer
-
-    setupChannel();                                 // find pit channel of reserved timer
-    const int channelNr = channel - KINETISK_PIT_CHANNELS;
-    pitHandler[channelNr] = handler;                // store handler
-	timer.priority(32);
-    timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler													
-    stop();        		                            // stop doesn't clear TEN, we want to keep the IntervalTimer reserved
-
-    return true;
-}
-
 bool PIT::begin(TF_Handler* handler)
 {
     if (!timer.begin(dummyISR, 1E6)) return false;  // try to reserve a timer
 
     setupChannel();                                 // find pit channel of reserved timer
     const int channelNr = channel - KINETISK_PIT_CHANNELS;
-    tf_Handler[channelNr] = handler;                // store handler
+    Handler[channelNr] = handler;                // store handler
 	timer.priority(32);
-    timer.begin(tf_dispatcher[channelNr], 1E6);     // attach an ISR which will call the stored handler													
+    timer.begin(dispatcher[channelNr], 1E6);     // attach an ISR which will call the stored handler													
     stop();        		                            // stop doesn't clear TEN, we want to keep the IntervalTimer reserved
 
     return true;
