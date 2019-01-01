@@ -47,8 +47,8 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
     accEnd = std::min(ae, delta_tgt / 2);              // limit acceleration phase to half of total steps
     decStart = delta_tgt - accEnd;
 
-    Serial.printf("ae: %i ds:%i\n", accEnd, decStart);
-    return accEnd == 0 ? v_tgt : (uint32_t)sqrtf(v_min2);
+   // Serial.printf("ae: %i ds:%i v:%d\n", accEnd, decStart,(uint32_t)sqrtf(v_min2));
+    return accEnd == 0 ? v_tgt : (int32_t)sqrtf(v_min2);
 }
 
 int32_t LinStepAccelerator::updateSpeed(int32_t curPos)

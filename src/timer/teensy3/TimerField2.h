@@ -2,9 +2,10 @@
 
 #include "wiring.h"
 #include "PIT.h"
-#include "TeensyDelay/TeensyDelay.h"
+#include "TeensyStepFTM.h"
 
 #include "../TF_Handler.h"
+//#include "../TimerFieldBase.h"
 
 //=========================
 // Teensy3
@@ -46,21 +47,23 @@ protected:
 
 TimerField::TimerField(TF_Handler *_handler)
     : handler(_handler),
-      accLoopDelayChannel(TeensyDelay::addDelayChannel(this)),
-      pinResetDelayChannel(TeensyDelay::addDelayChannel(this))
+      accLoopDelayChannel(TeensyStepFTM::addDelayChannel(this)),
+      pinResetDelayChannel(TeensyStepFTM::addDelayChannel(this))
 {
   //Serial.println(accLoopDelayChannel);
 }
 
 bool TimerField::begin()
 {
-  TeensyDelay::begin();
+  TeensyStepFTM::begin();
   return stepTimer.begin(handler);
 }
 
 void TimerField::end()
 {
   stepTimer.end();
+  TeensyStepFTM::removeDelayChannel(accLoopDelayChannel);
+  TeensyStepFTM::removeDelayChannel(pinResetDelayChannel);
 }
 
 // Step Timer ------------------------------------------------------
@@ -82,7 +85,7 @@ void TimerField::setStepFrequency(unsigned f)
 
 bool TimerField::stepTimerIsRunning() const
 {
-  return stepTimer.channel->TCTRL & PIT_TCTRL_TIE;
+  return stepTimer.isRunning();
 }
 
 // Acceleration Timer ------------------------------------------------------
@@ -106,12 +109,12 @@ void TimerField::accTimerStop()
 
 void TimerField::setPulseWidth(unsigned delay)
 {
-  delayWidth = delay;
+  delayWidth = TeensyStepFTM::microsToReload(delay);
 }
 
 void TimerField::triggerDelay()
 {
-  TeensyDelay::trigger(delayWidth, pinResetDelayChannel);
+    TeensyStepFTM::trigger(delayWidth, pinResetDelayChannel);
 }
 
 void TimerField::delayISR(unsigned channel)
@@ -123,11 +126,10 @@ void TimerField::delayISR(unsigned channel)
 
   else if (channel == accLoopDelayChannel)
   {
-    if (accUpdatePeriod == 0)
-      return;
+    if (accUpdatePeriod == 0) return;
 
     noInterrupts();
-    TeensyDelay::trigger(accUpdatePeriod, accLoopDelayChannel);
+    TeensyStepFTM::trigger(accUpdatePeriod, accLoopDelayChannel);
     interrupts();
 
     handler->accTimerISR();

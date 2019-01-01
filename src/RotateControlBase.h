@@ -1,198 +1,144 @@
 #pragma once
 
 #include "MotorControlBase.h"
-#include "Stepper.h"
-
 #include <algorithm>
-#include "timer/TF_Handler.h"
 
-template <typename Accelerator, typename TimerField, unsigned pulseWidth, unsigned accUpdatePeriod>
-class RotateControlBase : public MotorControlBase, public TF_Handler
+template <typename Accelerator, typename TimerField>
+class RotateControlBase : public MotorControlBase<TimerField>
 {
   public:
-    RotateControlBase();
-    ~RotateControlBase() { timerField.end(); }
+    RotateControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);    
 
-    void rotateAsync(Stepper &stepper);
-
+    // Non-blocking movements ----------------
     template <typename... Steppers>
-    void rotateAsync(Stepper &stepper, Steppers &... steppers);
-
+    void rotateAsync(Steppers &... steppers);
+   
     template <size_t N>
     void rotateAsync(Stepper *(&motors)[N]);
 
     void stopAsync();
+ 
+ // Blocking movements --------------------
     void stop();
 
     void overrideSpeed(float factor);
 
   protected:
-    Accelerator accelerator;
-    TimerField timerField;
-
     void doRotate(int N, float speedFactor = 1.0);
-
-    void stepTimerISR();
     void accTimerISR();
-    void pulseTimerISR();
-    
+
+    Accelerator accelerator;
+
     RotateControlBase(const RotateControlBase &) = delete;
     RotateControlBase &operator=(const RotateControlBase &) = delete;
 };
 
 // Implementation *************************************************************************************************
 
-template <typename a, typename t, unsigned p, unsigned u>
-RotateControlBase<a, t, p, u>::RotateControlBase():timerField(this) 
-{ 
-    OK = timerField.begin();
-    timerField.setPulseWidth(p);
-    timerField.setAccUpdatePeriod(u);
+template <typename a, typename t>
+RotateControlBase<a, t>::RotateControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
+    : MotorControlBase<t>(pulseWidth, accUpdatePeriod)
+{
+    this->mode = MotorControlBase<t>::Mode::notarget;
 }
 
-
-template <class a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::doRotate(int N, float speedFactor)
+template <typename a, typename t>
+void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
 {
-    std::sort(motorList, motorList + N, Stepper::cmpVmax);
-    leadMotor = motorList[0];
+     //Calculate Bresenham parameters ----------------------------------------------------------------
+    std::sort(this->motorList, this->motorList + N, Stepper::cmpVmax);
+    this->leadMotor = this->motorList[0];
 
-    if (leadMotor->vMax == 0)
+    if (this->leadMotor->vMax == 0)
         return;
 
-    leadMotor->A = std::abs(leadMotor->vMax);
+    this->leadMotor->A = std::abs(this->leadMotor->vMax);
 
     for (int i = 1; i < N; i++)
     {
-        motorList[i]->A = std::abs(motorList[i]->vMax);
-        motorList[i]->B = 2 * motorList[i]->A - leadMotor->A;
+        this->motorList[i]->A = std::abs(this->motorList[i]->vMax);
+        this->motorList[i]->B = 2 * this->motorList[i]->A - this->leadMotor->A;
     }
+    uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
 
-    uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-    int32_t f = accelerator.prepareRotation(leadMotor->current, leadMotor->vMax, acceleration, speedFactor);
-
-    timerField.setStepFrequency(f);
-    stepTimerISR();
-    timerField.accTimerStart();
+    // Start moving---------------------------------------------------------------------------------------  
+    this->stepTimerISR();
+    this->timerField.setStepFrequency(accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, speedFactor));
+    this->timerField.stepTimerStart();
+    this->timerField.accTimerStart();
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
 
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::stepTimerISR()
+template <typename a, typename t>
+void RotateControlBase<a, t>::accTimerISR()
 {
-    Stepper **slave = motorList;
-    leadMotor->doStep(); // move master motor
+    int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
 
-    while (*(++slave) != nullptr) // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
+    if (this->leadMotor->currentSpeed == newSpeed)
+        return; // nothing changed, just keep running
+
+    if (newSpeed == 0) // stop pulsing
     {
-        if ((*slave)->B >= 0)
-        {
-            (*slave)->doStep();
-            (*slave)->B -= leadMotor->A;
-        }
-        (*slave)->B += (*slave)->A;
-    }
-    timerField.triggerDelay(); // start delay line to dactivate all step pins
-}
-
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::pulseTimerISR()
-{
-    Stepper **motor = motorList;
-    while ((*motor) != nullptr)
-    {
-        (*motor++)->clearStepPin();
-    }
-}
-
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::accTimerISR()
-{
-    int32_t newSpeed = accelerator.updateSpeed(leadMotor->current); // get new speed for the leading motor
-
-    if (leadMotor->currentSpeed == newSpeed) return;                // nothing changed, just keep running
-    
-    if (newSpeed == 0)                                              // stop pulsing
-    {
-        timerField.stepTimerStop();
-        leadMotor->currentSpeed = 0;
+        this->timerField.stepTimerStop();
+        this->leadMotor->currentSpeed = 0;
         return;
     }
 
-    int dir = newSpeed >= 0 ? 1 : -1;                               // direction changed? -> toggle direction of all motors
-    if (dir != leadMotor->dir)
+    int dir = newSpeed >= 0 ? 1 : -1; // direction changed? -> toggle direction of all motors
+    if (dir != this->leadMotor->dir)
     {
-        Stepper **motor = motorList;
+        Stepper **motor = this->motorList;
         while ((*motor) != nullptr)
         {
             (*motor++)->toggleDir();
         }
     }
 
-    timerField.setStepFrequency(std::abs(newSpeed));                // speed changed, update timer
-    if (leadMotor->currentSpeed == 0)                               // timer was off -> restart
+    this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer
+    if (this->leadMotor->currentSpeed == 0)                // timer was off -> restart
     {
-        timerField.stepTimerStart();                                // speed changed, update timer
+        this->timerField.stepTimerStart(); // speed changed, update timer
     }
 
-    leadMotor->currentSpeed = newSpeed;
+    this->leadMotor->currentSpeed = newSpeed;
 }
-
 
 // ROTATE Commands -------------------------------------------------------------------------------
 
-template <class a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::rotateAsync(Stepper &stepper)
-{
-    motorList[mCnt++] = &stepper;
-    motorList[mCnt] = nullptr;
-    doRotate(mCnt);
-    mCnt = 0;
-}
-
-template <typename a, typename t, unsigned p, unsigned u>
+template <typename a, typename t>
 template <typename... Steppers>
-void RotateControlBase<a, t, p, u>::rotateAsync(Stepper &stepper, Steppers &... steppers)
+void RotateControlBase<a, t>::rotateAsync(Steppers &... steppers)
 {
-    static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-    motorList[mCnt++] = &stepper;
-    rotateAsync(steppers...);
+    this->attachStepper(steppers...);
+    doRotate(sizeof...(steppers));
 }
 
-template <typename a, typename t, unsigned p, unsigned u>
+template <typename a, typename t>
 template <size_t N>
-void RotateControlBase<a, t, p, u>::rotateAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
+void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N]) 
 {
-    static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-    for (unsigned i = 0; i < N; i++)
-    {
-        motorList[i] = motors[i];
-    }
-    motorList[N] = nullptr;
+    this->attachStepper(steppers);
     doRotate(N);
 }
 
-
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::overrideSpeed(float factor)
+template <typename a, typename t>
+void RotateControlBase<a, t>::overrideSpeed(float factor)
 {
-    accelerator.overrideSpeed(factor, leadMotor->current);
+    accelerator.overrideSpeed(factor, this->leadMotor->current);
 }
 
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::stopAsync()
+template <typename a, typename t>
+void RotateControlBase<a, t>::stopAsync()
 {
-    accelerator.initiateStopping(leadMotor->current);
+    accelerator.initiateStopping(this->leadMotor->current);
 }
 
-template <typename a, typename t, unsigned p, unsigned u>
-void RotateControlBase<a, t, p, u>::stop()
+template <typename a, typename t>
+void RotateControlBase<a, t>::stop()
 {
     stopAsync();
-    while (timerField.stepTimerIsRunning())
+    while (this->isRunning())
     {
         delay(1);
     }

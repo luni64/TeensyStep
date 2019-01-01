@@ -5,16 +5,13 @@
 
 #include "Accelerators/LinRotAccelerator.h"
 #include "Accelerators/LinStepAccelerator.h"
+//#include "Accelerators/SinRotAccelerator.h"
 
-#include "Accelerators/SinRotAccelerator.h"
-
-constexpr unsigned defPW = 1;
-constexpr unsigned defAP = 5000;
 
 // TEENSY 3.0 - Teensy 3.6 ==================================================================================
 
 #if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-#include "timer/teensy3/TimerField.h"
+#include "timer/teensy3/TimerField2.h"
 
 // TEENSY 4 ================================================================================================
 
@@ -29,21 +26,18 @@ constexpr unsigned defAP = 5000;
 //Some other hardware ======================================================================================
 
 #elif defined(__someHardware_TBD__)
-#include "timers/someHardware/TimerField.h"
+#include "timers/someHardware/TimerField2.h"
 #endif
 
 // Linear acceleration -----------------------------------------------------------------------------------------
 
-template <unsigned stepPulseWidth = defPW, unsigned accUpdatePeriod = defAP>
-using RotateControl = RotateControlBase<LinRotAccelerator, TimerField, stepPulseWidth, accUpdatePeriod>;
-
-template <unsigned stepPulseWidth = defPW, unsigned a = defAP>
-using StepControl = StepControlBase<LinStepAccelerator, TimerField, stepPulseWidth, a>;
+using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
+using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
 
 // Sine acceleration -------------------------------------------------------------------------------------------
 
-template <unsigned stepPulseWidth = defPW, unsigned accUpdatePeriod = defAP>
-using RotateControlSin = RotateControlBase<SinRotAccelerator, TimerField, stepPulseWidth, accUpdatePeriod>;
+// template <unsigned stepPulseWidth = defPW, unsigned accUpdatePeriod = defAP>
+// using RotateControlSin = RotateControlBase<SinRotAccelerator, TimerField>;
 
 //template <unsigned p = defPW, unsigned a>
 //using StepControlSin = StepControlBase<SinStepAccelerator, p, a>;
