@@ -35,7 +35,7 @@ class Stepper
     inline void toggleDir();
 
     volatile int32_t current;
-    volatile int32_t currentSpeed;
+    volatile int32_t currentSpeed; 
     volatile int32_t target;
 
     int32_t A, B; // Bresenham paramters
@@ -56,11 +56,14 @@ class Stepper
     const int stepPin, dirPin;
 
     // Friends
-    template <unsigned u, unsigned p>
+    template <typename a, typename t>
     friend class StepControlBase;
 
-    template <unsigned u, unsigned p>
+    template <typename a, typename t>
     friend class RotateControlBase;
+
+    template <typename t>
+    friend class MotorControlBase;
 };
 
 // Inline implementation -----------------------------------------

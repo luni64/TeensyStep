@@ -1,194 +1,147 @@
 #pragma once
 
-#include "./PIT/PIT.h"
-#include "./TeensyDelay/TeensyDelay.h"
 #include "MotorControlBase.h"
-#include "Stepper.h"
-
 #include <algorithm>
 
-template <unsigned pulseWidth, unsigned accUpdatePeriod>
-class StepControlBase : public MotorControlBase
+template <typename Accelerator, typename TimerField>
+class StepControlBase : public MotorControlBase<TimerField>
 {
-  public:  
-    // Blocking movements
-    template <typename... Steppers>
-    void move(Steppers &... steppers);
-  
-    template <size_t N>
-    void move(Stepper *(&motors)[N]);
+  public:
+    StepControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);
 
-    // Non-blocking movements    
-    void moveAsync(Stepper &stepper);
-
+    // Non-blocking movements ----------------
     template <typename... Steppers>
-    void moveAsync(Stepper &stepper, Steppers &... steppers);
+    void moveAsync(Steppers &... steppers);
 
     template <size_t N>
     void moveAsync(Stepper *(&motors)[N]);
 
-    // Misc
     void stopAsync();
+
+    // Blocking movements --------------------
+    template <typename... Steppers>
+    void move(Steppers &... steppers);
+
+    template <size_t N>    
+    void move(Stepper *(&motors)[N]);
+
+    void stop();
+    
+    // Misc
     void setCallback(void (*_callback)()) { callback = _callback; }
 
   protected:
-    // Construction
-    StepControlBase() = default;
-    StepControlBase(const StepControlBase &) = delete;
-    StepControlBase &operator=(const StepControlBase &) = delete;
-
-    void pitISR();
-    void delayISR(unsigned channel);
-  
-    void (*callback)() = nullptr;
+    void accTimerISR();
 
     void doMove(int N, bool mode = true);
-    uint32_t virtual prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t acceleration) = 0;
-    uint32_t virtual updateSpeed(int32_t currentPosition) = 0;
-    uint32_t virtual initiateStopping(int32_t currentPosition) = 0;
+
+    void (*callback)() = nullptr;
+    Accelerator accelerator;
+
+    StepControlBase(const StepControlBase &) = delete;
+    StepControlBase &operator=(const StepControlBase &) = delete;
 };
 
 // Implementation *************************************************************************************************
 
-template <unsigned p, unsigned u>
-void StepControlBase<p, u>::doMove(int N, bool move)
+template <typename a, typename t>
+StepControlBase<a, t>::StepControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
+    : MotorControlBase<t>(pulseWidth, accUpdatePeriod)
+{
+    this->mode = MotorControlBase<t>::Mode::target;
+}
+
+template <typename a, typename t>
+void StepControlBase<a, t>::doMove(int N, bool move) 
 {
     //Calculate Bresenham parameters ----------------------------------------------------------------
-    std::sort(motorList, motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
-    leadMotor = motorList[0];
+    std::sort(this->motorList, this->motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
+    this->leadMotor = this->motorList[0];
 
     for (int i = 1; i < N; i++)
     {
-        motorList[i]->B = 2 * motorList[i]->A - leadMotor->A;
+        this->motorList[i]->B = 2 * this->motorList[i]->A - this->leadMotor->A;
     }
 
     // Calculate acceleration parameters --------------------------------------------------------------
-    uint32_t targetSpeed = std::abs((*std::min_element(motorList, motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
-    uint32_t acceleration = (*std::min_element(motorList, motorList + N, Stepper::cmpAcc))->a;           // use the lowest acceleration for the move
-    if (leadMotor->A == 0 || targetSpeed == 0) return;
+    uint32_t targetSpeed = std::abs((*std::min_element(this->motorList, this->motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
+    uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a;              // use the lowest acceleration for the move
+    if (this->leadMotor->A == 0 || targetSpeed == 0)
+        return;
 
     // Start move---------------------------------------------------------------------------------------
-    StepTimer.stop();
-    StepTimer.setFrequency(prepareMovement(leadMotor->current, leadMotor->target, targetSpeed, acceleration));
-    StepTimer.start();
-
-    pitISR();                      // initiate first step immediately (no need to wait for the potentially long first cycle)
-    delayISR(accLoopDelayChannel); // implicitely start the accLoop
+    this->stepTimerISR(); // initiate first step immediately (no need to wait for the potentially long first cycle)
+    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
+    this->timerField.stepTimerStart();
+    this->timerField.accTimerStart();
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
-template <unsigned p, unsigned u>
-void StepControlBase<p, u>::pitISR()
+
+template <typename a, typename t>
+void StepControlBase<a, t>::accTimerISR()
 {
-    Stepper **slave = motorList;
-    leadMotor->doStep(); // move master motor
-
-    while (*(++slave) != nullptr) // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
+    if (this->isRunning())
     {
-        if ((*slave)->B >= 0)
-        {
-            (*slave)->doStep();
-            (*slave)->B -= leadMotor->A;
-        }
-        (*slave)->B += (*slave)->A;
-    }
-    TeensyDelay::trigger(p, pinResetDelayChannel); // start delay line to dactivate all step pins
-
-    if (leadMotor->current == leadMotor->target) // stop timer and call callback if we reached target
-    {
-        StepTimer.stop();
-        if (callback != nullptr)
-            callback();
-    }
-}
-
-template <unsigned p, unsigned u>
-void StepControlBase<p, u>::delayISR(unsigned channel)
-{
-    //clear all step pins ----------------------------------------------
-    if (channel == pinResetDelayChannel)
-    {
-        Stepper **motor = motorList;
-        while ((*motor) != nullptr)
-        {
-            (*motor++)->clearStepPin();
-        }
-    }
-
-    // calculate new speed  --------------------------------------------
-    if (channel == accLoopDelayChannel)
-    {
-        if (StepTimer.isRunning())
-        {
-            noInterrupts();
-            TeensyDelay::trigger(u, accLoopDelayChannel); // retrigger
-            interrupts();
-
-            StepTimer.setFrequency(updateSpeed(leadMotor->current));
-        }
+        this->timerField.setStepFrequency(accelerator.updateSpeed(this->leadMotor->current));
     }
 }
 
 // MOVE ASYNC Commands -------------------------------------------------------------------------------------------------
 
-template <unsigned p, unsigned u>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper)
-{
-    motorList[mCnt++] = &stepper;
-    motorList[mCnt] = nullptr;
-    doMove(mCnt);
-    mCnt = 0;
-}
-
-template <unsigned p, unsigned u>
+template <typename a, typename t>
 template <typename... Steppers>
-void StepControlBase<p, u>::moveAsync(Stepper &stepper, Steppers &... steppers)
+void StepControlBase<a, t>::moveAsync(Steppers &... steppers)
 {
-    static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-    motorList[mCnt++] = &stepper;
-    moveAsync(steppers...);
+    this->attachStepper(steppers...);
+    doMove(sizeof...(steppers));
 }
 
-template <unsigned p, unsigned u>
+template <typename a, typename t>
 template <size_t N>
-void StepControlBase<p, u>::moveAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
+void StepControlBase<a, t>::moveAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
 {
-    static_assert((N + 1) <= sizeof(motorList) / sizeof(motorList[0]), "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-    for (unsigned i = 0; i < N; i++)
-    {
-        motorList[i] = motors[i];
-    }
-    motorList[N] = nullptr;
+    this->attachStepper(motors);
     doMove(N);
 }
 
 // MOVE Commands -------------------------------------------------------------------------------------------------
 
-template <unsigned p, unsigned u>
+template <typename a, typename t>
 template <typename... Steppers>
-void StepControlBase<p, u>::move(Steppers &... steppers)
+void StepControlBase<a, t>::move(Steppers &... steppers)
 {
     moveAsync(steppers...);
-    while (isRunning())
+    while (this->timerField.stepTimerIsRunning())
     {
         delay(1);
     }
 }
 
-template <unsigned p, unsigned u>
+template <typename a, typename t>
 template <size_t N>
-void StepControlBase<p, u>::move(Stepper *(&motors)[N])
+void StepControlBase<a, t>::move(Stepper *(&motors)[N])
 {
-    moveAsync(motors, N);
-    while (isRunning())
+    moveAsync(motors);
+    while (this->isRunning())
+    {
         delay(1);
+    }
 }
 
-template <unsigned p, unsigned u>
-void StepControlBase<p, u>::stopAsync()
+template <typename a, typename t>
+void StepControlBase<a, t>::stopAsync()
 {
-    uint32_t newTarget = initiateStopping(leadMotor->current);
-    leadMotor->target = newTarget;
+    uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
+    this->leadMotor->target = newTarget;
+}
+
+template <typename a, typename t>
+void StepControlBase<a, t>::stop()
+{
+    stopAsync();
+    while (this->isRunning())
+    {
+        delay(1);
+    }
 }
