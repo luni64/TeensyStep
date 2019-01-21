@@ -10,6 +10,10 @@ class MotorControlBase : TF_Handler
 {
 public:
   bool isRunning();
+  inline int getCurrentSpeed()
+  {
+    return timerField.getStepFrequency();
+  }
 
 protected:
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
@@ -41,6 +45,8 @@ protected:
     target,
     notarget
   } mode = Mode::notarget;
+
+  
 
   MotorControlBase(const MotorControlBase &) = delete;
   MotorControlBase &operator=(const MotorControlBase &) = delete;

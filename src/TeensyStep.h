@@ -7,6 +7,8 @@
 #include "Accelerators/LinStepAccelerator.h"
 //#include "Accelerators/SinRotAccelerator.h"
 
+#include "timer/generic/TimerField.h"
+
 
 // TEENSY 3.0 - Teensy 3.6 ==================================================================================
 
@@ -15,7 +17,7 @@
 
 // TEENSY 4 ================================================================================================
 
-#elif defined(__TEENSY4_TBD__)
+#elif defined(__IMXRT1052__)
 #include "timer/teensy4/TimerField.h"
 
 //STM32 ====================================================================================================
@@ -31,8 +33,14 @@
 
 // Linear acceleration -----------------------------------------------------------------------------------------
 
+
+using MotorControl = MotorControlBase<TimerField>;
+
 using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
 using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
+
+using StepControlTick = StepControlBase<LinStepAccelerator,TickTimerField>;
+using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
 
 // Sine acceleration -------------------------------------------------------------------------------------------
 

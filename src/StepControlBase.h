@@ -133,7 +133,7 @@ template <typename a, typename t>
 void StepControlBase<a, t>::stopAsync()
 {
     uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
-    this->leadMotor->target = newTarget;
+    this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir*newTarget;
 }
 
 template <typename a, typename t>
