@@ -27,12 +27,12 @@ class Stepper
     inline void setPosition(int32_t pos) { current = pos; }
     int32_t dir;
 
-  protected:
     inline void doStep();
     inline void clearStepPin() const;
 
     inline void setDir(int d);
     inline void toggleDir();
+  protected:
 
     volatile int32_t current;
     volatile int32_t currentSpeed; 
