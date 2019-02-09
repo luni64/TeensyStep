@@ -4,7 +4,6 @@
 #include "PathStepper.h"
 #include <cmath>
 
-
 template <typename TimerField>
 class PathControlBase : public MotorControlBase<TimerField>
 {
@@ -33,9 +32,7 @@ template <typename... Steppers>
 void PathControlBase<tf>::followPathAsync(Steppers &... steppers)
 {
     this->attachStepper(steppers...);
-    this->timerField.stepTimerStart();    
-
-    
+    this->timerField.stepTimerStart();        
 }
 
 template <typename TimerField>
