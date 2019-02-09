@@ -2,6 +2,7 @@
 
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
+#include "PathControlBase.h"
 
 #include "Accelerators/LinRotAccelerator.h"
 #include "Accelerators/LinStepAccelerator.h"
@@ -38,6 +39,7 @@ using MotorControl = MotorControlBase<TimerField>;
 
 using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
 using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
+using PathControl = PathControlBase<TimerField>;
 
 using StepControlTick = StepControlBase<LinStepAccelerator,TickTimerField>;
 using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
