@@ -15,10 +15,6 @@ PathStepper spindle(spindleStp, spindleDir);
 
 PathControl pathControl(20);  // Evaluate path functions every 20µs (50kHz)
 
-
-constexpr float x = 4.0f / 1E6;
-
-
 // The following function is called every 20µs (see line 16) 
 // t = time in µs. It needs to return a value proprtional to the spindle angle at time t
 //
@@ -28,7 +24,7 @@ constexpr float x = 4.0f / 1E6;
 //   return (TWO_PI / 60) * (t / 1E6) ;  // t = 0 -> returns 0; 30s: t = 30'000'000µs -> return pi, 60s: t= 60'000'000 -> return 2pi
 // }
 
-// the next example generates a spindle oscillation according to the Farris paper
+// This next example generates a spindle oscillation according to the Farris paper
 float spindleFunc(float t)  
 {
   float phi = (TWO_PI / 60) * (t/1E6);  // 1rpm  
@@ -39,15 +35,15 @@ float spindleFunc(float t)
 }
 
 // The following function is called every 20µs (see line 16) 
-// t = time in µs. It needs to return the slide position (mm) at time t
+// t = time in µs. It needs to return a value proportional to the slide position at time t
 //
 // Simple example: constantly moving slide with 14 mm/s
 // float slideFunctd(float t)
 // {    
-//   return (t / 1E6) * 14.0f ;  // t = 0 -> returns 0; 0.5s: t = 500'000µs -> return 7, 1s: t= 1'000'000 -> returns 14
+//   return (t / 1E6) * 14.0f ;  // t = 0 -> returns 0; 0.5s: t = 500'000µs -> returns 7, 1s: t= 1'000'000 -> returns 14
 // }
 
-// the next example generates a slide oscillation according to the Farris paper
+// This next example generates a slide oscillation according to the Farris paper
 float slideFunc(float t)
 {
   float phi = (TWO_PI / 60) * (t/1E6);  // 1rpm  
