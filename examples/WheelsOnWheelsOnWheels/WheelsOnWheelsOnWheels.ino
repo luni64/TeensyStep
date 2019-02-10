@@ -3,9 +3,7 @@
 #include "TeensyStep.h"
 
 PathStepper slide(0, 1), spindle(2, 3);
-
 PathControl pathControl(20);
-
 
 constexpr float omega = 0.00000004f;
 
@@ -44,7 +42,7 @@ void setup()
 
 void loop()
 {
-  printf("%ld\t%ld\n", spindle.getPosition(), slide.getPosition());
+  Serial.printf("%ld\t%ld\n", spindle.getPosition(), slide.getPosition());
   digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN));
   delay(20);
 }
