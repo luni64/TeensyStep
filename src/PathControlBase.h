@@ -40,7 +40,7 @@ void PathControlBase<TimerField>::stepTimerISR()
 {
     digitalWriteFast(4, HIGH); // to check the calulation time on a scope
 
-    float t = tCnt * dt;    
+    float t = (tCnt * dt)* 1E-6; // Time in seconds
 
     PathStepper **axis = (PathStepper **) this->motorList;
 

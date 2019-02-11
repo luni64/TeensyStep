@@ -16,37 +16,37 @@ PathStepper spindle(spindleStp, spindleDir);
 PathControl pathControl(20);  // Evaluate path functions every 20µs (50kHz)
 
 // The following function is called every 20µs (see line 16) 
-// t = time in µs. It needs to return a value proprtional to the spindle angle at time t
+// t = time in s. It needs to return a value proprtional to the spindle angle at time t
 //
 // Simple example: constantly rotating spindle with 1 rpm
 // float spindleFunctd(float t)
 // {    
-//   return (TWO_PI / 60) * (t / 1E6) ;  // t = 0 -> returns 0; 30s: t = 30'000'000µs -> return pi, 60s: t= 60'000'000 -> return 2pi
+//   return (TWO_PI / 60) * t ;  // t = 0 -> returns 0; t = 30s -> return pi,  t= 60s -> return 2pi
 // }
 
 // This next example generates a spindle oscillation according to the Farris paper
 float spindleFunc(float t)  
 {
-  float phi = (TWO_PI / 60) * (t/1E6);  // 1rpm  
-  phi = fmodf(phi, TWO_PI);             // limit phi to 2pi to avoid sin(large argument) which will calculate very long
+  float phi = (TWO_PI / 60) * t;  // 1rpm  
+  phi = fmodf(phi, TWO_PI);       // limit phi to 2pi to avoid sin(large argument) which will calculate very long
   
   return sinf(-2.0f * phi) + 0.5f*sinf(5.0f*phi) + 0.25*sinf(19.0f*phi) ;  
   //return sinf(phi) + 0.5f*sinf(7.0f*phi) + 0.3333f*cosf(17.0f*phi) ;
 }
 
 // The following function is called every 20µs (see line 16) 
-// t = time in µs. It needs to return a value proportional to the slide position at time t
+// t = time in s. It needs to return a value proportional to the slide position at time t
 //
 // Simple example: constantly moving slide with 14 mm/s
 // float slideFunctd(float t)
 // {    
-//   return (t / 1E6) * 14.0f ;  // t = 0 -> returns 0; 0.5s: t = 500'000µs -> returns 7, 1s: t= 1'000'000 -> returns 14
+//   return t * 14.0f ;  // t = 0 -> returns 0; 0.5s: t = 0.5s -> returns 7, t=1s -> returns 14
 // }
 
-// This next example generates a slide oscillation according to the Farris paper
+// This example generates a slide oscillation according to the Farris paper
 float slideFunc(float t)
 {
-  float phi = (TWO_PI / 60) * (t/1E6);  // 1rpm  
+  float phi = (TWO_PI / 60) * t;  // 1rpm  
   return cosf(-2.0f*phi) + 0.5f*cosf(5.0f*phi) + 0.25f*cosf(19.0f*phi) ;    
   //return cosf(phi) + 0.5f*cosf(7.0f*phi) + 0.33333f*sinf(17.0f*phi) ; 
 }
