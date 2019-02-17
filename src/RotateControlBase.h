@@ -52,8 +52,9 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     if (this->leadMotor->vMax == 0)
         return;
 
-    this->leadMotor->A = std::abs(this->leadMotor->vMax);
+    this->leadMotor->currentSpeed = 0; 
 
+    this->leadMotor->A = std::abs(this->leadMotor->vMax);
     for (int i = 1; i < N; i++)
     {
         this->motorList[i]->A = std::abs(this->motorList[i]->vMax);
@@ -62,27 +63,23 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
 
     // Start moving---------------------------------------------------------------------------------------  
-    this->stepTimerISR();
-    this->timerField.setStepFrequency(accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, speedFactor));
-    this->timerField.stepTimerStart();
-    this->timerField.accTimerStart();
+    accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
+    this->timerField.setStepFrequency(0);    
+    this->timerField.accTimerStart();    
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
 
 template <typename a, typename t>
 void RotateControlBase<a, t>::accTimerISR()
-{
+{   
     int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
+     
+    //Serial.printf("rc,curSpeed: %i newspd:%i\n",this->leadMotor->currentSpeed,  newSpeed);
 
     if (this->leadMotor->currentSpeed == newSpeed)
+    {         
         return; // nothing changed, just keep running
-
-    if (newSpeed == 0) // stop pulsing
-    {
-        this->timerField.stepTimerStop();
-        this->leadMotor->currentSpeed = 0;
-        return;
     }
 
     int dir = newSpeed >= 0 ? 1 : -1; // direction changed? -> toggle direction of all motors
@@ -93,15 +90,12 @@ void RotateControlBase<a, t>::accTimerISR()
         {
             (*motor++)->toggleDir();
         }
+        delayMicroseconds(this->pulseWidth);
     }
-
-    this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer
-    if (this->leadMotor->currentSpeed == 0)                // timer was off -> restart
-    {
-        this->timerField.stepTimerStart(); // speed changed, update timer
-    }
-
-    this->leadMotor->currentSpeed = newSpeed;
+    
+    
+    this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer    
+    this->leadMotor->currentSpeed = newSpeed;   
 }
 
 // ROTATE Commands -------------------------------------------------------------------------------

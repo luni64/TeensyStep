@@ -15,6 +15,7 @@ public:
     return timerField.getStepFrequency();
   }
 
+TimerField timerField;
 protected:
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
   ~MotorControlBase();
@@ -37,7 +38,7 @@ protected:
 
   bool OK = false;
   bool isOk() const { return OK; }
-  TimerField timerField;
+  
   unsigned mCnt;
 
   enum class Mode
@@ -46,7 +47,8 @@ protected:
     notarget
   } mode = Mode::notarget;
 
-  
+  uint32_t accUpdatePeriod;
+  uint32_t pulseWidth;
 
   MotorControlBase(const MotorControlBase &) = delete;
   MotorControlBase &operator=(const MotorControlBase &) = delete;
@@ -68,6 +70,8 @@ MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePer
   OK = timerField.begin();
   timerField.setPulseWidth(pulseWidth);
   timerField.setAccUpdatePeriod(accUpdatePeriod);
+  this->accUpdatePeriod = accUpdatePeriod;
+  this->pulseWidth = pulseWidth;
 }
 
 template <typename t>

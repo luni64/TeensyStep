@@ -32,7 +32,7 @@ public:
   inline void triggerDelay();
   inline void delayISR(unsigned channel);
 
-protected:
+  //protected:
   PIT stepTimer;
   TF_Handler *handler;
 
@@ -79,8 +79,44 @@ void TimerField::stepTimerStop()
 }
 
 void TimerField::setStepFrequency(unsigned f)
-{
-  stepTimer.setFrequency(f);
+{  
+  if (f != 0)
+  {
+    if (stepTimer.isRunning())
+    {
+      uint32_t ldval = stepTimer.getLDVAL();
+
+      if (ldval < F_BUS / 250 ) // normal step freqency (> 250 Hz) -> set new period for following periods
+      {       
+        stepTimer.setNextReload(F_BUS / f);
+        return;
+      }
+      
+      uint32_t newReload = F_BUS / f;
+      uint32_t cyclesSinceLastStep = ldval - stepTimer.channel->CVAL;
+      if (cyclesSinceLastStep <= newReload) // time between last pulse and now less than required new period -> wait
+      {       
+        stepTimer.setThisReload(newReload - cyclesSinceLastStep);
+        stepTimer.setNextReload(newReload);
+      }
+      else
+      {       
+        stepTimer.setThisReload(newReload);
+        handler->stepTimerISR();
+      }
+    }
+    else // not running
+    {
+      handler->stepTimerISR();
+      stepTimer.setThisReload(F_BUS / f);  // restarts implicitly
+    }
+  }
+  else //f==0
+  {
+    digitalWriteFast(5, HIGH);
+    stepTimer.stop();    
+    digitalWriteFast(5, LOW);
+  }
 }
 
 bool TimerField::stepTimerIsRunning() const
@@ -95,9 +131,9 @@ void TimerField::accTimerStart()
   delayISR(accLoopDelayChannel);
 }
 
-void TimerField::setAccUpdatePeriod(unsigned p) 
+void TimerField::setAccUpdatePeriod(unsigned p)
 {
-  accUpdatePeriod = p;
+  accUpdatePeriod = TeensyStepFTM::microsToReload(p);
 }
 
 void TimerField::accTimerStop()
@@ -114,7 +150,7 @@ void TimerField::setPulseWidth(unsigned delay)
 
 void TimerField::triggerDelay()
 {
-    TeensyStepFTM::trigger(delayWidth, pinResetDelayChannel);
+  TeensyStepFTM::trigger(delayWidth, pinResetDelayChannel);
 }
 
 void TimerField::delayISR(unsigned channel)
@@ -126,7 +162,8 @@ void TimerField::delayISR(unsigned channel)
 
   else if (channel == accLoopDelayChannel)
   {
-    if (accUpdatePeriod == 0) return;
+    if (accUpdatePeriod == 0)
+      return;
 
     noInterrupts();
     TeensyStepFTM::trigger(accUpdatePeriod, accLoopDelayChannel);
