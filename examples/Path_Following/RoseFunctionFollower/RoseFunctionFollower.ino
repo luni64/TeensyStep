@@ -91,7 +91,7 @@ void loop()
   float phi = spindle.getPosition() * (TWO_PI / spindleSPR);
   int32_t r = slide.getPosition();
 
-  Serial.printf("%f\t%d\n", phi, r+2*slideAmplitude);
+  Serial.printf("%f\t%d\n", phi, r);
 
   delay(20);
 }
