@@ -15,8 +15,11 @@ public:
     return timerField.getStepFrequency();
   }
 
-TimerField timerField;
+  void emergencyStop() { timerField.stepTimerStop();}
+
 protected:
+
+  TimerField timerField;
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
   ~MotorControlBase();
 
@@ -26,9 +29,8 @@ protected:
   void attachStepper(Stepper &stepper, Steppers &... steppers);
   void attachStepper(Stepper &stepper);
 
-
   void stepTimerISR();
-  void accTimerISR() { Serial.println("df"); }
+  //void accTimerISR() { Serial.println("df"); }
   void pulseTimerISR();
 
   Stepper *motorList[MaxMotors + 1];
@@ -38,7 +40,7 @@ protected:
 
   bool OK = false;
   bool isOk() const { return OK; }
-  
+
   unsigned mCnt;
 
   enum class Mode
@@ -62,7 +64,6 @@ bool MotorControlBase<t>::isRunning()
   return timerField.stepTimerIsRunning();
 }
 
-
 template <typename t>
 MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
     : timerField(this), mCnt(0)
@@ -83,7 +84,7 @@ MotorControlBase<t>::~MotorControlBase()
 template <typename t>
 void MotorControlBase<t>::stepTimerISR()
 {
-  leadMotor->doStep();        // move master motor
+  leadMotor->doStep(); // move master motor
 
   Stepper **slave = motorList;
   while (*(++slave) != nullptr) // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
@@ -118,30 +119,30 @@ void MotorControlBase<t>::pulseTimerISR()
 template <typename t>
 void MotorControlBase<t>::attachStepper(Stepper &stepper)
 {
-    motorList[mCnt++] = &stepper;
-    motorList[mCnt] = nullptr;    
-    mCnt = 0;
+  motorList[mCnt++] = &stepper;
+  motorList[mCnt] = nullptr;
+  mCnt = 0;
 }
 
 template <typename t>
 template <typename... Steppers>
 void MotorControlBase<t>::attachStepper(Stepper &stepper, Steppers &... steppers)
-{  
-    static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
+{
+  static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
 
-    motorList[this->mCnt++] = &stepper;
-    attachStepper(steppers...);
+  motorList[this->mCnt++] = &stepper;
+  attachStepper(steppers...);
 }
 
 template <typename t>
 template <size_t N>
-void MotorControlBase<t>::attachStepper(Stepper *(&motors)[N]) 
+void MotorControlBase<t>::attachStepper(Stepper *(&motors)[N])
 {
-    static_assert(N <= MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-    
-    for (int i = 0; i < N; i++)
-    {        
-        this->motorList[i] = motors[i];
-    }
-    this->motorList[N] = nullptr;    
+  static_assert(N <= MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
+
+  for (size_t i = 0; i < N; i++)
+  {
+    this->motorList[i] = motors[i];
+  }
+  this->motorList[N] = nullptr;
 }

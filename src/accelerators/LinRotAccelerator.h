@@ -30,7 +30,7 @@ void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetS
 {
     v_tgt_orig = targetSpeed;
     dv_orig = (a / 1000) * (accUpdatePeriod / 1000);
-    v_cur = 325;
+    v_cur = 0;
 
     overrideSpeed(speedFactor, currentPosition);
 }
