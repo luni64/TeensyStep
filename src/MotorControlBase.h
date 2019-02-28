@@ -74,11 +74,11 @@ MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePer
   this->accUpdatePeriod = accUpdatePeriod;
   this->pulseWidth = pulseWidth;
 }
-
+ 
 template <typename t>
 MotorControlBase<t>::~MotorControlBase()
 {
-  timerField.end();
+  emergencyStop();  
 }
 
 template <typename t>

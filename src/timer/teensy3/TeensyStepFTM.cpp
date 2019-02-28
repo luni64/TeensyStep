@@ -67,7 +67,12 @@ unsigned addDelayChannel(IDelayHandler *handler)
 void removeDelayChannel(unsigned chNr)
 {
 	if (chNr < maxChannel)
+	{
+		noInterrupts();
+		timer->CH[chNr].SC &= ~FTM_CSC_CHIE; // disable channel
 		callbacks[chNr] = nullptr;
+		interrupts(); 
+	}
 }
 } // namespace TeensyDelay2
 
@@ -101,8 +106,8 @@ void tpm2_isr(void)
 	{
 		if ((timer->CH[i].SC & (FTM_CSC_CHIE | FTM_CSC_CHF)) == (FTM_CSC_CHIE | FTM_CSC_CHF)) // only handle if channel is active (CHIE set) and overflowed (CHF set)
 		{
-			timer->CH[i].SC &= ~FTM_CSC_CHIE; // We want one shot only. (Make sure to reset the CHF flag before re-activating interrupt in trigger function)
-			callbacks[i]->delayISR(i);		  // invoke callback function for the channel
+			timer->CH[i].SC &= ~FTM_CSC_CHIE; 	// We want one shot only. (Make sure to reset the CHF flag before re-activating interrupt in trigger function)
+			callbacks[i]->delayISR(i);			// invoke callback function for the channel
 		}
 	}
 }

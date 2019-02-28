@@ -15,6 +15,7 @@ class TimerField : public IDelayHandler
 {
 public:
   inline TimerField(TF_Handler *);
+  inline ~TimerField();
 
   inline bool begin();
   inline void end();
@@ -23,6 +24,7 @@ public:
   inline void stepTimerStop();
   inline bool stepTimerIsRunning() const;
   inline void setStepFrequency(unsigned f);
+  inline unsigned getStepFrequency();
 
   inline void accTimerStart();
   inline void accTimerStop();
@@ -53,6 +55,11 @@ TimerField::TimerField(TF_Handler *_handler)
   //Serial.println(accLoopDelayChannel);
 }
 
+TimerField::~TimerField()
+{  
+  end(); 
+}
+
 bool TimerField::begin()
 {
   TeensyStepFTM::begin();
@@ -60,7 +67,7 @@ bool TimerField::begin()
 }
 
 void TimerField::end()
-{
+{  
   stepTimer.end();
   TeensyStepFTM::removeDelayChannel(accLoopDelayChannel);
   TeensyStepFTM::removeDelayChannel(pinResetDelayChannel);
@@ -76,6 +83,11 @@ void TimerField::stepTimerStart()
 void TimerField::stepTimerStop()
 {
   stepTimer.stop();
+}
+
+unsigned TimerField::getStepFrequency()
+{
+  return F_BUS / stepTimer.getLDVAL();
 }
 
 void TimerField::setStepFrequency(unsigned f)

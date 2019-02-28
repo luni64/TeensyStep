@@ -8,7 +8,7 @@ class StepControlBase : public MotorControlBase<TimerField>
 {
   public:
     StepControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);
-
+    
     // Non-blocking movements ----------------
     template <typename... Steppers>
     void moveAsync(Steppers &... steppers);

@@ -15,7 +15,7 @@ class PIT
 public:	
 	bool begin(TF_Handler*);
 
-	inline void end() const { channel->TCTRL = 0; }
+	inline void end() { timer.end(); }
 	inline void start() const { channel->TFLG = 1; channel->TCTRL = 0; channel->TCTRL = 3; }
 	inline void stop() const { channel->TCTRL &= ~PIT_TCTRL_TIE; }	
 	inline void enableInterupt() const { channel->TFLG = 1; channel->TCTRL |= PIT_TCTRL_TIE; }
