@@ -2,7 +2,7 @@
 title: "TeensyStep"
 layout: splash
 permalink: /index.html
-date: 2016-03-23T11:48:41-04:00
+date: 2019-03-02T17:48:41-04:00
 header:
   overlay_color: "#000"
   overlay_filter: "0.5"
@@ -12,7 +12,7 @@ header:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/luni64/TeensyStep/"
   #caption: "Photo credit: [**Unsplash**](https://unsplash.com)"
-excerpt: "Efficient high speed stepper motor library compatible with PJRC Teensy Boards"
+excerpt: "Efficient, high speed stepper motor library for PJRC Teensy Boards"
 # intro: 
 #   - excerpt: "eensyStep is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second."
 feature_row:
@@ -28,7 +28,7 @@ feature_row:
     url: "#test-link"
     btn_label: "Read More"
     btn_class: "btn--primary"
-  - image_path: /assets/images/unsplash-gallery-image-3-th.jpg
+  - image_path: /assets/images/tst.jpg
     title: "Placeholder 3"
     excerpt: "This is some sample content that goes here with **Markdown** formatting."
 # feature_row2:
