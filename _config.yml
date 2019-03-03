@@ -33,7 +33,7 @@ tagline:               >
   Efficient, high speed stepper motor library for Teensy boards
 
 # A list of keywords for your blog
-keywords:              []
+keywords:              [Teensy, Stepper, Arduino, Steppermotor]
 
 # A (square) logo for your site.
 # If provided, it will be shown at the top of the sidebar.
@@ -43,9 +43,10 @@ logo:                  /assets/images/app.png
 # This should be the same author as first entry in `_data/authors.yml`.
 author:
   name:                Lutz Niggl
-  email:               lutz.niggl@lunoptics.com
+  # email:               lutz.niggl@lunoptics.com
   # Used by `jekyll-seo-tag`:
-  twitter:            luni_64
+  # twitter:            luni_64
+  github:             luni64/TeensyStep  
 
 # Add links to the sidebar.
 menu:
@@ -103,7 +104,7 @@ font_heading:          Roboto Slab, Helvetica, Arial, sans-serif
 
 defaults:
   - scope:
-      path:            hyde
+      path:            docs
     values:
       accent_color:    rgb(38,139,210)
       accent_image:
