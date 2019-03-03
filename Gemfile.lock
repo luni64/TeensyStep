@@ -112,8 +112,6 @@ GEM
       commonmarker (~> 0.17.6)
       jekyll-commonmark (~> 1)
       rouge (~> 2)
-    jekyll-data (1.0.0)
-      jekyll (~> 3.3)
     jekyll-default-layout (0.1.4)
       jekyll (~> 3.0)
     jekyll-feed (0.11.0)
@@ -123,8 +121,6 @@ GEM
     jekyll-github-metadata (2.12.1)
       jekyll (~> 3.4)
       octokit (~> 4.0, != 4.4.0)
-    jekyll-include-cache (0.1.0)
-      jekyll (~> 3.3)
     jekyll-mentions (1.4.1)
       html-pipeline (~> 2.3)
       jekyll (~> 3.0)
@@ -159,6 +155,8 @@ GEM
     jekyll-theme-hacker (0.1.1)
       jekyll (~> 3.5)
       jekyll-seo-tag (~> 2.0)
+    jekyll-theme-hydejack (8.3.2)
+      jekyll (~> 3.7)
     jekyll-theme-leap-day (0.1.1)
       jekyll (~> 3.5)
       jekyll-seo-tag (~> 2.0)
@@ -207,15 +205,6 @@ GEM
       jekyll (~> 3.5)
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
-    minimal-mistakes-jekyll (4.15.2)
-      jekyll (~> 3.7)
-      jekyll-data (~> 1.0)
-      jekyll-feed (~> 0.10)
-      jekyll-gist (~> 1.5)
-      jekyll-include-cache (~> 0.1)
-      jekyll-paginate (~> 1.1)
-      jekyll-sitemap (~> 1.2)
-      jemoji (~> 0.10)
     minitest (5.11.3)
     multipart-post (2.0.0)
     nokogiri (1.10.1-x64-mingw32)
@@ -249,6 +238,8 @@ GEM
       ethon (>= 0.9.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
+    tzinfo-data (1.2018.9)
+      tzinfo (>= 1.0.0)
     unicode-display_width (1.4.1)
     wdm (0.1.1)
 
@@ -257,10 +248,11 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
-  jekyll-github-metadata
-  jekyll-remote-theme
-  minimal-mistakes-jekyll
-  wdm (>= 0.1.0)
+  jekyll-feed (~> 0.6)
+  jekyll-paginate
+  jekyll-theme-hydejack
+  tzinfo-data
+  wdm (~> 0.1.0)
 
 BUNDLED WITH
    2.0.1

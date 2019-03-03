@@ -1,44 +1,17 @@
 ---
-title: "TeensyStep"
-layout: splash
-permalink: /index.html
-date: 2019-03-02T17:48:41-04:00
-header:
-  overlay_color: "#000"
-  overlay_filter: "0.5"
-  overlay_image: /assets/images/banner.png
-  actions:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/luni64/TeensyStep/"
-  #caption: "Photo credit: [**Unsplash**](https://unsplash.com)"
-excerpt: "Efficient, high speed stepper motor library for Teensy boards <br> **!!! PAGE UNDER CONSTRUCTION!!!**"
-# intro: 
-#   - excerpt: "eensyStep is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second."
-feature_row:
-  - image_path: "https://upload.wikimedia.org/wikipedia/commons/e/e3/API_calls.jpg"
-    alt: "API"
-    title: "API"
-    excerpt: "Documentation of the classes and interfaces of TeensyStep"
-    url: "#test-link"
-    btn_label: "Read More"
-    btn_class: "btn--primary"
-  - image_path: "assets/images/arduino_ide.png"
-    alt: "Usage"
-    title: "Usage"
-    excerpt: "How to use the library, best practices and example code"
-    url: "#test-link"
-    btn_label: "Read More"
-    btn_class: "btn--primary"
-  - image_path: /assets/images/tst.jpg
-    title: "Applications"
-    excerpt: "A few real life applications of the library"
+layout: page
+title: TeensyStep
+cover: true
 ---
 
-{% include feature_row %}
+TeensyStep is a highly efficient Arduino library compatible with the [PJRC](https://www.pjrc.com) boards Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement as well as continuous rotation of steppers with pulse rates of up to 300'000 steps per second. 
 
-<!-- {% include feature_row id="feature_row2" type="left" %}
+One of the design goals of TeensyStep was to provide an intuitive and self explaning programming interface. All movement commands are available in a blocking version and a non blocking (async) version. The blocking commands return from the call only after the movement is finished. The async commands return immediately and the motors finish their  movment in the background. 
 
-{% include feature_row id="feature_row3" type="right" %}
+Basically TeensyStep works with two types of objects: 
+1) A stepper class which encapsulates all physical properties of a stepper motor like maximum speed acceleration, polarity and duration of step pulses etc. In addition to those static properties the stepper objects have methods to set the target position of a movement. 
 
-{% include feature_row id="feature_row4" type="center" %} -->
+2) Various controller classes which perform the actual movement. The controller classes are able to move up to 10 steppers synchronously. I.e. the controller adjustst the speed of all motors of one set such that they will reach their targets at the same time. 
+
+
+
