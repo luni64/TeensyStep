@@ -46,4 +46,6 @@ vendor/bundle
 *.gem
 _zip
 
+.vscode
+
 #<removed>
