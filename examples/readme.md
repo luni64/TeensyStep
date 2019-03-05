@@ -1,12 +1,13 @@
 ---
-description: >  
-    Here you should be able to find everything you need to know to use TeensyStep for your projects. 
-hide_description: true
-permalink: /docs/
+layout: page
+# description: >  
+#     Here you should be able to find everything you need to know to use TeensyStep for your projects. 
+# hide_description: true
+permalink: /examples/
 ---
 
-# Documentation
-Here you find everything you need to know to use TeensyStep in your projects. 
+# Examples
+asfasdf Here you find everything you need to know to use TeensyStep in your projects. 
 Should you discover a mistake in the documentation, missing explanations or a bug in general, feel free to [open an issue](https://github.com/luni64/TeensyStep/issues) on GitHub.
 
 <!-- **NOTE**: While this manual tries to be beginner-friendly, as a user of Jekyll it is assumed that you are comfortable running shell commands and editing text files.
@@ -16,14 +17,14 @@ Should you discover a mistake in the documentation, missing explanations or a bu
 ## Classes
 * [Stepper]{:.heading.flip-title} --- How to use the Stepper class
 * [Controller]{:.heading.flip-title} --- How to use the various controller classes of TeensyStep
-{:.related-posts.faded}
+
 
 
 ## Other
 * [LICENSE]{:.heading.flip-title} --- The license of this project.
 * [NOTICE]{:.heading.flip-title} --- Parts of this program are provided under separate licenses.
 * [CHANGELOG]{:.heading.flip-title} --- Version history of Hydejack.
-{:.related-posts.faded}
+
 
 [controller]: controller.md
 [stepper]: stepper.md
