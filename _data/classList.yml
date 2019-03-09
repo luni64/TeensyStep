@@ -4,7 +4,7 @@
     Physical properties (pins, speed...), target position
 
 - title: StepControl
-  link: StepControl
+  link: stepControl
   description: > 
     Move one or motors to their target positions
 
