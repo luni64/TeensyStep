@@ -1,14 +1,14 @@
 - title: Stepper
-  link: stepper
+  link: stepper/
   description: > 
     Physical properties (pins, speed...), target position
 
 - title: StepControl
-  link: stepControl
+  link: stepControl/
   description: > 
     Move one or motors to their target positions
 
 - title: RotateControl
-  link: controller
+  link: controller/
   description: > 
     Continiously rotate one or more motors
