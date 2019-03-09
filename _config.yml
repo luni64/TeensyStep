@@ -51,13 +51,11 @@ author:
 # Add links to the sidebar.
 menu:
   - title:             Documentation
-    url:               /documentation/
-  - title:             Examples
-    url:               /examples/
+    url:               /documentation/  
   - title:             Applications
     url:               /applications/
-  - title:             About
-    url:               /about/
+  - title:             Impressum
+    url:               /IMPRESSUM/
 
 # Add links to the footer.
 # Typically you'll want to link to your cookie- or privacy policy (if appliable), etc..

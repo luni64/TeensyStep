@@ -1,0 +1,54 @@
+---
+layout: base
+---
+
+<head>
+  <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
+</head>
+
+{% assign classFile = site.data[page.classDataFile] %}
+
+<div class="test">   
+  <a href="#public-member-functions">Public Member Functions</a>  | 
+  <a href="#public-data-members">Public Data Members</a> |   
+  <a href="#methods">Protected Members</a> 
+</div>  
+<div class="classHeader"> {{ classFile.className }} - Class Reference </div> 
+<div class="test2">  #include "{{ classFile.includeFile }}" </div>
+
+{{ classFile.introduction | markdownify}}
+
+<h2><a id="public-member-functions"></a> Public Member Functions </h2>
+
+<table>
+{% for method in classFile.publicMethods %} 
+  <tr style="height:3.5em">
+    <td class="codeDisplay">{{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>(      
+      {%- for param in method.parameter %} 
+        {{- param.type}} {{ param.name }}
+        {%- if forloop.last == false  %}, {% endif %}
+      {%- endfor %})
+    </td>
+    <td  > {{ method.description }}</td>
+  </tr>
+{%- endfor %} 
+</table>
+
+<h2><a id="public-data-members"></a> Public Data Members</h2>
+<table>
+{% for method in classFile.publicDataMembers %} 
+  <tr>
+    <td class="codeDisplay">{{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>  (      
+      {%- for param in method.parameter %} 
+        {{ param.type}} {{ param.name }}
+      {%- endfor %} )
+    </td>
+    <td>{{ method.description | markdownify }}</td>
+  </tr>
+{%- endfor %} 
+</table>
+
+
+
+{{ content }}
+

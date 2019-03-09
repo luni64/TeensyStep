@@ -1,0 +1,44 @@
+
+table:not(.highlight) tbody tr:nth-child(even) td,
+  table:not(.highlight) tbody tr:nth-child(odd) td
+  { 
+    text-align: left;
+    font-weight: normal;  
+    border: none;
+  }
+
+  
+  .test
+  {  
+    font-size: 0.7rem;    
+    margin-bottom: 2px;
+  }
+
+  .test2
+  {  
+    font-family: Menlo,Monaco,Consolas,monospace;
+    font-size: 0.8rem;    
+    margin-bottom: 3px;
+    border-bottom:1pt solid lightgray;
+    padding-bottom: 5px;
+    margin-bottom: 20px; 
+    
+  }
+
+
+
+  .classHeader {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    font-size: 1.8rem;
+    font-weight: 500;   
+  }
+
+  .codeDisplay
+  { 
+    padding-top: 13px ;
+    padding-bottom: 13px ;
+    font-family: Menlo,Monaco,Consolas,monospace;
+  }
+
+
+  
