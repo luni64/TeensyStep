@@ -171,7 +171,7 @@ If you want to control more than one motor there are three different possibiliti
 The simplest thing you can do is to move the motors one after the other:
 ~~~c++
 ...
-StepControl<> controller;               
+StepControl<> controller;                
 
 M1.setTargetAbs(targetY);
 M2.setTargetAbs(targetX);
@@ -183,7 +183,7 @@ controller.move(M2);           // Move M2_to the target position (targetX)
 The resulting movement is shown in the figure below.
 
 
-![Sequential Movement](/media/seqMove.png?raw=true "Sequential Movement")
+![Sequential Movement](/TeensyStep/assets/images/seqMove.png)
 
 
 ### Synchronous Movement
@@ -202,7 +202,7 @@ controller.move(M1, M2);        // Move M1 _and_ M2 to the target position
 
 The resulting movement is shown in the figure below.
 
-![Synchronous Movement](/media/sycMove.png?raw=true "Sequential Movement")
+![Synchronous Movement](/TeensyStep/assets/images/sycMove.png)
 
 ### Independent Movement
 
@@ -226,12 +226,13 @@ while(controller_1.isRunning() || controller_2.isRunning()){  // wait until both
 // do the sample transfer...
 ~~~
 
-![Independend Movement](/media/indMove.png?raw=true "Sequential Movement")
+![Independent Movement](/TeensyStep/assets/images/indMove.png)
 
 
 ## Used Resources
 ### StepControl and RotateControl
-Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyStep** together with other libraries reserving one ore more IntervallTimer the number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervallTimer. 
+Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyStep** together with other libraries reserving one ore more IntervalTimer the 
+number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervalTimer. 
 
 ```c++
 StepControl<> cnt1;
@@ -248,9 +249,9 @@ A *StepControl* object requires 96 bytes of stack or static memory.
 You can define as many *Stepper* objects as you like. *Stepper* objects do not use any system resources except 56 bytes of stack or static memory.
 
 ## Performance
-The table in the figure below shows some information about the performance of the library. To  estimate the generated processor load we need to  know the time it takes for handling acceleration, Bresenham algorithm and switching the STEP and DIR signals. The experiment was done by setting a digital pin to HIGH when the processor enters the corresponding ISR and back to LOW when it leaves it. The actual times were measured with a logic analyzer, the processor load was calculated for various conditions and processors. (The .xlsx spreadsheet can be downloaded  [here](/media/load_calculation.xlsx)). 
+The table in the figure below shows some information about the performance of the library. To  estimate the generated processor load we need to  know the time it takes for handling acceleration, Bresenham algorithm and switching the STEP and DIR signals. The experiment was done by setting a digital pin to HIGH when the processor enters the corresponding ISR and back to LOW when it leaves it. The actual times were measured with a logic analyzer, the processor load was calculated for various conditions and processors. (The .xlsx spreadsheet can be downloaded  [here](/TeensyStep/assets/images/load_calculation.xlsx)). 
 
-![Alt text](/media/load_calculation.PNG?raw=true "Load calculation")
+![Alt text](/TeensyStep/assets/images/load_calculation.PNG)
 
 **Summarizing:**
 Moving one motor at 100kHz generates a processor load of about 10% for a T3.6 and some 28% for a T3.2. Handling 3 motors at that speed generates a load of 13% and 34% respectively. The results roughly fit to the difference in the clock frequency of both boards. Numbers in the table are linear in motor speed, i.e. half the step rate generates half of the load. 
