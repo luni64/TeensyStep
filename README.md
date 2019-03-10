@@ -16,6 +16,6 @@ Detailed Documentation can be found here [https://luni64.github.io/TeensyStep/](
 | Settable step pulse width                  | 1-100µs                   | 5µs              |
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
-<div class="video-container">
-    <iframe width="853" heigth="400" src="https://www.youtube.com/embed/Fzt75I_Zi14" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
-</div>
+
+<iframe width="853" heigth="400" src="https://www.youtube.com/embed/Fzt75I_Zi14" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
+
