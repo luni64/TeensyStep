@@ -64,4 +64,4 @@ However, I found none which is able to handle accelerated and synchronous moves 
 [3] This is the speed up to which the motor can start without acceleration. 
 
 [Documentation]({{ site.baseurl }}/documentation/)  
-[Applications]({{ site.baseurl }}/application/)  
+[Applications]({{ site.baseurl }}/applications/)  
