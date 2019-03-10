@@ -16,6 +16,9 @@ Detailed Documentation can be found here [https://luni64.github.io/TeensyStep/](
 | Settable step pulse width                  | 1-100µs                   | 5µs              |
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
+Here a quick demonstration video showing two motors running in sync with 160'000 steps/sec
 
-<iframe width="853" heigth="400" src="https://www.youtube.com/embed/Fzt75I_Zi14" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Fzt75I_Zi14
+" target="_blank"><img src="http://img.youtube.com/vi/Fzt75I_Zi14/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="600" height="450" border="10" /></a>
 
