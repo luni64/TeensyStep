@@ -2,7 +2,7 @@
 title:  "IMPRESSUM"
 ---
 
-# Legal Disclosure
+## Legal Disclosure
 Information in accordance with Section 5 TMG
 
 Lutz Niggl  

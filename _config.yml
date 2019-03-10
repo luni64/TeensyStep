@@ -30,8 +30,7 @@ description:           >
 
 # A shorter description for the sidebar.
 tagline:               >
-  Efficient, high speed stepper motor library for Teensy boards
-  UNDER CONSTRUCTION
+  Efficient, high speed stepper motor library for Teensy boards 
 
 # A list of keywords for your blog
 keywords:              [Teensy, Stepper, Arduino, Steppermotor, PJRC]
@@ -52,7 +51,7 @@ author:
 # Add links to the sidebar.
 menu:
   - title:             Home
-    url:               /index/  
+    url:               /index
   - title:             Documentation
     url:               /documentation/  
   - title:             Applications
