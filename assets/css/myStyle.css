@@ -1,0 +1,66 @@
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  padding-top: 30px; height: 0; overflow: hidden;
+  }
+  
+  .video-container iframe,
+  .video-container object,
+  .video-container embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  }
+
+table:not(.highlight) tbody tr:nth-child(even) td,
+table:not(.highlight) tbody tr:nth-child(odd) td
+{ 
+  text-align: left;
+  font-weight: normal;  
+  border: none;
+}
+
+.test
+{  
+  font-size: 0.7rem;    
+  margin-bottom: 2px;
+}
+
+.test2
+{  
+  font-family: Menlo,Monaco,Consolas,monospace;
+  font-size: 0.8rem;    
+  margin-bottom: 3px;
+  border-bottom:1pt solid lightgray;
+  padding-bottom: 5px;
+  margin-bottom: 20px; 
+  
+}
+
+table,thead,tbody,tr {width:100%} 
+
+.smallTxt
+{
+  font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+  font-size: medium;
+  margin-top: 0.2rem;
+}
+
+.classHeader {
+  font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+  font-size: 1.8rem;
+  font-weight: 500;   
+  
+}
+
+.codeDisplay
+{     
+  font-family: Menlo,Monaco,Consolas,monospace;
+  //font-size: 1.0rem
+}
+
+
+

@@ -1,23 +1,35 @@
 ---
 layout: page
-description: >  
-    Here you find everything you need to know to use TeensyStep in your projects. 
-    Should you discover a mistake in the documentation, missing explanations or a bug in general, feel free to [open an issue](https://github.com/luni64/TeensyStep/issues) on GitHub.
-# hide_description: true
+title: Documentation
 permalink: /documentation/
+
+classList:
+- title: Stepper
+  link: stepper/
+  description: > 
+    Physical properties (pins, speed...), target position
+
+- title: StepControl
+  link: stepControl/
+  description: > 
+    Move one or motors to their target positions
+
+- title: RotateControl
+  link: controller/
+  description: > 
+    Continuously rotate one or more motors
+
 ---
-# Documentation
-## Class List
+## Classes
 
 <table>
-{% for class in site.data.classList %}
+{% for class in page.classList %}
   <tr>
     <td> <a href="{{ class.link }}">{{ class.title }}</a></td>
     <td>{{class.description}}</td>
   </tr>  
 {% endfor %}
 </table>
-
 
 ## Examples
 

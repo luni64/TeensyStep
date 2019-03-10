@@ -67,8 +67,6 @@ chapters:
     
 ---
 
-asfasdfsdf
-
 
   
 
