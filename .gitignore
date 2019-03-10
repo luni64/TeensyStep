@@ -2,6 +2,13 @@
 Thumbs.db
 ehthumbs.db
 
+# Ignore docs files
+_gh_pages
+_site*
+_drafts
+.vscode*
+.ruby-version
+
 # Folder config file
 Desktop.ini
 
