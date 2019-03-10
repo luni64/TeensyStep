@@ -1,19 +1,19 @@
 ---
 layout:         mypage
 
-className: StepControl
+className: RotateControl
 includeFile:  TeensyStep.h
 
 chapters:
 - name: Constructor
   anchor: constructor
   methods:
-  - name: StepControl
+  - name: RotateControl
     shortDesc: Pulsewidth and updatePeriod in µs.
     parameter:
-    - name: pulseWidth
+    - name: pulseWidth=5
       type: unsigned   
-    - name: updatePeriod
+    - name: updatePeriod=5000
       type: unsigned      
       
 - name: Public Function Members

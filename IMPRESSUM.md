@@ -10,11 +10,8 @@ Traunsteinerstr. 15a
 83329 Waging
 
 ## Contact Information
-E-Mail: <a href="mailto:lutz.niggl@lunoptics.com">lutz.niggl@lunoptics.com</a>  
-Telephone: +49 (0)176 45783856  
-
-## VAT number
-VAT indentification number in accorance with Section 27 a of the German VAT act: DE309105250
+E-Mail: <a href="mailto:lutz@niggl-schlagbauer.de">lutz@niggl-schlagbauer.de</a>  
+Mobile: +49 (0)176 45783856  
 
 ## Disclaimer
 ### Accountability for content

@@ -9,8 +9,8 @@ cover: true
 
 TeensyStep is a highly efficient Arduino stepper motor library compatible with the [PJRC](https://www.pjrc.com) boards Teensy 3.0, 3.1, 3.2, 3.5 and 3.6.
 The library is able to handle synchronized as well as independent movement of up to **4 groups of up to 10 motors** to their target positions. 
-In addition to the **target mode** TeensyStep provides a continuous **rotation mode**. In this mode the steppers can be moved with fixed rotation speeds. The rotation speed can 
-be changed on the fly with keeping the motors in sync. In both modes pulse rates of up to 300'000 steps per second are possible. 
+In addition to the **target mode** TeensyStep provides a continuous **rotation mode**. In this mode the steppers can be rotated using fixed rotation speeds. The rotation speed can 
+be changed on the fly with keeping the motors in sync. In both modes, pulse rates of up to 300'000 steps per second are possible. 
 
 ### Quick Demonstration
 In the video below the two motors are accelerated to 160'000 steps per second. Besides the high step frequency it demonstrates that both motors move synchronized not even at their 
@@ -63,3 +63,5 @@ However, I found none which is able to handle accelerated and synchronous moves 
 [2] An acceleration of say 1200 stp/s^2 will accelerate the motor from 0 to 1200 stp/s in 1 second, or from 0 to 2400 stp/s in 2 seconds...  
 [3] This is the speed up to which the motor can start without acceleration. 
 
+[Documentation]({{ site.baseurl }}/documentation/)  
+[Applications]({{ site.baseurl }}/application/)  

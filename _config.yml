@@ -31,9 +31,10 @@ description:           >
 # A shorter description for the sidebar.
 tagline:               >
   Efficient, high speed stepper motor library for Teensy boards
+  UNDER CONSTRUCTION
 
 # A list of keywords for your blog
-keywords:              [Teensy, Stepper, Arduino, Steppermotor]
+keywords:              [Teensy, Stepper, Arduino, Steppermotor, PJRC]
 
 # A (square) logo for your site.
 # If provided, it will be shown at the top of the sidebar.
@@ -61,9 +62,9 @@ menu:
 
 # Add links to the footer.
 # Typically you'll want to link to your cookie- or privacy policy (if appliable), etc..
-# legal:
-#   - title:             Impress
-#     url:               /impress/
+legal:
+ - title:             Impressum
+   url:               /IMPRESSUM/
 #   - title:             Cookies Policy
 #     url:               /cookies-policy/
 

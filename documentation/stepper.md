@@ -56,16 +56,7 @@ chapters:
           type: int32_t
 ---
 
-The stepper class encapsulates all physical properties of a stepper motor
-- Pin numbers of the STEP and DIR signals.
-- Maximum speed and maximum acceleration of the motor.
-- Settings for STEP and DIR pulse polarity. I.e., does your driver require 
-  active high or active low step pulses or inverted rotation direction.
-- The pull-in speed of the motor (pull-in speed is the speed up to 
-  which the motor can be started without the need for acceleration).
-
-In addition to those static properties, the stepper class has member functions to set the 
-target position of the next movement to an absolute position or to a position relative to the current position. 
+UNDER CONSTRUCTION
 
   
 
