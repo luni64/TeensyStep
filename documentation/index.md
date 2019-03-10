@@ -231,7 +231,7 @@ while(controller_1.isRunning() || controller_2.isRunning()){  // wait until both
 
 ## Used Resources
 ### StepControl and RotateControl
-Each *StepControl* object requires **one IntervallTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyStep** together with other libraries reserving one ore more IntervalTimer the 
+Each *StepControl* object requires **one IntervalTimer** and **two channels of a FTM timer**. Since all supported Teensies implement four PIT timers and the FTM0 module which has 8 timer channels the usage is limited to 4 *StepControl* objects existing at the same time. In case you use **TeensyStep** together with other libraries reserving one ore more IntervalTimer the 
 number of available *StepControl* objects is reduced accordingly. You can use the *isOK()* member to check if the *Controller* object was able to reserve a IntervalTimer. 
 
 ```c++

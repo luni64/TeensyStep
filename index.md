@@ -49,15 +49,16 @@ However, I found none which is able to handle accelerated and synchronous moves 
 ## Key Specifications of TeensyStep
 
 | Description                                | Specification             | Default          |
-|:-------------------------------------------|:-------------------------:|:----------------:|
-| Motor speed / pulse rate 1)                |1 - 300'000 stp/s          |   800 stp/s      |
-| Acceleration  2)                           | 0 - 500'000 stp/s^2       |   2500 stp/s^2   |
+|:-------------------------------------------|:--------------------------|:---------------- |
+| Motor speed / pulse rate 1)                | 1 - 300'000 stp/s         | 800 stp/s        |
+| Acceleration  2)                           | 0 - 500'000 stp/s²        | 2500 stp/s²      |
 | Pull in speed 3)                           | 50-10'000 stp/s           | 100 stp/s        |
-| Synchronous movement of motors             | up to 10                  | -                |
-| Independent movement of motors             | 4 groups of 1 to 10 motors| -                |
+| Synchronous movement                       | up to 10 motors           | -                |
+| Independent movement                       | 4 groups of 1 to 10 motors| -                |
 | Settable step pulse polarity               | Active HIGH or LOW        | Active HIGH      |
 | Settable step pulse width                  | 1-100µs                   | 5µs              |
 | Settable direction signal polarity         | cw / ccw                  | cw               |
+{:.stretch-table}
 
 [1] Depending on Teensy model  
 [2] An acceleration of say 1200 stp/s^2 will accelerate the motor from 0 to 1200 stp/s in 1 second, or from 0 to 2400 stp/s in 2 seconds...  
