@@ -6,49 +6,46 @@ layout: base
   <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
 </head>
 
-{% assign classFile = site.data[page.classDataFile] %}
+{% assign classFile = page.data %}
 
 <div class="test">   
   <a href="#public-member-functions">Public Member Functions</a>  | 
   <a href="#public-data-members">Public Data Members</a> |   
   <a href="#methods">Protected Members</a> 
 </div>  
-<div class="classHeader"> {{ classFile.className }} - Class Reference </div> 
-<div class="test2">  #include "{{ classFile.includeFile }}" </div>
+<div class="classHeader"> class {{ page.className }} - Reference </div> 
+<div class="test2">  #include "{{ page.includeFile }}" </div>
 
-{{ classFile.introduction | markdownify}}
+{{ content }}
 
-<h2><a id="public-member-functions"></a> Public Member Functions </h2>
+{% for chapter in page.chapters %} 
+<h2><a id={{ chapter.anchor }}></a> {{ chapter.name }}</h2>
 
-<table>
-{% for method in classFile.publicMethods %} 
-  <tr style="height:3.5em">
-    <td class="codeDisplay">{{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>(      
+
+{% for method in chapter.methods %} 
+  <div style="margin-bottom: 1rem" >
+    <div class="codeDisplay">
+      {{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>(      
       {%- for param in method.parameter %} 
         {{- param.type}} {{ param.name }}
         {%- if forloop.last == false  %}, {% endif %}
-      {%- endfor %})
-    </td>
-    <td  > {{ method.description }}</td>
-  </tr>
+      {%- endfor %}) 
+    </div>
+    <div class="smallTxt"> {{ method.shortDesc }} </div>
+  </div>
 {%- endfor %} 
-</table>
 
-<h2><a id="public-data-members"></a> Public Data Members</h2>
-<table>
-{% for method in classFile.publicDataMembers %} 
-  <tr>
-    <td class="codeDisplay">{{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>  (      
-      {%- for param in method.parameter %} 
-        {{ param.type}} {{ param.name }}
-      {%- endfor %} )
-    </td>
-    <td>{{ method.description | markdownify }}</td>
-  </tr>
 {%- endfor %} 
-</table>
+
+<!-- ------------------------------------------------ -->
+<h1><a id="Reference"></a> Reference</h1>
+
+{% for chapter in page.chapters %} 
+  {% for method in chapter.methods %} 
+    {{ method.name }} <br>
+  {%- endfor %} 
+{%- endfor %} 
 
 
 
-{{ content }}
 

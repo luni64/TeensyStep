@@ -6,7 +6,6 @@ table:not(.highlight) tbody tr:nth-child(even) td,
     font-weight: normal;  
     border: none;
   }
-
   
   .test
   {  
@@ -25,19 +24,26 @@ table:not(.highlight) tbody tr:nth-child(even) td,
     
   }
 
+  table,thead,tbody,tr {width:100%} 
 
+  .smallTxt
+  {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    font-size: medium;
+    margin-top: 0.2rem;
+  }
 
   .classHeader {
     font-family: Roboto Slab,Helvetica,Arial,sans-serif;
     font-size: 1.8rem;
     font-weight: 500;   
+    
   }
 
   .codeDisplay
-  { 
-    padding-top: 13px ;
-    padding-bottom: 13px ;
+  {     
     font-family: Menlo,Monaco,Consolas,monospace;
+    font-size: 1.15rem
   }
 
 
