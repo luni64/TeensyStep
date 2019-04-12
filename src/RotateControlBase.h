@@ -21,7 +21,8 @@ class RotateControlBase : public MotorControlBase<TimerField>
  // Blocking movements --------------------
     void stop();
 
-    void overrideSpeed(float factor);
+    void overrideSpeed(float speedFac);
+    void overrideAcceleration(float accFac);
 
   protected:
     void doRotate(int N, float speedFactor = 1.0);
@@ -61,7 +62,7 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
         this->motorList[i]->B = 2 * this->motorList[i]->A - this->leadMotor->A;
     }
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-
+    
     // Start moving---------------------------------------------------------------------------------------  
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
     this->timerField.setStepFrequency(0);    
@@ -119,7 +120,13 @@ void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N])
 template <typename a, typename t>
 void RotateControlBase<a, t>::overrideSpeed(float factor)
 {
-    accelerator.overrideSpeed(factor, this->leadMotor->current);
+    accelerator.overrideSpeed(factor);
+}
+
+template <typename a, typename t>
+void RotateControlBase<a, t>::overrideAcceleration(float factor)
+{
+    accelerator.overrideAcceleration(factor);
 }
 
 template <typename a, typename t>
