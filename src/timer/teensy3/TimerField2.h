@@ -124,10 +124,8 @@ void TimerField::setStepFrequency(unsigned f)
     }
   }
   else //f==0
-  {
-    digitalWriteFast(5, HIGH);
-    stepTimer.stop();    
-    digitalWriteFast(5, LOW);
+  {    
+    stepTimer.stop();       
   }
 }
 

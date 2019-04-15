@@ -2,6 +2,7 @@
 
 #include "MotorControlBase.h"
 #include <algorithm>
+#include "core_pins.h"
 
 template <typename Accelerator, typename TimerField>
 class RotateControlBase : public MotorControlBase<TimerField>
@@ -17,21 +18,26 @@ class RotateControlBase : public MotorControlBase<TimerField>
     void rotateAsync(Stepper *(&motors)[N]);
 
     void stopAsync();
- 
- // Blocking movements --------------------
-    void stop();
 
-    void overrideSpeed(float speedFac);
-    void overrideAcceleration(float accFac);
+     void emergencyStop() {
+         accelerator.eStop();
+         this->timerField.stepTimerStop();
+     }
 
-  protected:
-    void doRotate(int N, float speedFactor = 1.0);
-    void accTimerISR();
+     // Blocking movements --------------------
+     void stop();
 
-    Accelerator accelerator;
+     void overrideSpeed(float speedFac);
+     void overrideAcceleration(float accFac);
 
-    RotateControlBase(const RotateControlBase &) = delete;
-    RotateControlBase &operator=(const RotateControlBase &) = delete;
+ protected:
+     void doRotate(int N, float speedFactor = 1.0);
+     void accTimerISR();
+
+     Accelerator accelerator;
+
+     RotateControlBase(const RotateControlBase &) = delete;
+     RotateControlBase &operator=(const RotateControlBase &) = delete;
 };
 
 // Implementation *************************************************************************************************
