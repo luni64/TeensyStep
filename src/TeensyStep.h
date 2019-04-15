@@ -3,9 +3,9 @@
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
 
-#include "Accelerators/LinRotAccelerator.h"
-#include "Accelerators/LinStepAccelerator.h"
-//#include "Accelerators/SinRotAccelerator.h"
+#include "accelerators/LinRotAccelerator.h"
+#include "accelerators/LinStepAccelerator.h"
+//#include "accelerators/SinRotAccelerator.h"
 
 #include "timer/generic/TimerField.h"
 
