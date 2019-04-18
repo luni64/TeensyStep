@@ -40,12 +40,6 @@ class TickTimerField
 
 // IMPLEMENTATION ====================================================================
 
-
-void test()
-{
-    Serial.println("test");
-}
-
 TickTimerField::TickTimerField(TF_Handler *_handler)
     : handler(_handler),
       stepTimer([this] { handler->stepTimerISR(); }),
