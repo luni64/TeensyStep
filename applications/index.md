@@ -2,4 +2,4 @@
 title: Applications
 ---
 
-[String Winder](winder/StringWinder)  
+[String Winder](winder/StringWinder/)  
