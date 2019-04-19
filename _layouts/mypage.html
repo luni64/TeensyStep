@@ -9,9 +9,12 @@ layout: base
 {% assign classFile = page.data %}
 
 <div class="test">   
-  <a href="#public-member-functions">Public Member Functions</a>  | 
-  <a href="#public-data-members">Public Data Members</a> |   
-  <a href="#methods">Protected Members</a> 
+
+  {% for chapter in page.chapters %}     
+    <a href="#{{ chapter.anchor }}">{{ chapter.name }} </a> 
+    {%- if forloop.last == false  %}| {% endif %}
+  {%- endfor %} 
+
 </div>  
 <div class="classHeader"> {{ page.className }} - Class Reference </div> 
 <div class="test2">  #include "{{ page.includeFile }}" </div>
@@ -25,26 +28,27 @@ layout: base
 {% for method in chapter.methods %} 
   <div style="margin-bottom: 1rem" >
     <div class="codeDisplay">
-      {{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>(      
+      <!-- {{ method.returnType }} <a href="{{ method.name }}">{{ method.name }}</a>(       -->
+      {{ method.returnType }} {{ method.name }}(      
       {%- for param in method.parameter %} 
         {{- param.type}} {{ param.name }}
         {%- if forloop.last == false  %}, {% endif %}
       {%- endfor %}) 
     </div>
-    <div class="smallTxt"> {{ method.shortDesc }} </div>
+    <div class="smallTxt"> {{ method.shortDesc | markdownify}} </div>
   </div>
 {%- endfor %} 
 
 {%- endfor %} 
 
 <!-- ------------------------------------------------ -->
-<h1><a id="Reference"></a> Reference</h1>
+<!-- <h1><a id="Reference"></a> Reference</h1>
 
 {% for chapter in page.chapters %} 
   {% for method in chapter.methods %} 
     {{ method.name }} <br>
   {%- endfor %} 
-{%- endfor %} 
+{%- endfor %}  -->
 
 
 

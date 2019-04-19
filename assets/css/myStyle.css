@@ -59,7 +59,9 @@ table,thead,tbody,tr {width:100%}
 .codeDisplay
 {     
   font-family: Menlo,Monaco,Consolas,monospace;
-  //font-size: 1.0rem
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: darkblue
 }
 
 
