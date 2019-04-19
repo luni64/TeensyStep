@@ -107,7 +107,7 @@ chapters:
     returnType: void   
 ---
 
-Objects of the StepControl class are used to move up to 10 motors to target positions in sync. The synchronization is kept during acceleration and deceleration phases and all motors will reach their target positions at the same time. 
+Objects of the StepControl class are used to move up to 10 motors to target positions in sync. The synchronization is kept during acceleration and deceleration phases and all motors will reach their target positions at the same time.
   
 
 
