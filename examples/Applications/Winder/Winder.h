@@ -9,11 +9,11 @@ public:
 
     void begin();
 
-    Winder &setSpindleParams(unsigned stpPerRev, unsigned acceleration);  // steps per spindle revolution & maximum spindle speed in rpm
-    Winder &setFeederParams(unsigned stpPerMM);                           // steps to move the feeder 1mm
+    Winder &setSpindleParams(unsigned stpPerRev, unsigned acceleration); // steps per spindle revolution & maximum spindle speed in rpm
+    Winder &setFeederParams(unsigned stpPerMM);                                        // steps to move the feeder 1mm
 
-    void setSpindleSpeed(float rpm);                                      // changes the spindle speed to the given rpm
-    void setPitch(float pitch_in_mm);                                     // changes the winder pitch to the given value
+    void setSpindleSpeed(float rpm);  // changes the spindle speed to the given rpm
+    void setPitch(float pitch_in_mm); // changes the winder pitch to the given value
     void updateSpeeds();
 
     inline int getCurSpindleSpeed() { return spindleCtrl.isRunning() ? spindleCtrl.getCurrentSpeed() : 0; }
@@ -21,13 +21,14 @@ public:
     inline float getCurPitch(){return (float)getCurFeederSpeed()/getCurSpindleSpeed()/pitchFactor; }
 
 protected:
-    Stepper &spindle, &feeder;
-    RotateControl spindleCtrl, feederCtrl;
+    Stepper &spindle;
+    Stepper &feeder;
 
     unsigned spindleStpPerRev, feederStpPerMM;
-    unsigned acceleration;
-
     float pitchFactor;
 
-    float targetSpindleSpeed, targetFeederSpeed, targetPitch;
+    float targetSpindleSpeed, targetPitch;
+    float oldSpindleSpeed, oldPitch;
+
+    RotateControl feederCtrl, spindleCtrl;
 };
