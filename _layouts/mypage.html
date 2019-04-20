@@ -24,6 +24,8 @@ layout: base
 {% for chapter in page.chapters %} 
 <h2><a id={{ chapter.anchor }}></a> {{ chapter.name }}</h2>
 
+<p>{{ chapter.introduction }}</p>
+
 
 {% for method in chapter.methods %} 
   <div style="margin-bottom: 1rem" >
@@ -38,6 +40,8 @@ layout: base
     <div class="smallTxt"> {{ method.shortDesc | markdownify}} </div>
   </div>
 {%- endfor %} 
+
+<p>{{ chapter.summary }}</p>
 
 {%- endfor %} 
 

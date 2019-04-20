@@ -5,6 +5,9 @@ className:   Stepper
 includeFile: TeensyStep.h
 
 chapters: 
+
+#==============================================================================================
+
   - name: Construction
     anchor: constructor
     methods:
@@ -35,18 +38,22 @@ chapters:
           type: uint32_t
             
     - name: setStepPinPolarity
-      shortDesc: Sets the polarity of the generated step pulses. setStepPinPolarity(HIGH) generates active high pulses. setStepPinPolarity(LOW) generates active low pulses. 
+      shortDesc: Sets the polarity of the generated step pulses. ```setStepPinPolarity(HIGH)``` generates active high pulses. ```setStepPinPolarity(LOW)``` generates active low pulses. 
       returnType: Stepper&
       parameter:
         - name: polarity
           type: int
 
     - name: setInversRotation
-      shortDesc: Use this function to change the polarity of the generated direction signal. setInversRotation(true) sets the DIR pin to LOW if the motor runs in 'upward direction"
+      shortDesc: Use this function to change the polarity of the generated direction signal. ```setInversRotation(true)``` sets the DIR pin to LOW if the motor runs in 'upward direction'
       returnType: Stepper&
       parameter:
         - name: polarity
           type: int
+
+    summary: sumary
+
+#==============================================================================================
 
   - name: Motor Positioning
     anchor: positioning-functions
@@ -67,18 +74,21 @@ chapters:
        - name: delta
          type: int32_t
 
+    - name: setPosition
+      shortDesc: >
+        Sets the internal step counter to the parameter ```counterValue```. 
+        This function is NOT setting a new target position. 
+        Typically, you only use this function after homing to set the counter to zero or some offset value.       
+      returnType: void
+      parameter:
+      - name: counterValue
+        type: int32_t
+
     - name: getPosition
       shortDesc: Returns the current position of the stepper. 
       longDesc: 
       returnType: int32_t
      
-    - name: setPosition
-      shortDesc: Sets the internal step counter to the parameter counterValue. This function is NOT setting a new target position. Typically, you only use this function after homing to set the counter to zero or some offset value. 
-      longDesc: af
-      returnType: void
-      parameter:
-      - name: counterValue
-        type: int32_t
 ---
 
 

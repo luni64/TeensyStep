@@ -1,7 +1,7 @@
 ---
 title: Coil Winder
 
-permalink: /applications/winder/
+permalink: /applications/coil_winder/ 
 ---
 
 ## Overview

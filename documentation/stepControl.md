@@ -93,6 +93,8 @@ chapters:
 #---------------------------------------------------------------------------------------------------------------------------------------------------------- 
 - name: Stopping Motors
   anchor: stopping
+  introduction: intro
+  summary: summary
   methods:
   - name: stopAsync
     shortDesc: Decelerates the controlled motors to a stop. This function returns immediately after starting the stop sequence (non blocking). 
