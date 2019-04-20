@@ -1,5 +1,6 @@
 ---
 title: Applications
+permalink: /applications/
 ---
 
-[String Winder](winder/StringWinder/)  
+[Coil Winder](winder/)  

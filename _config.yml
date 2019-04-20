@@ -234,8 +234,8 @@ collections:
     permalink:         /tag-:name/
     output:            true
 
-  projects:
-    permalink:         /projects/:path/
+  testCol:
+    permalink:         /testCol/:path/
     output:            true
 
 

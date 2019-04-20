@@ -11,7 +11,6 @@ Traunsteinerstr. 15a
 
 ## Contact Information
 E-Mail: <a href="mailto:lutz@niggl-schlagbauer.de">lutz@niggl-schlagbauer.de</a>  
-Mobile: +49 (0)176 45783856  
 
 ## Disclaimer
 ### Accountability for content
