@@ -28,7 +28,7 @@ void setup()
   // setup the winder
   winder
       .setSpindleParams(spindleStpPerRev, spindleAcceleration)
-      .setFeederParams(feederStpPerMM)
+      .setFeederParams(feederStpPerMM, 50000)
       .begin();
 
   // startup the winder

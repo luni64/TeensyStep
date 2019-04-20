@@ -8,12 +8,10 @@ Winder::Winder(Stepper &_spindle, Stepper &_feeder)
 Winder& Winder::setSpindleParams(unsigned stepsPerRev, unsigned acc)
 {
     spindleStpPerRev = stepsPerRev;
+    spindleAcc =  acc;
 
     spindle.setMaxSpeed(1);   // -> parameter of overrideSpeed equals real speed
-    spindle.setAcceleration(acc);
-
-    feeder.setMaxSpeed(1); 
-    feeder.setAcceleration(acc);
+    spindle.setAcceleration(spindleAcc);
 
     oldSpindleSpeed = 0.0f;
     oldPitch = 1.0f;
@@ -21,9 +19,14 @@ Winder& Winder::setSpindleParams(unsigned stepsPerRev, unsigned acc)
     return *this;
 }
 
-Winder& Winder::setFeederParams(unsigned stpPerMM)
+Winder& Winder::setFeederParams(unsigned stpPerMM, unsigned acc)
 {
-    feederStpPerMM = stpPerMM;  
+    feederStpPerMM = stpPerMM;
+    feederAcc = acc;
+
+    feeder.setMaxSpeed(1); 
+    feeder.setAcceleration(spindleAcc);
+
     return *this;
 }
 
@@ -51,18 +54,24 @@ void Winder::setPitch(float pitch)
 
 void Winder::updateSpeeds()
 {   
-    float accFactor = pitchFactor * targetPitch;
-    float targetFeederSpeed = accFactor * targetSpindleSpeed;
+    float targetFeederSpeed =  targetPitch * pitchFactor * targetSpindleSpeed;
+
     if(targetSpindleSpeed != oldSpindleSpeed)  // if target speed changed -> update all
     {
         oldSpindleSpeed = targetSpindleSpeed;
-        feederCtrl.overrideAcceleration(accFactor);
+
+        float feederAccFactor = targetPitch * pitchFactor;
+
+        //Serial.println(feederAccFactor);
+
+        feederCtrl.overrideAcceleration(feederAccFactor);
         feederCtrl.overrideSpeed(targetFeederSpeed);
         spindleCtrl.overrideSpeed(targetSpindleSpeed);
     }
     else if(targetPitch != oldPitch)           // if only target pitch changed, update feeder speed only
-    {
+    {        
         oldPitch = targetPitch;
+        feederCtrl.overrideAcceleration(feederAcc / spindleAcc);
         feederCtrl.overrideSpeed(targetFeederSpeed);
     }
 }
