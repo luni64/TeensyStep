@@ -21,6 +21,7 @@ Since both StepControl and RotateControl are able to rotate motors in  sync a qu
 The shown code periodically prints out the current speed of the feeder and spindle motor and the ratio (spindle speed)/(feeder speed). 
 
 IMAGE
+[newfile](newpage/)
 [newfile](newpage)
 
 
