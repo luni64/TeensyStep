@@ -41,7 +41,7 @@ layout: base
   </div>
 {%- endfor %} 
 
-<p>{{ chapter.summary }}</p>
+<p>{{ chapter.summary  | markdownify  }}</p>
 
 {%- endfor %} 
 

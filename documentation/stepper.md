@@ -51,7 +51,21 @@ chapters:
         - name: polarity
           type: int
 
-    summary: sumary
+    summary: >-
+      **Example:**
+
+      ```c++ 
+       // you can use the standard interface
+       motor_1.setAcceleration(5000);
+       motor_1.setMaxSpeed(10000);       
+      
+       // ...or a fluent interface
+       motor_2
+        .setAcceleration(20000)
+        .setMaxSpeed(15000)
+        .setInverseRotation(true)
+        .setStepPinPolarity(LOW);
+      ```
 
 #==============================================================================================
 
