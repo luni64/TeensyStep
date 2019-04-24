@@ -43,7 +43,7 @@ spindle.setMaxSpeed(speed/pitch*spdlStpPerRev); // calculate from pitch
 controller.rotateAsync(feeder, spindle);        // and start the motors
 ...
 ```
-Here, fdrStpPerMM holds the number of feeder steps required for a 1mm travel, spdlStpPerRev holds the number of steps per spindle revolution and the winder pitch is given in mm per spindle revolution. The code moves the feeder at 5 mm/s and rotates the spindle at 5.0 / 0.2 = 25 rev/s = 1500 rpm. Since the controller takes care that the motors will stay in sync, the winding pitch stays at a constant 0.2 mm/rev even during acceleration and deceleration. 
+Here, ```fdrStpPerMM``` holds the number of feeder steps required for a 1mm travel, ```spdlStpPerRev``` holds the number of steps per spindle revolution and the winder pitch is given in mm per spindle revolution. The code moves the feeder at 5 mm/s and rotates the spindle at 5.0 / 0.2 = 25 rev/s = 1500 rpm. Since the controller takes care that the motors will stay in sync, the winding pitch stays at a constant 0.2 mm/rev even during acceleration and deceleration. 
 
 *Speed Adjustment*   
 In case you want to adjust the speed of the motors on the fly you can override the current speed using ```RotateControl::overrideSpeed(float speedFactor)```.
@@ -90,11 +90,17 @@ protected:
 ```
 **Construction**   
 The constructor takes references to the spindle and feeder steppers. No need to define a controller, this is done within the class
+```c++
+Stepper spindle(0,1);             // STP pin 0, DIR pin 1
+Stepper feeder(2,3);              // STP pin 2, DIR pin 3
 
-**Setup Properties**   
+Winder winder(spindle, feeder);   // winder uses the steppers
+```
+
+**Setup Mechanical Properties**   
 Before using the class you need to setup the mechanical properties of spindle and feeder. 
 
-*setSpindleParams* takes the number of steps per spindle revolution and the requested spindle acceleration (stp/s^2). *setFeederParams* takes the number of steps to move the feeder 1mm and an acceleration value (stp/s^2). This acceleration is used for pitch trimming only; for normal synced movements the feeder acceleration is calculated from the spindle acceleration and the target speeds of both motors. After setting up the parameters a call to *begin()* is required.   
+The function ```setSpindleParams``` takes the number of steps per spindle revolution and the requested spindle acceleration (stp/s^2). ```setFeederParams``` takes the number of steps to move the feeder 1mm and an acceleration value (stp/s^2). This acceleration is used for pitch trimming only; for normal synced movements the feeder acceleration is calculated from the spindle acceleration and the target speeds of both motors. After setting up the parameters a call to *begin()* is required.   
 The class supports a classical or a fluid interface for the setup functions: 
 ```c++
 // classic:
@@ -110,13 +116,16 @@ winder
 ```
 
 **Controlling the Winder**   
-Controlling the winder is easy. You can set the spindle speed (rpm) by calling *setSpindleSpeed(float rpm)* and the winding pitch (mm/rev) by calling *setPitch(float pitch)*. 
+Controlling the winder is easy. You set or change the spindle speed (rpm) by a calling ```setSpindleSpeed(float rpm).``` The winding pitch (mm/rev) can be set or changed on the fly by calling ```setPitch(float pitch).``` Both functions only preset the values. The actual change is performed by a call to the function ```updateSpeeds().``` To stop the winder simply set the spindle speed to 0. 
 
+You can find a quick example of the usage below. The sketch first sets up the winder and then performs the following actions: 
 
-
-
-
-
+1. Start the winder at a spindle speed of 1125 rpm and a pitch of 0.1mm/rev
+2. After 3.0s trim the pitch to 0.12 mm/rev
+3. After 0.5s trim the pitch to 0.08 mm/rev
+4. After 0.5s trim the pitch to 0.15 mm/rev
+5. After 3.0s change the spindle speed to 300 rpm, keep pitch at 0.15 mm/rev
+6. After 2.5s stop the winder
 
 
 ```c++
@@ -198,5 +207,10 @@ void printCurrent()
   }
 }
 ```
+The sketch uses an IntervalTimer to periodically (50ms) call ```printCurrent()``` which gets the current speed of the motors, calculates the pitch and prints the result on the serial port. The exported data was pasted into a spread sheet to generate the following v-t diagram.
 
 ![Speed Diagram](assets/winder_class_speed.PNG)
+
+ The diagram shows the speed profile of the spindle (red) and the feeder (blue). The generated pitch is shown in green below the speed profiles. 
+
+The complete implementation of the Winder class can be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)
