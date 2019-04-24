@@ -12,7 +12,7 @@ permalink: /applications/winder/
       <ul>
         <li><a href="#overview">Overview</a></li>
         <li><a href="#simple-approach">Simple Approach</a></li>
-        <li><a href="#implementing-a-winder-class">Implementing a Winder Class</a></li>       
+        <li><a href="#a-winder-class">A Winder Class</a></li>       
       </ul>
     </td>
     <td valign = "top" align="right">
@@ -26,7 +26,7 @@ permalink: /applications/winder/
 
 ## Overview
 
-The following figure shows the principal setup of a coil winder. A string (blue) is rotated by the spindle motor. While the spindle rotates the feeder (green) linearly moves parallel to the string and winds a wire on the string. It is important that the ratio of the feeder speed and the spindle rotation stays constant even during acceleration and deceleration phases to keep a constant winding pitch. 
+Strings for musical instruments are made by very precisely winding some wrap material around a core to give the string more mass while keeping it flexible. The following figure shows the principal setup of a string making machine (coil winder). The core of a string (blue) is rotated by the spindle motor. While the spindle rotates, the feeder (green) linearly moves parallel to the string and winds a wire on the string. It is important that the ratio of the feeder speed and the spindle rotation stays constant even during acceleration and deceleration phases to keep a constant winding pitch. 
 
 
 ![Overview](assets/winder.png)
