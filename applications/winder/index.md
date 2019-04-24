@@ -16,7 +16,7 @@ permalink: /applications/winder/
       </ul>
     </td>
     <td valign = "top" align="right">
-      <a href="assets/Title.png">
+      <a href="assets/title.png">
         <img src="assets/smallTitle.png" alt="Saiten Macher">
       </a>
     </td>   
