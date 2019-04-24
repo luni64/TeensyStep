@@ -21,6 +21,7 @@ table:not(.highlight) tbody tr:nth-child(odd) td
   text-align: left;
   font-weight: normal;  
   border: none;
+  background: none;
 }
 
 .test

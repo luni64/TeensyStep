@@ -1,5 +1,6 @@
 ---
 title: Applications
+layout: myApp
 
 permalink: /applications/
 ---
