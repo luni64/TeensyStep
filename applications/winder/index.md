@@ -12,7 +12,8 @@ permalink: /applications/winder/
       <ul>
         <li><a href="#overview">Overview</a></li>
         <li><a href="#simple-approach">Simple Approach</a></li>
-        <li><a href="#a-winder-class">A Winder Class</a></li>       
+        <li><a href="#a-winder-class">A Winder Class</a></li>
+        <li><a href="#phil-tickers-real-life-video">Phil Tickers Real Life Video</a></li>
       </ul>
     </td>
     <td valign = "top" align="right">
@@ -55,7 +56,7 @@ A value of 0.8 would decelerate both motors to 80% of their current speed. Of co
 For advanced applications you might need a possibility to slightly trim the pitch to compensate mechanical imprecision of the machine or thickness variation of the winding wire. However, changing the pitch on the fly would require that spindle and feeder steppers change their fixed speed ratio, which is something the built in Bresenham synchronizing algorithm can not do. 
 
 Thus, we need to provide some flexible external sync algorithm. To do this we can use two rotation controllers, one for each motor. We then calculate rotation speed and acceleration in such a way that the motors will generate the required, and adjustable pitch. To not clutter the main sketch with detailed calculations it makes sense to abstract away all the low level stuff in a dedicated winder class.   
-Here the interface of this class: 
+Here the interface of this class (The complete implementation of the Winder class can be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)).
 
 ```c++
 class Winder
@@ -213,4 +214,9 @@ The sketch uses an IntervalTimer to periodically (50ms) call ```printCurrent()``
 
  The diagram shows the speed profile of the spindle (red) and the feeder (blue). The generated pitch is shown in green below the speed profiles. 
 
-The complete implementation of the Winder class can be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)
+## Phil Tickers Real Life Video
+
+YouTube user [phil ticker](https://www.youtube.com/user/philtickerchannel) developed a string winding machine which uses TeensyStep to drive the motors. Here a video showing the speed and fantastic precision of his machine. 
+
+<iframe width="800" height="450" src="https://www.youtube.com/embed/SYRmfHMnmTE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
