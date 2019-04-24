@@ -1,5 +1,5 @@
 ---
-title: String Making Machine
+title: String Winding Machine
 
 permalink: /applications/winder/
 ---
@@ -52,7 +52,7 @@ A value of 0.8 would decelerate both motors to 80% of their current speed. Of co
 
 ## A Winder Class
 
-For advanced applications you might need a possibility to slightly trim the pitch to compensate mechanical imprecision of the machine or thickness variation of the winding wire. However, changing the pitch on the fly would require that spindle and feeder steppers change their fixed speed ratio, which is something the built in Bresenham synchronizing algorithm can not do. 
+For advanced applications you might need a possibility to slightly trim the pitch to compensate mechanical imprecision of the machine or thickness variation of the winding wire or you might want to pull back the winding wire a bit to get the winding tighter. However, changing the pitch on the fly would require that spindle and feeder steppers change their fixed speed ratio, which is something the built in Bresenham synchronizing algorithm can not do. 
 
 Thus, we need to provide some flexible external sync algorithm. To do this we can use two rotation controllers, one for each motor. We then calculate rotation speed and acceleration in such a way that the motors will generate the required, and adjustable pitch. To not clutter the main sketch with detailed calculations it makes sense to abstract away all the low level stuff in a dedicated winder class.   
 Here the interface of this class: 
