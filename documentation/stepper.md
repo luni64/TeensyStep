@@ -51,11 +51,10 @@ chapters:
         - name: polarity
           type: int
 
-    summary: >-
-      **Example:**
+    summary: >-     
 
       ```c++ 
-       // you can use the standard interface
+       // you can use the standard interface for setup
        motor_1.setAcceleration(5000);
        motor_1.setMaxSpeed(10000);       
       
@@ -105,8 +104,6 @@ chapters:
      
 ---
 
-
-  
-
+Objects of the Stepper class store the physical properties of a stepper motor and the pins it is connected to. The target position of a a stepper object is used by the StepControl class to actually move the motor.  Stepper objects also maintain a step counter which reflects the current motor position. Writing to the step counter is possible to set the counter to zero (or some offset) at the home position. 
 
 

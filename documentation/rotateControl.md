@@ -18,7 +18,7 @@ chapters:
       type: unsigned  
 
   - name: RotateControl
-    shortDesc: Constructs a RotateControl object with default parameters for stepPulseWidth (5µs) and speedUpdatePeriod (5ms)
+    shortDesc: Constructs a RotateControl object with default parameters for the step pulse width (5µs) and speed update period (5ms).
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 - name: Rotating Motors
@@ -44,11 +44,17 @@ chapters:
     shortDesc: >-
       Accepts an array of up to N=10 pointers to stepper objects and starts rotating them. The rotation speeds are defined by the Stepper::setMaxSpeed function.  The function returns immediately after starting the motors (non blocking).
   
-      ```c++                        
-         RotateControl controller;
-         Stepper* stArray[] = { new Stepper(1,2), new Stepper(3,4), newStepper(5,6)};
+      ```c++                                         
+         // allocated on the stack / globally:
+         Stepper m1(0,1);
+         Stepper m2(2,3);
+         Stepper m3(4,5);
+         Stepeper* stArray[] = {&m1, &m2, &m3};         
+         controller.rotateAsync(stArray);
          
-         controller.rotateAsync(stArray);        
+         // or, allocated dynamically:
+         Stepper* stArray[] = { new Stepper(1,2), new Stepper(3,4), newStepper(5,6)};         
+         controller.rotateAsync(stArray);
       ```
         
 
@@ -65,7 +71,7 @@ chapters:
         ```c++                        
            controller.rotateAsync(s1,s2,s3);
            delay(1000);         
-           controller.overrideSpeed(0.5)  // reduce speed of all motors to 50% 
+           controller.overrideSpeed(0.5)  // reduce speed of all motors (s1, s2, s3) to 50% 
         ```
     returnType: void   
     parameter:

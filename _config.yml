@@ -52,17 +52,17 @@ author:
 menu:
   - title:             Home
     url:               /index
-  - title:             Documentation
+  - title:             Reference
     url:               /documentation/  
   - title:             Applications
     url:               /applications/
-  - title:             Impressum
+  - title:             Imprint
     url:               /IMPRESSUM/
 
 # Add links to the footer.
 # Typically you'll want to link to your cookie- or privacy policy (if appliable), etc..
 legal:
- - title:             Impressum
+ - title:             Imprint
    url:               /IMPRESSUM/
 #   - title:             Cookies Policy
 #     url:               /cookies-policy/

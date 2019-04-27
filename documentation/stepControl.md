@@ -93,8 +93,18 @@ chapters:
 #---------------------------------------------------------------------------------------------------------------------------------------------------------- 
 - name: Stopping Motors
   anchor: stopping
-  introduction: intro
-  summary: summary
+  introduction: 
+  summary: >
+    ```c++
+     controller.moveAsync(s1,s2);
+     
+     delay(1000);
+     controller.stopAsync();     // starts deceleration
+     
+     delay(50); 
+     controller.emergencyStop(); // immediately stops the motor without decelleration
+    ```
+
   methods:
   - name: stopAsync
     shortDesc: Decelerates the controlled motors to a stop. This function returns immediately after starting the stop sequence (non blocking). 
@@ -109,8 +119,7 @@ chapters:
     returnType: void   
 ---
 
-Objects of the StepControl class are used to move up to 10 motors to target positions in sync. The synchronization is kept during acceleration and deceleration phases and all motors will reach their target positions at the same time.
-  
+Objects of the StepControl class are used to move up to 10 motors to target positions in sync. The synchronization is done by [Bresenham's algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm) and it is kept during acceleration and deceleration phases and all motors will reach their target positions at the same time.
 
 
 
