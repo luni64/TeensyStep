@@ -3,7 +3,7 @@ layout: page
 title: TeensyStep
 cover: true
 ---
-<head>
+<head> 
   <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
 </head>
 

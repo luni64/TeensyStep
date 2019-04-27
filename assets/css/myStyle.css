@@ -43,6 +43,10 @@ table:not(.highlight) tbody tr:nth-child(odd) td
 
 table,thead,tbody,tr {width:100%} 
 
+tr.spaceUnder>td {
+  padding-bottom: 1em;
+}
+
 .smallTxt
 {
   font-family: Roboto Slab,Helvetica,Arial,sans-serif;

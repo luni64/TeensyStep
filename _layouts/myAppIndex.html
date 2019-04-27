@@ -1,0 +1,34 @@
+---
+layout: base
+---
+
+<header>
+    <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
+    <h1 class="page-title">{{ page.title }}</h1>
+    {% include components/message.html text=page.description hide=page.hide_description %}
+</header>
+
+
+
+<table class="none">  
+    <col width="200">     
+    <col width="350"> 
+    {% for application in page.applications %}
+    <tr  class="spaceUnder"   >
+      <td valign="top">              
+            <a title="{{application.image.title}}" href="{{application.image.href}}"><img max_width="200" max_height="200" src="{{application.image.href}}" alt="{{application.name}}"> </a>       
+      </td>
+      <td valign = "top">           
+            <a href="{{application.folder}}/">{{application.title}}</a>
+            <p>
+                {{application.description}}
+            </p>
+        </a>
+      </td>   
+    </tr>  
+    {%- endfor %}
+  </table>
+  
+
+
+{{ content }}

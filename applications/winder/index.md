@@ -5,7 +5,7 @@ description: >
   Strings for musical instruments are made by very precisely winding some wrap material around a core to give the string more mass while keeping it flexible.  Principal setup of a string making machine (coil winder). The core of a string is rotated by the spindle motor. While the spindle rotates, the feeder moves parallel to the string and winds a wire on the string. 
 hide_description: true
 
-permalink: /applications/coil_winder/ 
+permalink: /applications/winder/
 ---
 
 <table class="none">  
@@ -17,7 +17,7 @@ permalink: /applications/coil_winder/
         <li><a href="#overview">Overview</a></li>
         <li><a href="#simple-approach">Simple Approach</a></li>
         <li><a href="#a-winder-class">A Winder Class</a></li>
-        <li><a href="#phil-tickers-real-life-video">Phil Tickers Real Life Video</a></li>
+        <li><a href="#phil-tickers-winding-machine">Phil Tickers Winding Machine</a></li>
       </ul>
     </td>
     <td valign = "top">
@@ -217,7 +217,7 @@ The sketch uses an IntervalTimer to periodically (50ms) call ```printCurrent()``
 
  The diagram shows the speed profile of the spindle (red) and the feeder (blue). The generated pitch is shown in green below the speed profiles. 
 
-## Phil Tickers Real Life Video
+## Phil Tickers Winding Machine
 
 YouTube user [phil ticker](https://www.youtube.com/user/philtickerchannel) developed a string winding machine which uses TeensyStep to drive the motors. Here a video showing the speed and fantastic precision of his machine.<br> 
 
