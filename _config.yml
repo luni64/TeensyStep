@@ -180,7 +180,7 @@ hydejack:
 
   # Code blocks and tables "break" the layout by spanning the full available width.
   # Set this to true if you want them to be the same width as other content.
-  no_break_layout:     true
+  no_break_layout:     false
 
   # Set to `true` if you do not want to expose your resume and projects
   # in machine-readable formats.
@@ -284,7 +284,7 @@ remote_theme: qwtel/hydejack
 # ---------------------------------------------------------------------------------------
 
 # Where you proof that you own this site (used by jekyll-seo-tag)
-# google_site_verification: <verification-id>
+# google_site_verification: ddjyWo72o3ZBdquHa1JXDA9_MQscmVaKAjVbfVM45JM
 # -- or --
 # webmaster_verifications:
 #   google:              <verification-id>
