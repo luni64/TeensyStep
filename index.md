@@ -4,8 +4,9 @@ title: TeensyStep
 cover: true
 ---
 <head> 
-  <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
+  <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css"> 
 </head>
+
 
 TeensyStep is a highly efficient Arduino stepper motor library compatible with the [PJRC](https://www.pjrc.com) boards Teensy 3.0, 3.1, 3.2, 3.5 and 3.6.
 The library is able to handle synchronized as well as independent movement of up to **4 groups of up to 10 motors** to their target positions. 

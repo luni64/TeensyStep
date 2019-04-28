@@ -2,37 +2,20 @@
 title: String Winding Machine
 layout: myApp
 description: >
-  Strings for musical instruments are made by very precisely winding some wrap material around a core to give the string more mass while keeping it flexible.  Principal setup of a string making machine (coil winder). The core of a string is rotated by the spindle motor. While the spindle rotates, the feeder moves parallel to the string and winds a wire on the string. 
+  Strings for musical instruments are made by precisely winding wrap material around a core. 
+  How to use TeensyStep to control the winding process in such a machine. 
+
 hide_description: true
 
-permalink: /applications/winder/
+image:       
+  title:  Deutsche Fotothek [Public domain], via Wikimedia Commons
+  src:    https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Fotothek_df_tg_0008533_St%C3%A4ndebuch_%5E_Beruf_%5E_Handwerk_%5E_Musik_%5E_Saite.jpg/512px-Fotothek_df_tg_0008533_St%C3%A4ndebuch_%5E_Beruf_%5E_Handwerk_%5E_Musik_%5E_Saite.jpg
+  href:   https://commons.wikimedia.org/wiki/File:Fotothek_df_tg_0008533_St%C3%A4ndebuch_%5E_Beruf_%5E_Handwerk_%5E_Musik_%5E_Saite.jpg#/media/File:Fotothek_df_tg_0008533_St%C3%A4ndebuch_%5E_Beruf_%5E_Handwerk_%5E_Musik_%5E_Saite.jpg
+  size:   150
 ---
-
-<table class="none">  
-  <col width="640"> 
-  <col width="300">
-  <tr>
-    <td valign="top">
-      <ul>
-        <li><a href="#overview">Overview</a></li>
-        <li><a href="#simple-approach">Simple Approach</a></li>
-        <li><a href="#a-winder-class">A Winder Class</a></li>
-        <li><a href="#phil-tickers-string-winder">Phil Tickers String Winder</a></li>
-      </ul>
-    </td>
-    <td valign = "top">
-      <a href="assets/largeTitle.png">
-        <img src="assets/smallTitle.png" alt="Saiten Macher">
-      </a>
-    </td>   
-  </tr>  
-</table>
-
-
-## Overview
-
-Strings for musical instruments are made by very precisely winding some wrap material around a core to give the string more mass while keeping it flexible. The following figure shows the principal setup of a string making machine (coil winder). The core of a string (blue) is rotated by the spindle motor. While the spindle rotates, the feeder (green) linearly moves parallel to the string and winds a wire on the string. It is important that the ratio of the feeder speed and the spindle rotation stays constant even during acceleration and deceleration phases to keep a constant winding pitch.<br><br>
-
+<p>
+Basically, strings for musical instruments are made by precisely winding some wrap material around a core to give the string more mass while keeping it flexible. The following figure shows the principal setup of a string making machine (coil winder). The core of a string (blue) is rotated by the spindle motor. While the spindle rotates, the feeder (green) linearly moves parallel to the string and winds a wire on the string. It is important that the ratio of the feeder speed and the spindle rotation stays constant even during acceleration and deceleration phases to keep a constant winding pitch.<br><br>
+</p>
 
 ![Overview](assets/winder.png)
 

@@ -1,6 +1,6 @@
 ---
 layout: base
----
+--- 
 
 <header>
     <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
@@ -8,27 +8,22 @@ layout: base
     {% include components/message.html text=page.description hide=page.hide_description %}
 </header>
 
-
-
-<table class="none">  
-    <col width="200">     
-    <col width="350"> 
-    {% for application in page.applications %}
-    <tr  class="spaceUnder"   >
-      <td valign="top">              
-            <a title="{{application.image.title}}" href="{{application.image.href}}"><img max_width="200" max_height="200" src="{{application.image.href}}" alt="{{application.name}}"> </a>       
+<div>
+  <table> 
+    <col width="200">
+    <col width="350">
+    {% for application in site.applications2 %}    
+    <tr  class="spaceUnder">      
+      <td valign = "top">  <a title="{{application.image.title}}" href="{{site.baseurl}}{{application.url}}"><img max_width="200" max_height="200" src="{{application.image.src}}" alt="{{application.image.alt}}"></a></td>
+      <td valign = "center"> 
+        <a href="{{site.baseurl}}{{application.url}}">{{application.title}}</a>
+        <p>{{application.description}}</p>  
       </td>
-      <td valign = "top">           
-            <a href="{{application.folder}}/">{{application.title}}</a>
-            <p>
-                {{application.description}}
-            </p>
-        </a>
-      </td>   
-    </tr>  
+    </tr>
     {%- endfor %}
   </table>
+</div>
   
 
 
-{{ content }}
+{{ content | markdownify}}

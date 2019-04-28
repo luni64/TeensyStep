@@ -94,7 +94,7 @@ chapters:
         Typically, you only use this function after homing to set the counter to zero or some offset value.       
       returnType: void
       parameter:
-      - name: counterValue
+      - name: counterValue 
         type: int32_t
 
     - name: getPosition

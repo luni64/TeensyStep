@@ -2,11 +2,33 @@
 layout: base
 ---
 <article class="page" role="article">
+
   <header>
     <link rel="stylesheet" href="/TeensyStep/assets/css/myStyle.css">
     <h1 class="page-title">{{ page.title }}</h1>
     {% include components/message.html text=page.description hide=page.hide_description %}
   </header>
 
+
+
+  <div>
+    <table>
+      <col width="490">
+      <col width="300">
+      <tr>
+        <td valign="center">
+          <ul>
+            {% include toc.html html=content sanitize=true %}
+          </ul>
+        </td>
+        <td valign="top">
+          <a href="{{page.image.href}}">
+            <img title="{{page.image.title}}" width="{{page.image.size}}" src="{{page.image.src}}" alt="{{page.image.title}}">
+          </a>
+        </td>
+      </tr>
+    </table>
+  </div>
   {{ content }}
+
 </article>
