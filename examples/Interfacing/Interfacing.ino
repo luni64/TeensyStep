@@ -12,12 +12,12 @@ The following serial commands are implemented
 Additionally a pin can be used to stop the motor
 
 ------------------------------------------------------------*/
-#include "StepControl.h"
+#include "TeensyStep.h"
 
 // stepper and  controller
 constexpr int stpPin = 0, dirPin = 1;
 Stepper motor(stpPin, dirPin);
-StepControl<> controller;
+StepControl controller;
 
 // pin to stop the motor, connect a push button to this pin
 constexpr int stopPin = 2;
@@ -29,12 +29,15 @@ elapsedMillis debounceTimer = 0;     // debouncing input pins
 
 int lastPos = 0;
 
-
+void handlePins();
+void handleCommands();
 
 void setup()
 {
     while (!Serial);
-    Serial.println("Simple Serial Stepper Example");
+    Serial.println("Simple Serial Stepper Example");    
+    Serial.println("(type h for help)");
+    
 
     motor.setMaxSpeed(5000);
     motor.setAcceleration(50000);
@@ -42,8 +45,6 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     pinMode(stopPin, INPUT_PULLUP);  // touch the pin with GND to stop the motor
 }
-
-
 
 
 void loop()
@@ -74,8 +75,6 @@ void loop()
         digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN)); // toggle LED
     }
 }
-
-
 
 
 //------------------------------------------------
@@ -146,4 +145,3 @@ void handlePins()
         Serial.println("Stopping motor");
     }
 }
-

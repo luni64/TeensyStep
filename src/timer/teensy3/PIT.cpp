@@ -1,14 +1,15 @@
 #include "PIT.h"
  
+ #include "../TF_Handler.h"
 
 namespace
 {
-    IPitHandler* pitHandler[4];
+    TF_Handler* Handler[4];
 
     template<int n>
     void dispatchFunc()
     {      
-        pitHandler[n]->pitISR();     
+        Handler[n]->stepTimerISR();     
     }
 
     constexpr void(*dispatcher[])(void) =
@@ -22,18 +23,16 @@ namespace
     void dummyISR(void) {}
 }
 
-
-bool PIT::begin(IPitHandler* handler)
+bool PIT::begin(TF_Handler* handler)
 {
     if (!timer.begin(dummyISR, 1E6)) return false;  // try to reserve a timer
 
     setupChannel();                                 // find pit channel of reserved timer
     const int channelNr = channel - KINETISK_PIT_CHANNELS;
-    pitHandler[channelNr] = handler;                // store handler
+    Handler[channelNr] = handler;                // store handler
 	timer.priority(32);
-    timer.begin(dispatcher[channelNr], 1E6);        // attach an ISR which will call the stored handler
-													// don't clear TEN, we want to keep the IntervalTimer reserved
-    disableInterupt();     		
+    timer.begin(dispatcher[channelNr], 1E6);     // attach an ISR which will call the stored handler													
+    stop();        		                            // stop doesn't clear TEN, we want to keep the IntervalTimer reserved
 
     return true;
 }

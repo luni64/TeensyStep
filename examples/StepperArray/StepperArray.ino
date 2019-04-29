@@ -1,7 +1,7 @@
-#include <StepControl.h>
+#include <TeensyStep.h>
 
 Stepper M1(0, 1), M2(2, 3), M3(4, 5), M4(6, 7), M5(8, 9), M6(10, 11); // create 6 motors
-StepControl<> controller;
+StepControl controller;
 
 void setup() 
 {
