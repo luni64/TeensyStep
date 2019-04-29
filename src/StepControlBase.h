@@ -70,8 +70,7 @@ void StepControlBase<a, t>::doMove(int N, bool move)
         return;
 
     // Start move---------------------------------------------------------------------------------------
-    this->stepTimerISR(); // initiate first step immediately (no need to wait for the potentially long first cycle)
-    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
+    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));   
     this->timerField.stepTimerStart();
     this->timerField.accTimerStart();
 }
