@@ -6,36 +6,33 @@
 template <typename Accelerator, typename TimerField>
 class StepControlBase : public MotorControlBase<TimerField>
 {
-  public:
+public:
     StepControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);
-    
+
     // Non-blocking movements ----------------
     template <typename... Steppers>
     void moveAsync(Steppers &... steppers);
 
     template <size_t N>
     void moveAsync(Stepper *(&motors)[N]);
-
     void stopAsync();
 
     // Blocking movements --------------------
     template <typename... Steppers>
     void move(Steppers &... steppers);
 
-    template <size_t N>    
+    template <size_t N>
     void move(Stepper *(&motors)[N]);
-
     void stop();
-    
-    // Misc
-    void setCallback(void (*_callback)()) { callback = _callback; }
 
-  protected:
+    // Misc ----------------------------------
+    void setCallback(void (*_callback)()) { this->callback = _callback; }
+
+protected:
     void accTimerISR();
 
     void doMove(int N, bool mode = true);
 
-    void (*callback)() = nullptr;
     Accelerator accelerator;
 
     StepControlBase(const StepControlBase &) = delete;
@@ -52,7 +49,7 @@ StepControlBase<a, t>::StepControlBase(unsigned pulseWidth, unsigned accUpdatePe
 }
 
 template <typename a, typename t>
-void StepControlBase<a, t>::doMove(int N, bool move) 
+void StepControlBase<a, t>::doMove(int N, bool move)
 {
     //Calculate Bresenham parameters ----------------------------------------------------------------
     std::sort(this->motorList, this->motorList + N, Stepper::cmpDelta); // The motor which does most steps leads the movement, move to top of list
@@ -70,7 +67,7 @@ void StepControlBase<a, t>::doMove(int N, bool move)
         return;
 
     // Start move---------------------------------------------------------------------------------------
-    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));   
+    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
     this->timerField.stepTimerStart();
     this->timerField.accTimerStart();
 }
@@ -132,7 +129,7 @@ template <typename a, typename t>
 void StepControlBase<a, t>::stopAsync()
 {
     uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
-    this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir*newTarget;
+    this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
 }
 
 template <typename a, typename t>
