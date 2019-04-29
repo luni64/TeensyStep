@@ -4,7 +4,7 @@ layout: myApp
 
 folder: driver_connection
 description: >
-  Sizes, important parameters, connecting steppers to drivers, changing rotation direction etc. 
+  Information about stepper motor sizes, important parameters, connecting steppers to drivers, changing rotation direction etc. 
 image:       
   title: Figure 1 from Swedish patent 188863, Anordning för åstadkommande av stegvis matningsrörelse. Device to accomplish a stepwise feeding movement., G. E. W. Svensson, Halmstad [Public domain], via Wikimedia Commons
   src:   https://upload.wikimedia.org/wikipedia/commons/d/de/Swedish_patent_188863_Anordning_f%C3%B6r_%C3%A5stadkommande_av_stegvis_matningsr%C3%B6relse_Fig._1.jpg
@@ -26,7 +26,9 @@ A lot of detailed information about stepper motors can be found online and doesn
 
 ### Unipolar Steppers
 
-Unipolar Steppers have a center tap on both coils. This allows for a simple drive electronics. You can keep the center tap at GND / 0V and alternately switch both ends of the coil to the operating voltage. Opposed to bipolar types there is no need to reverse the polarity of the driving voltage. A simple full step stepping sequence is shown in the figure below: 
+Unipolar Steppers have a center tap on both coils. This allows for a simple drive electronics. You can keep the center tap at GND / 0V and alternately switch both ends of the 
+coil to the operating voltage. Opposed to bipolar types there is no need to reverse the polarity of the driving voltage. 
+A simple full step stepping sequence is shown in the figure below: 
 
 <br>![Step Sequence](assets/unipolar_steps.png)
 
@@ -36,7 +38,8 @@ However, since only half of a coil is energized at a time this leads to a less e
 
 ### Bipolar Steppers
 
-Most modern steppers are of the bipolar type. For bipolar steppers the current through the coils A and B needs to be reversed from step to step. A simple full step stepping sequence is shwon in the figure below: 
+Most modern steppers are of the bipolar type. For bipolar steppers the current through the coils A and B needs to be reversed from step to step. 
+A simple full step stepping sequence is shwon in the figure below: 
 
 <br>![Step Sequence](assets/bipolar_steps.png)
 
@@ -50,7 +53,7 @@ The following figure shows usual wiring configurations for unipolar and bipolar 
 <br>
 - Motors intended for bipolar operation are usually assembled in a 4 wire configuration. 
 - The 5 wire configuration can be operated in unipolar mode only.  The cheap geared stepper 28BYJ-48 is a popular representative of this motor type. 
-  ![28BYJ-48](https://www.seeedstudio.site/media/catalog/product/cache/134ea8534034ded9d909870d8862ea94/h/t/httpsstatics3.seeedstudio.comproductsstmt1_01.jpg)   
+  ![28BYJ-48](https://www.seeedstudio.site/media/catalog/product/cache/134ea8534034ded9d909870d8862ea94/h/t/httpsstatics3.seeedstudio.comproductsstmt1_01.jpg){:width="300"}  
   Please note that the omnipresent stepper drivers DRV8825, A4998, TB6600... are bipolar types and can not be used for this kind of steppers.
 
 - The 6 and 8 wire configurations can be driven by unipolar and bipolar drivers. 
@@ -58,23 +61,40 @@ The following figure shows usual wiring configurations for unipolar and bipolar 
 <br>![Wiring](assets/configurations.png)
 
 
+## Mechanical Paramters
+
+The National Electrical Manufacturers Association ([NEMA](https://www.nema.org/pages/default.aspx)) standardized motor frame sizes for the global "inch" market 
+([NEMA ICS 16](https://www.nema.org/Standards/SecureDocuments/ICS16.pdf)) In that standard the well known NEMA number denotes the outer flange dimensions in units of 0.1 inch. 
+E.g, a NEMA17 motor has a square flange size of 1.7 inch. 
+The following table lists typical dimensions and typical torque ranges for various NEMA motor sizes. In case you 
+want to do some mechanical design, you find links to free 3d models in the last column of the table. (Please note: motors with NEMA numbers in parentheses are not part of the official standard). 
+
+| NEMA | Flange <span>&#x2B1C;</span><br>inch/mm |Register<br><span>&empty;</span> mm|Mounting<br><span>&#x2B1C;</span> mm | Thread/<br>hole | Shaft<br><span>&empty;</span> mm|Torque (typ)<br>Nm| 3d data|
+|:----:|:---------------------------------------:|:---------------------------------:|:-----------------------------------:|:---------------:|:-----------:|:-------------:|:---------------:|
+| (08) | 0.8 / 20.0                              | 15.0/16.0                         | 16/15.4                             | M2              |  4.0        | 0.018 - 0.036 |[3d](https://grabcad.com/library/tag/nema8) |
+| (11) | 1.1 / 28.0                              | 22.0                              | 23.0                                | M2.5            |  5.0        | 0.03 - 0.14   |[3d](https://grabcad.com/library/tag/nema11)|
+| (14) | 1.4 / 35.0                              | 22.0                              | 26.0                                | M3              |  5.0        | 0.05 - 0.40   |[3d](https://grabcad.com/library/tag/nema14)|
+|  17  | 1.7 / 42.0                              | 22.0                              | 31.0                                | M3              |  5.0        | 0.15 - 1.00   |[3d](https://grabcad.com/library/tag/nema17)|
+|  23  | 2.3 / 56.4                              | 38.1                              | 47.14                               | 4.5 mm          |  6.35/8     | 0.40 - 3.40   |[3d](https://grabcad.com/library/tag/nema23)|
+|  34  | 3.4 / 86.0                              | 73.0                              | 69.58                               | 6.5 mm          |  14.0       | 2.50 - 14.0   |[3d](https://grabcad.com/library/tag/nema34)|
+|  42  | 4.2 / 106.0                             | 55.5                              | 88.88                               | 8.5 mm          |  19.0       | 12.0 - 30.0   |[3d](https://grabcad.com/library/tag/nema34)|   
 
 
-## Motor Parameters
-### Size and Torque
-
-NEMA, definition, link to norm
-
-table key parameters, including link to grabcad 3d models
+The torque in the table is given in the SI unit Nm (Newton x meter). Interestingly, torque seems to be one of the last playgrounds for obscure imperial units. 
+There is lb-ft (foot-pound), oz-in (ounce-force-inch) and much more... Fortunately, useful [online conversion](http://www.numberfactory.com/nf%20torque.htm) tools exist.
 
 
-## Motor Types
+## Electrical Parameters
 
-Voltage driven
-Current driven
+Lets have a look at a typical datasheet, defining the properties of a series of stepper motors (NEMA17, XY42STHXX, click on the table to open the full datasheet). 
 
+[![datasheet](assets/datasheet_XY42STH.png)](assets/datasheet_XY42STH.pdf)
 
+The main electrical parameter of a stepper is its **rated current** given in col. 2. Together with the coil **inductance** (col. 4) it generates the magnetic field and thus the 
+force, moving the motor. In static conditions this current is only limited by the **resistance** of the coils (col. 3), so that the **rated voltage** U (col. 1) is given by ohms 
+law U = R * I.  (E.g, for the first line in the table we get U = 0.4A * 24<span>&#x2126;</span> = 9.6V). The **holding torque** is the torque the motor generates at standstill when operated 
+with its rated current and the **detent torque** is the amount of torque the motor produces when the windings are not energized. The effect of the detent torque can be felt when moving the motor 
+shaft by hand. ([see here  for details](https://www.motioncontroltips.com/faq-whats-the-difference-between-detent-torque-and-holding-torque/))
 
-current, voltage, inductivity
 
 

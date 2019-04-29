@@ -2,8 +2,8 @@
 title: String Winding Machine
 layout: myApp
 description: >
-  Strings for musical instruments are made by precisely winding wrap material around a core. 
-  How to use TeensyStep to control the winding process in such a machine. 
+  Strings for musical instruments are made by precisely winding wrap material around a core. This post shows
+  how to use TeensyStep to control the winding process in such a machine. 
 
 hide_description: true
 
