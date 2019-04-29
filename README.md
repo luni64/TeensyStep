@@ -1,6 +1,6 @@
 # TeensyStep V2 - Fast Stepper Library for PJRC Teensy boards
 
-Please note: This is version 2 of the library. This version has a new user interface. Version 1 is still available in branch **Version-1**.
+Please note: This is version 2 of the library. This version has a new user interface. The version 1 is still available in the branch [Version-1](https://github.com/luni64/TeensyStep/tree/Version-1).
 
 
 ## Detailed Documentation can be found here [https://luni64.github.io/TeensyStep/](https://luni64.github.io/TeensyStep/)
