@@ -15,7 +15,7 @@
     "maintainer": true
   },
  
-  "version": "0.98",
+  "version": "1.0.0",
   "frameworks": "arduino",
   "platforms": "Teensy"
 }
