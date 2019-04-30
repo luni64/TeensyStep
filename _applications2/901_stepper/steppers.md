@@ -114,4 +114,3 @@ the motor with the lowest inductance available which is the XY42S1H34-1334A (lin
 
 
 
-

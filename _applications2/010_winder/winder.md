@@ -20,7 +20,9 @@ Basically, strings for musical instruments are made by precisely winding some wr
 ![Overview](assets/winder.png)
 
 ## Simple Approach
-TeensyStep is able to move steppers in sync. Using this feature a quick solution to the problem is easily coded. The following snippet shows how that works out using the two stepper motors 'feeder' and 'spindle':
+TeensyStep is able to move steppers in sync. Using this feature a quick solution to the problem is
+easily coded. The following snippet shows how that works out using the two stepper motors 'feeder'
+and 'spindle':
 ```c++
 ...
 constexpr unsigned speed = 5; // mm/s
@@ -31,18 +33,33 @@ spindle.setMaxSpeed(speed/pitch*spdlStpPerRev); // calculate from pitch
 controller.rotateAsync(feeder, spindle);        // and start the motors
 ...
 ```
-Here, ```fdrStpPerMM``` holds the number of feeder steps required for a 1mm travel, ```spdlStpPerRev``` holds the number of steps per spindle revolution and the winder pitch is given in mm per spindle revolution. The code moves the feeder at 5 mm/s and rotates the spindle at 5.0 / 0.2 = 25 rev/s = 1500 rpm. Since the controller takes care that the motors will stay in sync, the winding pitch stays at a constant 0.2 mm/rev even during acceleration and deceleration. 
+Here, ```fdrStpPerMM``` holds the number of feeder steps required for a 1mm travel,
+```spdlStpPerRev``` holds the number of steps per spindle revolution and the winder pitch is given
+in mm per spindle revolution. The code moves the feeder at 5 mm/s and rotates the spindle at 5.0 /
+0.2 = 25 rev/s = 1500 rpm. Since the controller takes care that the motors will stay in sync, the
+winding pitch stays at a constant 0.2 mm/rev even during acceleration and deceleration. 
 
 *Speed Adjustment*   
-In case you want to adjust the speed of the motors on the fly you can override the current speed using ```RotateControl::overrideSpeed(float speedFactor)```.
-A value of 0.8 would decelerate both motors to 80% of their current speed. Of course, the speed ratio and thus the winding pitch will stay constant during this operation. 
+In case you want to adjust the speed of the motors on the fly you can override the current speed
+using ```RotateControl::overrideSpeed(float speedFactor)```. A value of 0.8 would decelerate both
+motors to 80% of their current speed. Of course, the speed ratio and thus the winding pitch will
+stay constant during this operation. 
 
 
 ## A Winder Class
 
-For advanced applications you might need a possibility to slightly trim the pitch to compensate mechanical imprecision of the machine or thickness variation of the winding wire or you might want to pull back the winding wire a bit to get the winding tighter However, changing the pitch on the fly would require that spindle and feeder steppers change their fixed speed ratio, which is something the built in Bresenham synchronizing algorithm can not do. 
+For advanced applications you might need a possibility to slightly trim the pitch to compensate
+mechanical imprecision of the machine or thickness variation of the winding wire or you might want
+to pull back the winding wire a bit to get the winding tighter However, changing the pitch on the
+fly would require that spindle and feeder steppers change their fixed speed ratio, which is
+something the built in Bresenham synchronizing algorithm can not do. 
 
-Thus, we need to provide some flexible external sync algorithm. To do this we can use two rotation controllers, one for each motor. We then calculate rotation speed and acceleration in such a way that the motors will generate the required, and adjustable pitch. To not clutter the main sketch with detailed calculations it makes sense to abstract away all the low level stuff in a dedicated winder class. Here the interface of this class (the complete implementation of the Winder class can be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)).
+Thus, we need to provide some flexible external sync algorithm. To do this we can use two rotation
+controllers, one for each motor. We then calculate rotation speed and acceleration in such a way
+that the motors will generate the required, and adjustable pitch. To not clutter the main sketch
+with detailed calculations it makes sense to abstract away all the low level stuff in a dedicated
+winder class. Here the interface of this class (the complete implementation of the Winder class can
+be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)).
 
 ```c++
 class Winder
@@ -76,7 +93,8 @@ protected:
 };
 ```
 **Construction**   
-The constructor takes references to the spindle and feeder steppers. No need to define a controller, this is done within the class
+The constructor takes references to the spindle and feeder steppers. No need to define a controller,
+this is done within the class
 ```c++
 Stepper spindle(0,1);             // STP pin 0, DIR pin 1
 Stepper feeder(2,3);              // STP pin 2, DIR pin 3
@@ -87,7 +105,12 @@ Winder winder(spindle, feeder);   // winder uses the steppers
 **Setup Mechanical Properties**   
 Before using the class you need to setup the mechanical properties of spindle and feeder. 
 
-The function ```setSpindleParams``` takes the number of steps per spindle revolution and the requested spindle acceleration (stp/s^2). ```setFeederParams``` takes the number of steps to move the feeder 1mm and an acceleration value (stp/s^2). This acceleration is used for pitch trimming only; for normal synced movements the feeder acceleration is calculated from the spindle acceleration and the target speeds of both motors. After setting up the parameters a call to *begin()* is required.   
+The function ```setSpindleParams``` takes the number of steps per spindle revolution and the
+requested spindle acceleration (stp/s^2). ```setFeederParams``` takes the number of steps to move
+the feeder 1mm and an acceleration value (stp/s^2). This acceleration is used for pitch trimming
+only; for normal synced movements the feeder acceleration is calculated from the spindle
+acceleration and the target speeds of both motors. After setting up the parameters a call to
+*begin()* is required.   
 The class supports a classical or a fluid interface for the setup functions: 
 ```c++
 // classic:
@@ -103,9 +126,14 @@ winder
 ```
 
 **Controlling the Winder**   
-Controlling the winder is easy. You set or change the spindle speed (rpm) by a calling ```setSpindleSpeed(float rpm).``` The winding pitch (mm/rev) can be set or changed on the fly by calling ```setPitch(float pitch).``` Both functions only preset the values. The actual change is performed by a call to the function ```updateSpeeds().``` To stop the winder simply set the spindle speed to 0. 
+Controlling the winder is easy. You set or change the spindle speed (rpm) by a calling
+```setSpindleSpeed(float rpm).``` The winding pitch (mm/rev) can be set or changed on the fly by
+calling ```setPitch(float pitch).``` Both functions only preset the values. The actual change is
+performed by a call to the function ```updateSpeeds().``` To stop the winder simply set the spindle
+speed to 0. 
 
-You can find a quick example of the usage below. The sketch first sets up the winder and then performs the following actions: 
+You can find a quick example of the usage below. The sketch first sets up the winder and then
+performs the following actions: 
 
 1. Start the winder at a spindle speed of 1125 rpm and a pitch of 0.1mm/rev
 2. After 3.0s trim the pitch to 0.12 mm/rev
@@ -194,15 +222,20 @@ void printCurrent()
   }
 }
 ```
-The sketch uses an IntervalTimer to periodically (50ms) call ```printCurrent()``` which gets the current speed of the motors, calculates the pitch and prints the result on the serial port. The exported data was pasted into a spread sheet to generate the following v-t diagram.
+The sketch uses an IntervalTimer to periodically (50ms) call ```printCurrent()``` which gets the
+current speed of the motors, calculates the pitch and prints the result on the serial port. The
+exported data was pasted into a spread sheet to generate the following v-t diagram.
 
 ![Speed Diagram](assets/winder_class_speed.PNG)
 
- The diagram shows the speed profile of the spindle (red) and the feeder (blue). The generated pitch is shown in green below the speed profiles. 
+ The diagram shows the speed profile of the spindle (red) and the feeder (blue). The generated pitch
+ is shown in green below the speed profiles. 
 
 ## Phil Tickers String Winder
 
-YouTube user [phil ticker](https://www.youtube.com/user/philtickerchannel) developed a string winding machine which uses TeensyStep to drive the motors. Here a video showing the speed and fantastic precision of his machine.<br> 
+YouTube user [phil ticker](https://www.youtube.com/user/philtickerchannel) developed a string
+winding machine which uses TeensyStep to drive the motors. Here a video showing the speed and
+fantastic precision of his machine.<br> 
 
 <div class="video-container" >
 <iframe  width="800" height="450" src="https://www.youtube.com/embed/SYRmfHMnmTE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
