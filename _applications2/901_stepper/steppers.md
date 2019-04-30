@@ -86,15 +86,32 @@ There is lb-ft (foot-pound), oz-in (ounce-force-inch) and much more... Fortunate
 
 ## Electrical Parameters
 
-Lets have a look at a typical datasheet, defining the properties of a series of stepper motors (NEMA17, XY42STHXX, click on the table to open the full datasheet). 
+Lets have a look at a typical datasheet, defining the properties of a series of stepper motors (XY42STHXX, NEMA17, click on the table to open the full datasheet). 
 
 [![datasheet](assets/datasheet_XY42STH.png)](assets/datasheet_XY42STH.pdf)
 
 The main electrical parameter of a stepper is its **rated current** given in col. 2. Together with the coil **inductance** (col. 4) it generates the magnetic field and thus the 
-force, moving the motor. In static conditions this current is only limited by the **resistance** of the coils (col. 3), so that the **rated voltage** U (col. 1) is given by ohms 
+force which moves the motor. In static conditions this current is only limited by the **resistance** of the coils (col. 3), so that the **rated voltage** U (col. 1) is given by ohms 
 law U = R * I.  (E.g, for the first line in the table we get U = 0.4A * 24<span>&#x2126;</span> = 9.6V). The **holding torque** is the torque the motor generates at standstill when operated 
 with its rated current and the **detent torque** is the amount of torque the motor produces when the windings are not energized. The effect of the detent torque can be felt when moving the motor 
 shaft by hand. ([see here  for details](https://www.motioncontroltips.com/faq-whats-the-difference-between-detent-torque-and-holding-torque/))
+
+**What parameters do I need?**   
+- First, determine the required motor torque. For a first estimation, the following might help: A motor with a torque of 1kg-cm (~0.1Nm) can lift a mass of 1kg attached on a 1cm lever. 
+Equivalently, it can lift a mass of 0.1kg attached on a 10cm lever or a 200g mass on a 5cm lever).
+<br><br>![torque](assets/torque.png){:height="200"}
+
+- If you need the stepper for a high speed application, choose one with an inductance as small as possible. However, the smaller the inductance the larger the current required to generate 
+the needed torque. You usually drive such motors with a constant current driver (DRV8825, TB6600...). Make sure that your driver is capable of providing the large current. 
+If not, you might need to choose a motor with a higher inductance at the price of a lower speed (or a larger driver). 
+
+- If you want to drive the motor with a constant voltage, look for steppers with a rated voltage equal to your driving voltage. Those motors typically have a high inductivity and need not much 
+current. However, the large inductivity does not allow those motors to run very fast. 
+
+**Example:**   
+We are looking for a high speed, 2kg-cm motor for a DRV8825 driver. The torque requirement leads us to lines 5 - 10 in the datasheet above. Due to the speed requirement we look for
+the motor with the lowest inductance available which is the XY42S1H34-1334A (line 5) with 2.5 mH. It needs a current of about 1.3A which is fine for our driver. 
+
 
 
 

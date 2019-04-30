@@ -13,11 +13,9 @@ image:
 
 hide_description: true
 
+published: false
 ---
 <p></p>
-
-
-
 
 
 
