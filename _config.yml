@@ -336,6 +336,7 @@ kramdown:
   math_engine_opts:
     preview:           true
     preview_as_code:   true
+  parse_block_html:    true
 
 compress_html:
   comments:            ["<!-- ", " -->"]

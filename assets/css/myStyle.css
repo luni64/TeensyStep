@@ -49,9 +49,14 @@ tr.spaceUnder>td {
 
 .smallTxt
 {
-  font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+  font-family: Menlo,Monaco,Consolas,monospace;
   font-size: medium;
   margin-top: 0.2rem;
+}
+
+.smallTableFont
+{
+  font-size: medium;
 }
 
 .classHeader {
