@@ -21,7 +21,7 @@ protected:
 
   TimerField timerField;
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
-  ~MotorControlBase();
+  virtual ~MotorControlBase();
 
   template <size_t N>
   void attachStepper(Stepper *(&motors)[N]);
