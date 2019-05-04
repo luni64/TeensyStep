@@ -17,11 +17,12 @@ public:
 
   void emergencyStop() { timerField.stepTimerStop();}
 
-protected:
+  virtual ~MotorControlBase();
+  bool isOk() const { return OK; }
 
+protected:
   TimerField timerField;
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
-  virtual ~MotorControlBase();
 
   template <size_t N>
   void attachStepper(Stepper *(&motors)[N]);
@@ -39,7 +40,6 @@ protected:
   void (*callback)() = nullptr;
 
   bool OK = false;
-  bool isOk() const { return OK; }
 
   unsigned mCnt;
 
@@ -78,7 +78,7 @@ MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePer
 template <typename t>
 MotorControlBase<t>::~MotorControlBase()
 {
-  emergencyStop();  
+  if(OK)  emergencyStop();  
 }
 
 template <typename t>
