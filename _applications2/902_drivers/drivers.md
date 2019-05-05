@@ -39,15 +39,15 @@ a level shifter to connect them to a 3.3V controller. The figure below shows how
 [74HCT125](https://octopart.com/search?q=74hct125%20) containing 4 buffers which accept 3.3V input
 signals and generate 5V output signals. 
 
-[![74HCT125](assets/74HCT125.png){:width="50%"}](assets/74HCT125.png)
-[![74HCT125](assets/74HCT125_pinout.png){:width="45%"}](assets/74HCT125_pinout.png)
+[![74HCT125](assets/74hct125.png){:width="50%"}](assets/74hct125.png)
+[![74HCT125](assets/74hct125_pinout.png){:width="45%"}](assets/74hct125_pinout.png)
 
 Alternatively you can use a [74HCT245](https://octopart.com/search?q=74hct245%20) which contains 8
 buffers. The DIR pin of that chip defines the buffer direction. Set it to VCC for A->B or to GND for
 B->A. 
 
-[![74HCT125](assets/74HCT245.png){:width="40%"}](assets/74HCT245.png)
-[![74HCT125](assets/74HCT245_pinout.png){:width="45%"}](assets/74HCT245_pinout.png)
+[![74HCT125](assets/74hct245.png){:width="40%"}](assets/74hct245.png)
+[![74HCT125](assets/74hct245_pinout.png){:width="45%"}](assets/74hct245_pinout.png)
 
 Note: For both ICs make sure to connect the VCC pin to the 5V supply. 
 
