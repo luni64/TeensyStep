@@ -20,64 +20,50 @@ published: true
 
 Operating a stepper always requires some kind of driving electronics to energize the motor coils. In the
 most simple case this can be 4 transistors connected to a unipolar constant voltage stepper.
-<!-- 
-![https://coeleveld.com/arduino-stepper-uln2003a/](https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.gif){:height="200"}   
-<small>([https://coeleveld.com/arduino-stepper-uln2003a/](https://coeleveld.com/arduino-stepper-uln2003a/))<small> -->
 Anyway, these days stepper drivers with a much better performance and an easy to use STEP / DIR
 interface are readily available for steppers of all types and sizes. 
 
 ## Constant Current Drivers
 
-Most of the modern stepper drivers used in hobby applications are developed for bipolar steppers and
-operate in constant current mode. In the table below you find a few popular devices and their key specifications. 
+Most of the modern stepper drivers are developed for bipolar steppers and
+operate in constant current mode. The table below shows a few popular devices and their key specifications. 
 
 [![Driver List](assets/driverlist.png)](assets/driverlist.png)
 
 
-<!-- <div class="smallTableFont">
+## Logic Level Conversion
 
-| Type     | I<sub>max</sub> [A]<br><small>(heat sink)</small>| U<sub>motor</sub><br>[V]| U<sub>logic</sub><br>[V] | Microsteps | Remarks |
-|:---------|:------------------------------|:---------------:|:------------------|:----------:|---------|
-|A4988     | 1A (2A)                       | 8.0 - 35        | 3.0 - 5.5V        | up to 1/16 | <small>classic driver for 3d printers</small>   | 
-|DRV8825   | 1.5A (2.2A)                   | 8.2 - 45        | 2.5 - 5.25V       | up to 1/32 |  <br><br>    | 
-|DRV8824   | 0.75A (1.2A)                  | 8.2 - 45        | 2.5 - 5.25V       | up to 1/32 | <small>low current version of DRV8825</small> |
-|TMC2130   | 1.2A                          | 5.5 - 45        | 3.3 - 5V          | up to 1/256| <small>aka 'SilentStepStick'<br> STP/DIR and SPI interface </small> |
-|TB6600 |
+The control signals of a Stepper driver with a 3.3V logic interface can be connected to a Teensy (or
+any other 3.3V output controller) directly. For drivers with a 5V or an opto-coupled input you need
+a level shifter to connect them to a 3.3V controller. The figure below shows how to do that with a
+[74HCT125](https://octopart.com/search?q=74hct125%20) containing 4 buffers which accept 3.3V input
+signals and generate 5V output signals. 
 
+[![74HCT125](assets/74HCT125.png){:width="50%"}](assets/74HCT125.png)
+[![74HCT125](assets/74HCT125_pinout.png){:width="45%"}](assets/74HCT125_pinout.png)
 
-</div> -->
+Alternatively you can use a [74HCT245](https://octopart.com/search?q=74hct245%20) which contains 8
+buffers. The DIR pin of that chip defines the buffer direction. Set it to VCC for A->B or to GND for
+B->A. 
 
+[![74HCT125](assets/74HCT245.png){:width="40%"}](assets/74HCT245.png)
+[![74HCT125](assets/74HCT245_pinout.png){:width="45%"}](assets/74HCT245_pinout.png)
 
-
-TBC
-
-
+Note: For both ICs make sure to connect the VCC pin to the 5V supply. 
 
 
 ## Constant Voltage Drivers
 
-<!-- 
-Apply the rated voltage V to the coils. Usually this voltage is given in the motor datasheet.
-Alternatively you can calculate it from the coil resistance R and the rated coil current `I` by
-[Ohms law](http://www.ohmslawcalculator.com/ohms-law-calculator)). Motors designed for voltage
-control require a relatively high resistance which typically is achieved by a high number of coil
-windings leading to a high inductance of the motor (see values in the example datasheet below)
-<br><br>  
-*Advantage:*   
-Simple drive electronics. Combined with a unipolar wiring you can drive a voltage controlled stepper
-by 4 transistors or a simple [ULN2003](https://www.st.com/resource/en/datasheet/uln2001.pdf)
-circuit.   
-*Disadvantage:*   
-Due to the relatively high inductance of those motors they can not be used for high speed
-applications <br><br> [Here](https://coeleveld.com/arduino-stepper-uln2003a/) you find a nice
-writeup describing the method.   
+If you need to drive a constant voltage motor like the cheap and very popular
+[28BYJ-48](https://octopart.com/search?q=28byj-48) you can simply use four transistors, a integrated
+Darlington driver like the [ULN2003](https://www.st.com/resource/en/datasheet/uln2001.pdf) or an
+integrated H-bridge module like the [L298](https://octopart.com/search?q=28byj-48).   
+
 ![https://coeleveld.com/arduino-stepper-uln2003a/](https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.gif){:height="250"}
 ![https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.jpg](https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.jpg){:height="250"}
- -->
+
+[Here](https://coeleveld.com/arduino-stepper-uln2003a/) you find a nice writeup describing the
+method.
 
 
-
-## Logic Level Conversion
-
-## Performance
 

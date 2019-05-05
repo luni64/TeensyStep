@@ -21,9 +21,11 @@ In the video below the two motors are accelerated to 160'000 steps per second. B
 frequency it demonstrates that both motors move synchronized not even at their target speeds but
 also during the acceleration and deceleration phases. 
 
-<div class="video-container">
-    <iframe width="853" heigth="400" src="https://www.youtube.com/embed/Fzt75I_Zi14" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
+
+<div class="video-container" >
+<iframe  src="https://www.youtube.com/embed/Fzt75I_Zi14?showinfo=0" frameborder="0" showinfo="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
+
 
 ## Why would you use TeensyStep
 A lot of interesting projects require the movement of things. An easy way to implement such a
