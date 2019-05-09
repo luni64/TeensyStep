@@ -19,10 +19,10 @@ class RotateControlBase : public MotorControlBase<TimerField>
 
     void stopAsync();
 
-     void emergencyStop() {
-         accelerator.eStop();
-         this->timerField.stepTimerStop();
-     }
+    //  void emergencyStop() {
+    //      accelerator.eStop();
+    //      this->timerField.stepTimerStop();
+    // }
 
      // Blocking movements --------------------
      void stop();
@@ -38,6 +38,8 @@ class RotateControlBase : public MotorControlBase<TimerField>
 
      RotateControlBase(const RotateControlBase &) = delete;
      RotateControlBase &operator=(const RotateControlBase &) = delete;
+
+     bool isStopping = false;
 };
 
 // Implementation *************************************************************************************************
@@ -70,6 +72,7 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
     
     // Start moving---------------------------------------------------------------------------------------  
+    this->timerField.begin();
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
     this->timerField.setStepFrequency(0);    
     this->timerField.accTimerStart();    
@@ -83,6 +86,8 @@ void RotateControlBase<a, t>::accTimerISR()
     int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
      
     //Serial.printf("rc,curSpeed: %i newspd:%i\n",this->leadMotor->currentSpeed,  newSpeed);
+
+    if(isStopping && newSpeed == 0) this->timerField.end();
 
     if (this->leadMotor->currentSpeed == newSpeed)
     {         
@@ -126,6 +131,7 @@ void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N])
 template <typename a, typename t>
 void RotateControlBase<a, t>::overrideSpeed(float factor)
 {
+    isStopping = false;
     accelerator.overrideSpeed(factor);
 }
 
@@ -138,6 +144,7 @@ void RotateControlBase<a, t>::overrideAcceleration(float factor)
 template <typename a, typename t>
 void RotateControlBase<a, t>::stopAsync()
 {
+    isStopping = true;
     accelerator.initiateStopping(this->leadMotor->current);
 }
 

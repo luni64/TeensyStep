@@ -9,16 +9,13 @@ template <typename TimerField>
 class MotorControlBase : TF_Handler
 {
 public:
-  bool isRunning();
-  inline int getCurrentSpeed()
-  {
-    return timerField.getStepFrequency();
-  }
-
-  void emergencyStop() { timerField.stepTimerStop();}
+  bool isOk() const { return OK; }
+  bool isRunning() const;
+  int getCurrentSpeed()const;
+  
+  void emergencyStop() { timerField.end();}
 
   virtual ~MotorControlBase();
-  bool isOk() const { return OK; }
 
 protected:
   TimerField timerField;
@@ -30,8 +27,7 @@ protected:
   void attachStepper(Stepper &stepper, Steppers &... steppers);
   void attachStepper(Stepper &stepper);
 
-  void stepTimerISR();
-  //void accTimerISR() { Serial.println("df"); }
+  void stepTimerISR();  
   void pulseTimerISR();
 
   Stepper *motorList[MaxMotors + 1];
@@ -59,16 +55,22 @@ protected:
 // Implementation ============================================================================
 
 template <typename t>
-bool MotorControlBase<t>::isRunning()
+bool MotorControlBase<t>::isRunning() const
 {
   return timerField.stepTimerIsRunning();
+}
+
+template<typename t>
+int MotorControlBase<t>::getCurrentSpeed() const
+{
+  return timerField.getStepFrequency();
 }
 
 template <typename t>
 MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
     : timerField(this), mCnt(0)
 {
-  OK = timerField.begin();
+  //OK = timerField.begin();
   timerField.setPulseWidth(pulseWidth);
   timerField.setAccUpdatePeriod(accUpdatePeriod);
   this->accUpdatePeriod = accUpdatePeriod;
@@ -100,7 +102,8 @@ void MotorControlBase<t>::stepTimerISR()
 
   if (mode == Mode::target && (leadMotor->current == leadMotor->target)) // stop timer and call callback if we reached target
   {
-    timerField.stepTimerStop();
+    //timerField.stepTimerStop();
+    timerField.endAfterPulse();
     if (callback != nullptr)
       callback();
   }

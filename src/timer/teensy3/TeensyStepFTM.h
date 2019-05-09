@@ -18,8 +18,6 @@ namespace TeensyStepFTM
 	
 	inline void trigger(unsigned delay, unsigned channel)
 	{
-		//Serial.printf("chn: %d, tdt: %d\n", channel, microsToReload(delay));
-
 		timer->SC = 0;                                       // Remove clock to immediately write new channel value
 		timer->CH[channel].CV = timer->CNT + delay;    		 // Update channel value
 		timer->SC = FTM_SC_CLKS(0b01) | FTM_SC_PS(prescale); // Reattach clock       

@@ -67,7 +67,10 @@ void StepControlBase<a, t>::doMove(int N, bool move)
         return;
 
     // Start move---------------------------------------------------------------------------------------
+    this->timerField.begin();
     this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
+    //accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration);
+    //this->timerField.setStepFrequency(0);
     this->timerField.stepTimerStart();
     this->timerField.accTimerStart();
 }
@@ -79,7 +82,9 @@ void StepControlBase<a, t>::accTimerISR()
 {
     if (this->isRunning())
     {
+    //    digitalWriteFast(6,HIGH);
         this->timerField.setStepFrequency(accelerator.updateSpeed(this->leadMotor->current));
+    //    digitalWriteFast(6, LOW);
     }
 }
 

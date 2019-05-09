@@ -19,6 +19,7 @@ public:
 
   inline bool begin();
   inline void end();
+  inline void endAfterPulse();  // not nice look for better solution
 
   inline void stepTimerStart();
   inline void stepTimerStop();
@@ -34,43 +35,52 @@ public:
   inline void triggerDelay();
   inline void delayISR(unsigned channel);
 
-  //protected:
+protected:
   PIT stepTimer;
   TF_Handler *handler;
 
   unsigned delayWidth;
   unsigned accUpdatePeriod;
 
-  const unsigned accLoopDelayChannel;
-  const unsigned pinResetDelayChannel;
+  unsigned accLoopDelayChannel;
+  unsigned pinResetDelayChannel;
+
+  bool lastPulse = false;
 };
 
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler)
-    : handler(_handler),
-      accLoopDelayChannel(TeensyStepFTM::addDelayChannel(this)),
-      pinResetDelayChannel(TeensyStepFTM::addDelayChannel(this))
-{
-  //Serial.println(accLoopDelayChannel);
-}
+    : handler(_handler)
+{}
 
 TimerField::~TimerField()
-{  
-  end(); 
+{
+  end(); // release timer resources
 }
 
 bool TimerField::begin()
-{
+{ 
+  //digitalWriteFast(4,HIGH);
+  lastPulse = false;
+  accLoopDelayChannel = TeensyStepFTM::addDelayChannel(this);
+  pinResetDelayChannel = TeensyStepFTM::addDelayChannel(this);
   TeensyStepFTM::begin();
+
   return stepTimer.begin(handler);
 }
 
 void TimerField::end()
-{  
+{
   stepTimer.end();
   TeensyStepFTM::removeDelayChannel(accLoopDelayChannel);
   TeensyStepFTM::removeDelayChannel(pinResetDelayChannel);
+  //digitalWriteFast(4, LOW);
+}
+
+void TimerField::endAfterPulse()
+{
+  lastPulse = true;
 }
 
 // Step Timer ------------------------------------------------------
@@ -91,41 +101,41 @@ unsigned TimerField::getStepFrequency()
 }
 
 void TimerField::setStepFrequency(unsigned f)
-{  
+{
   if (f != 0)
   {
     if (stepTimer.isRunning())
     {
       uint32_t ldval = stepTimer.getLDVAL();
 
-      if (ldval < F_BUS / 250 ) // normal step freqency (> 250 Hz) -> set new period for following periods
-      {       
+      if (ldval < F_BUS / 250) // normal step freqency (> 250 Hz) -> set new period for following periods
+      {
         stepTimer.setNextReload(F_BUS / f);
         return;
       }
-      
+
       uint32_t newReload = F_BUS / f;
       uint32_t cyclesSinceLastStep = ldval - stepTimer.channel->CVAL;
       if (cyclesSinceLastStep <= newReload) // time between last pulse and now less than required new period -> wait
-      {       
+      {
         stepTimer.setThisReload(newReload - cyclesSinceLastStep);
         stepTimer.setNextReload(newReload);
       }
       else
-      {       
+      {
         stepTimer.setThisReload(newReload);
         handler->stepTimerISR();
       }
     }
     else // not running
     {
-      handler->stepTimerISR();
-      stepTimer.setThisReload(F_BUS / f);  // restarts implicitly
+      //handler->stepTimerISR();
+      stepTimer.setThisReload(F_BUS / f); // restarts implicitly
     }
   }
   else //f==0
-  {    
-    stepTimer.stop();       
+  {
+    stepTimer.stop();
   }
 }
 
@@ -138,7 +148,8 @@ bool TimerField::stepTimerIsRunning() const
 
 void TimerField::accTimerStart()
 {
-  delayISR(accLoopDelayChannel);
+  TeensyStepFTM::trigger(accUpdatePeriod, accLoopDelayChannel);
+  //delayISR(accLoopDelayChannel);
 }
 
 void TimerField::setAccUpdatePeriod(unsigned p)
@@ -168,6 +179,7 @@ void TimerField::delayISR(unsigned channel)
   if (channel == pinResetDelayChannel)
   {
     handler->pulseTimerISR();
+    if(lastPulse) end();
   }
 
   else if (channel == accLoopDelayChannel)
