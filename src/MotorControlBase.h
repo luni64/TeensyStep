@@ -3,6 +3,15 @@
 #include "timer/TF_Handler.h"
 #include "Stepper.h"
 
+enum ErrCode
+{
+  err_OK,
+  err_movment_not_possible,
+  err_too_much_motors
+};
+
+using ErrFunc = void (*)(ErrCode);
+
 constexpr int MaxMotors = 10;
 
 template <typename TimerField>
@@ -11,11 +20,13 @@ class MotorControlBase : TF_Handler
 public:
   bool isOk() const { return OK; }
   bool isRunning() const;
-  int getCurrentSpeed()const;
-  
-  void emergencyStop() { timerField.end();}
+  int getCurrentSpeed() const;
+
+  void emergencyStop() { timerField.end(); }
 
   virtual ~MotorControlBase();
+
+  void attachErrorFunction(ErrFunc ef) { errFunc = ef; }
 
 protected:
   TimerField timerField;
@@ -27,13 +38,18 @@ protected:
   void attachStepper(Stepper &stepper, Steppers &... steppers);
   void attachStepper(Stepper &stepper);
 
-  void stepTimerISR();  
+  void stepTimerISR();
   void pulseTimerISR();
 
   Stepper *motorList[MaxMotors + 1];
   Stepper *leadMotor;
 
   void (*callback)() = nullptr;
+  ErrFunc errFunc = nullptr;
+  inline void Error(ErrCode e)
+  {
+    if (errFunc != nullptr) errFunc(e);
+  }
 
   bool OK = false;
 
@@ -60,7 +76,7 @@ bool MotorControlBase<t>::isRunning() const
   return timerField.stepTimerIsRunning();
 }
 
-template<typename t>
+template <typename t>
 int MotorControlBase<t>::getCurrentSpeed() const
 {
   return timerField.getStepFrequency();
@@ -76,11 +92,12 @@ MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePer
   this->accUpdatePeriod = accUpdatePeriod;
   this->pulseWidth = pulseWidth;
 }
- 
+
 template <typename t>
 MotorControlBase<t>::~MotorControlBase()
 {
-  if(OK)  emergencyStop();  
+  if (OK)
+    emergencyStop();
 }
 
 template <typename t>

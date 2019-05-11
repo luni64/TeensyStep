@@ -8,6 +8,8 @@ Stepper::Stepper(const int _stepPin, const int _dirPin)
     setInverseRotation(false);
     setAcceleration(aDefault);
     setMaxSpeed(vMaxDefault);
+    setPullInSpeed(vPullInOutDefault);
+    setPullOutSpeed(vPullInOutDefault);
 
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
@@ -65,6 +67,18 @@ Stepper &Stepper::setMaxSpeed(int32_t speed)
 {
     setDir(speed >= 0 ? 1 : -1);
     vMax = std::min(vMaxMax, std::max(-vMaxMax, speed));
+    return *this;
+}
+
+Stepper &Stepper::setPullInSpeed(int32_t speed)
+{
+    vPullIn = std::abs(speed);
+    return *this;
+}
+
+Stepper &Stepper::setPullOutSpeed(int32_t speed)
+{
+    vPullOut = std::abs(speed);
     return *this;
 }
 

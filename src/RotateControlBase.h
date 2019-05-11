@@ -18,12 +18,7 @@ class RotateControlBase : public MotorControlBase<TimerField>
     void rotateAsync(Stepper *(&motors)[N]);
 
     void stopAsync();
-
-    //  void emergencyStop() {
-    //      accelerator.eStop();
-    //      this->timerField.stepTimerStop();
-    // }
-
+  
      // Blocking movements --------------------
      void stop();
 

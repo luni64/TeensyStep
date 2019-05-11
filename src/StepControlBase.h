@@ -62,13 +62,16 @@ void StepControlBase<a, t>::doMove(int N, bool move)
 
     // Calculate acceleration parameters --------------------------------------------------------------
     uint32_t targetSpeed = std::abs((*std::min_element(this->motorList, this->motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
-    uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a;              // use the lowest acceleration for the move
+    uint32_t pullInSpeed = this->leadMotor->vPullIn;
+    uint32_t pullOutSpeed = this->leadMotor->vPullOut;
+    uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
     if (this->leadMotor->A == 0 || targetSpeed == 0)
         return;
 
     // Start move---------------------------------------------------------------------------------------
     this->timerField.begin();
-    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
+
+    this->timerField.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, pullInSpeed, pullOutSpeed, acceleration));
     //accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration);
     //this->timerField.setStepFrequency(0);
     this->timerField.stepTimerStart();
@@ -82,9 +85,9 @@ void StepControlBase<a, t>::accTimerISR()
 {
     if (this->isRunning())
     {
-    //    digitalWriteFast(6,HIGH);
+        //    digitalWriteFast(6,HIGH);
         this->timerField.setStepFrequency(accelerator.updateSpeed(this->leadMotor->current));
-    //    digitalWriteFast(6, LOW);
+        //    digitalWriteFast(6, LOW);
     }
 }
 

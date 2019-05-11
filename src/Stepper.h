@@ -8,16 +8,20 @@ class Stepper
     static constexpr int32_t vMaxMax = 300000;   // largest speed possible (steps/s)
     static constexpr uint32_t aMax = 500000;     // speed up to 500kHz within 1 s (steps/s^2)
     static constexpr uint32_t vMaxDefault = 800; // should work with every motor (1 rev/sec in 1/4-step mode)
+    static constexpr uint32_t vPullInOutDefault = 100;
     static constexpr uint32_t aDefault = 2500;   // reasonably low (~0.5s for reaching the default speed)
+    
 
   public:
     Stepper(const int StepPin, const int DirPin);
 
-    Stepper &setMaxSpeed(int32_t speed);   // steps/s
-    Stepper &setAcceleration(uint32_t _a); // steps/s^2
+    Stepper &setMaxSpeed(int32_t speed);     // steps/s
+    Stepper &setPullInSpeed(int32_t speed);  // steps/s
+    Stepper &setPullOutSpeed(int32_t speed); // steps/s
+    Stepper &setAcceleration(uint32_t _a);   // steps/s^2
 
-    Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
-    Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
+    Stepper &setStepPinPolarity(int p);      // HIGH -> positive pulses, LOW -> negative pulses
+    Stepper &setInverseRotation(bool b);     // Change polarity of the dir pulse
 
     void setTargetAbs(int32_t pos);   // Set target position absolute
     void setTargetRel(int32_t delta); // Set target position relative to current position
@@ -39,6 +43,7 @@ class Stepper
 
     int32_t A, B; // Bresenham paramters
     int32_t vMax;
+    int32_t vPullIn, vPullOut;
     uint32_t a;
 
     // compare functions
