@@ -60,7 +60,7 @@ TimerField::~TimerField()
 }
 
 bool TimerField::begin()
-{ 
+{
   //digitalWriteFast(4,HIGH);
   lastPulse = false;
   accLoopDelayChannel = TeensyStepFTM::addDelayChannel(this);

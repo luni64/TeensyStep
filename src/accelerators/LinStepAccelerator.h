@@ -18,44 +18,40 @@ protected:
     LinStepAccelerator(const LinStepAccelerator &) = delete;
     LinStepAccelerator &operator=(const LinStepAccelerator &) = delete;
 
-    int32_t s_0;
-    int32_t ds;
-    int32_t accEnd, decStart;
+    int32_t s_0, ds;
+    uint32_t vs, ve, vt;
+    int64_t vs_sqr, ve_sqr, vt_sqr;
     uint32_t two_a;
-    uint32_t vs, ve, vtgt;
-    int64_t vs_sqr, ve_sqr, vtgt_sqr;
+    int32_t accEnd, decStart;
 };
 
 // Inline Implementation =====================================================================================================
 
 int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a)
 {
-    vtgt = targetSpeed; 
-    vs = pullInSpeed;    // v_start 
-    ve = pullOutSpeed;   // v_end 
+    vt = targetSpeed;
+    vs = pullInSpeed;  // v_start
+    ve = pullOutSpeed; // v_end
     two_a = 2 * a;
 
     s_0 = currentPos;
     ds = std::abs(targetPos - currentPos);
 
-    // Serial.printf("ve: %d\n", ve);
-    // Serial.printf("vs: %d\n", vs);
-    // Serial.printf("ds: %d\n", ds);
-
-    delay(100);
-
     vs_sqr = vs * vs;
     ve_sqr = ve * ve;
-    vtgt_sqr = vtgt * vtgt;
+    vt_sqr = vt * vt;
 
     int32_t sm = ((ve_sqr - vs_sqr) / two_a + ds) / 2; // position where acc and dec curves meet
 
-    Serial.printf("sm: %i\n", sm);
+    // Serial.printf("ve: %d\n", ve);
+    // Serial.printf("vs: %d\n", vs);
+    // Serial.printf("ds: %d\n", ds);
+    // Serial.printf("sm: %i\n", sm);
 
     if (sm >= 0 && sm <= ds) // we can directly reach the target with the given values vor v0, ve and a
     {
-        int32_t sa = (vtgt_sqr - vs_sqr) / two_a;  // required distance to reach target speed
-        if (sa < sm)                               // target speed can be reached
+        int32_t sa = (vt_sqr - vs_sqr) / two_a; // required distance to reach target speed
+        if (sa < sm)                              // target speed can be reached
         {
             accEnd = sa;
             decStart = sm + (sm - sa);
@@ -64,50 +60,44 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
         else
         {
             accEnd = decStart = sm;
-           // Serial.printf("limit accEnd: %i decStart:%i\n", accEnd, decStart);
+            //Serial.printf("limit accEnd: %i decStart:%i\n", accEnd, decStart);
         }
     }
     else
     {
-        //this->Error(ErrCode::err_movment_not_possible);
-        
-        // panic
-        while(1)
+        // hack, call some error callback instead
+        while (1)
         {
             digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN));
             delay(25);
         }
     }
-
     return vs;
 }
 
 int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 {
-  //  digitalWriteFast(3, HIGH);
-  //  delayMicroseconds(1);
-  //  digitalWriteFast(3, LOW);
 
-    int32_t stepsDone = std::abs(s_0 - curPos);
+    int32_t s = std::abs(s_0 - curPos);
 
     // acceleration phase -------------------------------------
-    if (stepsDone < accEnd)
-        return sqrtf(two_a * stepsDone + vs_sqr);
+    if (s < accEnd)
+    {
+        return sqrtf(two_a * s + vs_sqr);
+    }
 
     // constant speed phase ------------------------------------
-    if (stepsDone < decStart)
+    if (s < decStart)
     {
-        // digitalWriteFast(4, HIGH);
-        // delayMicroseconds(1);
-        // digitalWriteFast(4, LOW);
-        return vtgt;
+        return vt;
     }
 
     //deceleration phase --------------------------------------
-    if (stepsDone < ds)
-        //  return sqrtf(two_a * ((stepsDone < ds - 1) ? ds - stepsDone - 2 : 0) +
-        //  vs_sqr);
-        return sqrtf(ve_sqr + (ds - stepsDone-1) * two_a);
+    if (s < ds)
+    {
+        //  return sqrtf(two_a * ((stepsDone < ds - 1) ? ds - stepsDone - 2 : 0) + vs_sqr);
+        return sqrtf(ve_sqr + (ds - s - 1) * two_a);
+    }
 
     //we are done, make sure to return 0 to stop the step timer
     return 0;
