@@ -66,7 +66,8 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     }
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
     
-    // Start moving---------------------------------------------------------------------------------------  
+    // Start moving----------------------------------------------------------------------------------------------  
+    isStopping = false;
     this->timerField.begin();
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
     this->timerField.setStepFrequency(0);    
