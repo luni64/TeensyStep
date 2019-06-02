@@ -23,7 +23,7 @@ also during the acceleration and deceleration phases.
 
 
 <div class="video-container" >
-<iframe  src="https://www.youtube.com/embed/Fzt75I_Zi14?showinfo=0" frameborder="0" showinfo="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe  src="https://www.youtube.com/embed/Fzt75I_Zi14?showinfo=0" frameborder="0"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
 
