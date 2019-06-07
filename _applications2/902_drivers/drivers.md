@@ -57,7 +57,7 @@ Note: For both ICs make sure to connect the VCC pin to the 5V supply.
 If you need to drive a constant voltage motor like the cheap and very popular
 [28BYJ-48](https://octopart.com/search?q=28byj-48) you can simply use four transistors, a integrated
 Darlington driver like the [ULN2003](https://www.st.com/resource/en/datasheet/uln2001.pdf) or an
-integrated H-bridge module like the [L298](https://octopart.com/search?q=28byj-48).   
+integrated H-bridge module like the [L298](https://octopart.com/search?q=L298).   
 
 ![https://coeleveld.com/arduino-stepper-uln2003a/](https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.gif){:height="250"}
 ![https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.jpg](https://coeleveld.com/wp-content/uploads/2016/10/Arduino_Stepper_unipolar_driver.jpg){:height="250"}
