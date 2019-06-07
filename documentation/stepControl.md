@@ -90,6 +90,11 @@ chapters:
          controller.move(stArray); // returns after the motors reached their targets
       ```
 
+  - name: getCurrentSpeed 
+    shortDesc: >-
+        Returns the current speed of the controlled motor. If more than one motor is controlled by the controller it returns the current speed of the leading (fastest) motor. The speed of the other motors is always a fixed ratio to the speed of the leading motor.   
+    returnType: int32_t       
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------- 
 - name: Stopping Motors
   anchor: stopping

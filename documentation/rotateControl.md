@@ -78,6 +78,21 @@ chapters:
     - name: "factor"
       type: float
 
+  - name: getCurrentSpeed 
+    shortDesc: >-
+        Returns the current speed of the controlled motor. If more than one motor is controlled by the controller it returns the current speed of the leading (fastest) motor. The speed of the other motors is always a fixed ratio to the speed of the leading motor.     
+
+        ```c++                        
+           controller.rotateAsync(s1);           
+           while(controller.getCurrentSpeed() < 5000)
+           {
+              Serial.printf("pos: %d, speed: %d\n", s1.getPosition(), controller.getCurrentSpeed));
+              delay(50);
+           }
+           controller.stop();           
+        ```
+    returnType: int32_t       
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------- 
 - name: Stopping Motors
   anchor: stopping
