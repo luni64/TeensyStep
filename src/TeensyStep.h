@@ -1,5 +1,7 @@
 #pragma once
 
+#include "version.h"
+
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
 
@@ -8,6 +10,8 @@
 //#include "accelerators/SinRotAccelerator.h"
 
 #include "timer/generic/TimerField.h"
+
+
 
 
 // TEENSY 3.0 - Teensy 3.6 ==================================================================================
