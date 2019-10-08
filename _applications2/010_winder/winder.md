@@ -59,7 +59,7 @@ controllers, one for each motor. We then calculate rotation speed and accelerati
 that the motors will generate the required, and adjustable pitch. To not clutter the main sketch
 with detailed calculations it makes sense to abstract away all the low level stuff in a dedicated
 winder class. Here the interface of this class (the complete implementation of the Winder class can
-be found on [GitHub](https://github.com/luni64/TeensyStep/tree/develop/examples/Applications/Winder)).
+be found on [GitHub](https://github.com/luni64/TeensyStep/tree/master/examples/Applications/Winder)).
 
 ```c++
 class Winder
