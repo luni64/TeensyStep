@@ -139,8 +139,11 @@ namespace TeensyStep
     template <typename a, typename t>
     void StepControlBase<a, t>::stopAsync()
     {
-        uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
-        this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
+        if (this->isRunning())
+        {
+            uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
+            this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
+        }
     }
 
     // Blocking movmenents -------------------------------------------------------------------------------------------------

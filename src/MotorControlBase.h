@@ -22,6 +22,7 @@ namespace TeensyStep{
      public:
         bool isOk() const { return OK; }
         bool isRunning() const;
+        bool isAllocated() const;
         int getCurrentSpeed() const;
 
         void emergencyStop() { timerField.end(); }
@@ -65,6 +66,8 @@ namespace TeensyStep{
         uint32_t accUpdatePeriod;
         uint32_t pulseWidth;
 
+        inline mcErr err(mcErr code) const { return (mcErr)error(errModule::MC, (int)code); }
+
         MotorControlBase(const MotorControlBase&) = delete;
         MotorControlBase& operator=(const MotorControlBase&) = delete;
     };
@@ -78,6 +81,12 @@ namespace TeensyStep{
     }
 
     template <typename t>
+    bool MotorControlBase<t>::isAllocated() const
+    {
+        return timerField.stepTimerIsAllocated();
+    }
+
+    template <typename t>
     int MotorControlBase<t>::getCurrentSpeed() const
     {
         return timerField.getStepFrequency();
@@ -86,8 +95,7 @@ namespace TeensyStep{
     template <typename t>
     MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
         : timerField(this), mCnt(0)
-    {
-        //OK = timerField.begin();
+    {        
         timerField.setPulseWidth(pulseWidth);
         timerField.setAccUpdatePeriod(accUpdatePeriod);
         this->accUpdatePeriod = accUpdatePeriod;

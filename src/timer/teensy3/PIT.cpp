@@ -26,8 +26,6 @@ namespace TeensyStep
 
     pitErr PIT::begin(TF_Handler* handler)
     {
-        //Serial1.println("pit_begin");
-
         if (timer.begin(dummyISR, 1E6)) // try to reserve a timer
         {
             const int channelNr = setupChannel();    // find pit channel of reserved timer            

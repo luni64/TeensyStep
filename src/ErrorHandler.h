@@ -26,14 +26,20 @@ namespace TeensyStep
 
     enum class errModule {
         PIT = 1,
-        RB = 2
+        MC,
+        RB 
     };
 
     enum class pitErr {
         OK,
         argErr,
+        notAllocated,
         outOfTimers,
         
     };
 
+    enum class mcErr {
+        OK,
+        alrdyMoving,        
+    };
 }

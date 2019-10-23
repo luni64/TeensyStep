@@ -2,14 +2,10 @@
 #include <Arduino.h>
 
 namespace TeensyStep
-{
-    errCallback_t* ErrorHandler::callback = nullptr;
+{    
+    static Stream* stream;   
 
-    static Stream* stream;
-
-   
-
-    void vverboseHandler(int module, int code)
+    static void vHandler(int module, int code)
     {       
         const char* mod;
         const char* txt;
@@ -22,21 +18,17 @@ namespace TeensyStep
                 {
                     case pitErr::outOfTimers: txt = "No timer available"; break;
                     case pitErr::argErr:      txt = "BUG, argument error"; break;
+                    case pitErr::notAllocated:txt = "BUG, timer not allocated"; break;
                     default:                  txt = "unknown"; break;
                 }                
-                break;
+                break;           
 
-            case errModule::RB: //------------------------------------------
-                mod = "RB";
-                switch (code)
+            case errModule::MC: //------------------------------------------
+                mod = "CTRL";
+                switch ((mcErr)code)
                 {
-                    case 0:
-                        txt = "test";
-                        break;
-
-                    default:
-                        txt = "asdf";
-                        break;
+                    case mcErr::alrdyMoving:  txt = "Started while moving"; break;
+                    default:                  txt = "unknown"; break;
                 }                
                 break;
 
@@ -57,6 +49,8 @@ namespace TeensyStep
     errCallback_t* verboseHandler(Stream& s)
     {
         stream = &s;
-        return vverboseHandler;
+        return vHandler;
     }
+
+    errCallback_t* ErrorHandler::callback = nullptr;
 }

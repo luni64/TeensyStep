@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "MotorControlBase.h"
 #include "core_pins.h"
 #include <algorithm>
@@ -52,6 +51,12 @@ namespace TeensyStep
     template <typename a, typename t>
     void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     {
+        if(this->isRunning())
+        {
+            this->err(mcErr::alrdyMoving);
+            return;
+        }
+
         //Calculate Bresenham parameters ----------------------------------------------------------------
         std::sort(this->motorList, this->motorList + N, Stepper::cmpVmax);
         this->leadMotor = this->motorList[0];
@@ -72,7 +77,7 @@ namespace TeensyStep
         // Start moving----------------------------------------------------------------------------------------------
         isStopping = false;
         this->timerField.begin();
-        accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);        
+        accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
         this->timerField.accTimerStart();
     }
 
@@ -85,10 +90,10 @@ namespace TeensyStep
 
         if (isStopping && newSpeed == 0)
         {
-             this->timerField.end();
-             this->leadMotor->currentSpeed = 0;
-             isStopping = false;
-             return;
+            this->timerField.end();
+            this->leadMotor->currentSpeed = 0;
+            isStopping = false;
+            return;
         }
 
         if (this->leadMotor->currentSpeed == newSpeed)
@@ -145,8 +150,11 @@ namespace TeensyStep
     template <typename a, typename t>
     void RotateControlBase<a, t>::stopAsync()
     {
-        isStopping = true;
-        accelerator.initiateStopping(this->leadMotor->current);
+        if (!isStopping)
+        {
+            isStopping = true;
+            accelerator.initiateStopping(this->leadMotor->current);
+        }
     }
 
     template <typename a, typename t>
