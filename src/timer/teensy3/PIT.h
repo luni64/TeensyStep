@@ -106,7 +106,7 @@ namespace TeensyStep
 
     bool PIT::isRunning() const
     {
-        return isAllocated() ? channel->TCTRL & PIT_TCTRL_TIE : false;
+        return isAllocated();// && true;// (channel->TCTRL & PIT_TCTRL_TIE);
     }
     
     bool PIT::isAllocated() const
