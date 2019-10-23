@@ -2,6 +2,7 @@
 
 #include "version.h"
 
+#include "Stepper.h"
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
 
@@ -10,7 +11,6 @@
 //#include "accelerators/SinRotAccelerator.h"
 
 #include "timer/generic/TimerField.h"
-
 
 
 
@@ -38,13 +38,13 @@
 // Linear acceleration -----------------------------------------------------------------------------------------
 
 
-using MotorControl = MotorControlBase<TimerField>;
+//using MotorControl = TeensyStep::MotorControlBase<TimerField>;
 
-using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
-using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
+using RotateControl = TeensyStep::RotateControlBase<LinRotAccelerator, TimerField>;
+using StepControl = TeensyStep::StepControlBase<LinStepAccelerator, TimerField>;
 
-using StepControlTick = StepControlBase<LinStepAccelerator,TickTimerField>;
-using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
+using StepControlTick = TeensyStep::StepControlBase<LinStepAccelerator, TickTimerField>;
+using RotateControlTick = TeensyStep::RotateControlBase<LinStepAccelerator, TickTimerField>;
 
 // Sine acceleration -------------------------------------------------------------------------------------------
 
@@ -61,3 +61,6 @@ using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
 
 // template <unsigned stepPulseWidth = defPW, unsigned a = defAP>
 // using StepControl_tick = StepControlBase<LinStepAccelerator, stepPulseWidth, a>;
+
+
+using Stepper = TeensyStep::Stepper;

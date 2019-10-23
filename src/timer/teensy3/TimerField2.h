@@ -65,8 +65,7 @@ bool TimerField::begin()
   lastPulse = false;
   accLoopDelayChannel = TeensyStepFTM::addDelayChannel(this);
   pinResetDelayChannel = TeensyStepFTM::addDelayChannel(this);
-  TeensyStepFTM::begin();
-
+  TeensyStepFTM::begin(); 
   return stepTimer.begin(handler);
 }
 
