@@ -1,7 +1,7 @@
 #pragma once
 
-#include "wiring.h"
 #include "PIT.h"
+#include "wiring.h"
 #include "TeensyStepFTM.h"
 
 #include "../TF_Handler.h"
@@ -14,7 +14,7 @@
 class TimerField : public IDelayHandler
 {
 public:
-  inline TimerField(TF_Handler *);
+  inline TimerField(TeensyStep::TF_Handler *);
   inline ~TimerField();
 
   inline bool begin();
@@ -36,21 +36,21 @@ public:
   inline void delayISR(unsigned channel);
 
 protected:
-  PIT stepTimer;
-  TF_Handler *handler;
+   TeensyStep::PIT stepTimer;
+   TeensyStep::TF_Handler* handler;
 
-  unsigned delayWidth;
-  unsigned accUpdatePeriod;
+   unsigned delayWidth;
+   unsigned accUpdatePeriod;
 
-  unsigned accLoopDelayChannel;
-  unsigned pinResetDelayChannel;
+   unsigned accLoopDelayChannel;
+   unsigned pinResetDelayChannel;
 
-  bool lastPulse = false;
+   bool lastPulse = false;
 };
 
 // IMPLEMENTATION ====================================================================
 
-TimerField::TimerField(TF_Handler *_handler)
+TimerField::TimerField(TeensyStep::TF_Handler *_handler)
     : handler(_handler)
 {}
 
@@ -66,7 +66,7 @@ bool TimerField::begin()
   accLoopDelayChannel = TeensyStepFTM::addDelayChannel(this);
   pinResetDelayChannel = TeensyStepFTM::addDelayChannel(this);
   TeensyStepFTM::begin(); 
-  return stepTimer.begin(handler);
+  return stepTimer.begin(handler) == TeensyStep::pitErr::OK;
 }
 
 void TimerField::end()
@@ -114,7 +114,7 @@ void TimerField::setStepFrequency(unsigned f)
       }
 
       uint32_t newReload = F_BUS / f;
-      uint32_t cyclesSinceLastStep = ldval - stepTimer.channel->CVAL;
+      uint32_t cyclesSinceLastStep = ldval - stepTimer.getCVAL();
       if (cyclesSinceLastStep <= newReload) // time between last pulse and now less than required new period -> wait
       {
         stepTimer.setThisReload(newReload - cyclesSinceLastStep);

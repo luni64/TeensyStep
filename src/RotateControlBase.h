@@ -72,8 +72,7 @@ namespace TeensyStep
         // Start moving----------------------------------------------------------------------------------------------
         isStopping = false;
         this->timerField.begin();
-        accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
-        this->timerField.setStepFrequency(0);
+        accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);        
         this->timerField.accTimerStart();
     }
 
@@ -84,9 +83,13 @@ namespace TeensyStep
     {
         int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
 
-        //Serial.printf("rc,curSpeed: %i newspd:%i\n",this->leadMotor->currentSpeed,  newSpeed);
-
-        if (isStopping && newSpeed == 0) this->timerField.end();
+        if (isStopping && newSpeed == 0)
+        {
+             this->timerField.end();
+             this->leadMotor->currentSpeed = 0;
+             isStopping = false;
+             return;
+        }
 
         if (this->leadMotor->currentSpeed == newSpeed)
         {
@@ -101,7 +104,7 @@ namespace TeensyStep
             {
                 (*motor++)->toggleDir();
             }
-            delayMicroseconds(this->pulseWidth);
+            delayMicroseconds(this->pulseWidth); // dir signal need some lead time
         }
 
         this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer

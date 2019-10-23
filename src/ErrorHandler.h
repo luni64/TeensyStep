@@ -1,17 +1,19 @@
 #pragma once
-#include "Arduino.h"
+#include "Stream.h"
 
 namespace TeensyStep
 {
     using errCallback_t = void(int, int);
 
+    enum class errModule;
+    enum class pitERR;
+
     class ErrorHandler
     {
      public:
-        static int error(int module, int code)
-        {
-            digitalWriteFast(13,HIGH);
-            if (callback != nullptr) callback(module, code);
+        static int error(errModule module, int code)
+        {            
+            if (callback != nullptr) callback((int)module, code);
             return code;
         }
         static void attachCallback(errCallback_t* cb) { callback = cb; }
@@ -19,4 +21,19 @@ namespace TeensyStep
      protected:
         static errCallback_t* callback;
     };
+
+    extern errCallback_t* verboseHandler(Stream&);
+
+    enum class errModule {
+        PIT = 1,
+        RB = 2
+    };
+
+    enum class pitErr {
+        OK,
+        argErr,
+        outOfTimers,
+        
+    };
+
 }

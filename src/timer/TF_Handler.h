@@ -1,8 +1,11 @@
 #pragma once
 
-struct TF_Handler
+namespace TeensyStep
 {
-  virtual void stepTimerISR() = 0;
-  virtual void accTimerISR() = 0;
-  virtual void pulseTimerISR() = 0;
-};
+    struct TF_Handler
+    {
+        virtual void stepTimerISR() = 0;
+        virtual void accTimerISR() = 0;
+        virtual void pulseTimerISR() = 0;
+    };
+} // namespace TeensyStep
