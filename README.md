@@ -1,3 +1,7 @@
+# This repository is a work in progress!
+As of now platform conversion is not done.
+The project is intended for PlatformIO+STM32Cube environments.
+
 # TeensyStep V2 - Fast Stepper Library for PJRC Teensy boards
 
 Please note: This is version 2 of the library. This version has a new user interface. The version 1 is still available in the branch [Version-1](https://github.com/luni64/TeensyStep/tree/Version-1).
