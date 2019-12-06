@@ -1,4 +1,4 @@
-#include "Stepper.h"
+#include "STM32Step.h"
 #include "core_pins.h"
 
 Stepper::Stepper(const int _stepPin, const int _dirPin)
