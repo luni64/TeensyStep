@@ -1,7 +1,7 @@
-namespace TeensyStep
+namespace STM32Step
 {
 
-constexpr const char *version = "V2.0.0";
-constexpr const char *branch = "master";
+constexpr const char *version = "V0.1.0";
+constexpr const char *branch = "platform-conversion";
 
-} // namespace TeensyStep
+} // namespace STM32Step
