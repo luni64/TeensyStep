@@ -16,5 +16,5 @@
   },
   "version": "0.1.0",
   "frameworks": "STM32Cube",
-  "platforms": "STM32"
+  "platforms": "ststm32"
 }
