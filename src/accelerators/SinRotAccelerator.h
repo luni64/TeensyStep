@@ -66,12 +66,13 @@ int32_t SinRotAccelerator::updateSpeed(int32_t curPos)
 
 void SinRotAccelerator::overrideSpeed(float fac, int32_t curPos)
 {
-    noInterrupts();
+    // TODO: add interrupt handling
+    //noInterrupts();
     s_0 = curPos;
     v_tgt = std::round(v_tgt_orig * fac);
     vstp_tgt = ((float)v_tgt * v_tgt) / two_a * (v_tgt > 0 ? 1.0f : -1.0f);
     dir = vstp_tgt > vstp ? 1 : -1;
-    interrupts();
+    //interrupts();
 }
 
 int32_t SinRotAccelerator::initiateStopping(int32_t curPos)
