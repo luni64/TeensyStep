@@ -110,7 +110,7 @@ void StepControlBase<a, t>::move(Steppers &... steppers)
     moveAsync(steppers...);
     while (this->timerField.stepTimerIsRunning())
     {
-        delay(1);
+        HAL_Delay(1);
     }
 }
 
@@ -121,7 +121,7 @@ void StepControlBase<a, t>::move(Stepper *(&motors)[N])
     moveAsync(motors);
     while (this->isRunning())
     {
-        delay(1);
+        HAL_Delay(1);
     }
 }
 
@@ -138,6 +138,6 @@ void StepControlBase<a, t>::stop()
     stopAsync();
     while (this->isRunning())
     {
-        delay(1);
+        HAL_Delay(1);
     }
 }

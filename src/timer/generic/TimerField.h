@@ -8,7 +8,7 @@ class TickTimerField
   public:
     inline TickTimerField(TF_Handler *);
 
-    inline bool begin();
+    inline bool begin(TIM_HandleTypeDef* htim);
     inline void end();
 
     inline void stepTimerStart() { stepTimer.start(); }
@@ -47,9 +47,9 @@ TickTimerField::TickTimerField(TF_Handler *_handler)
 
 
 
-bool TickTimerField::begin()
+bool TickTimerField::begin(TIM_HandleTypeDef* htim)
 {
-    TimerControl::begin();
+    TimerControl::begin(htim);
     return true;
 }
 

@@ -2,7 +2,6 @@
 
 #include "MotorControlBase.h"
 #include <algorithm>
-#include "core_pins.h"
 
 template <typename Accelerator, typename TimerField>
 class RotateControlBase : public MotorControlBase<TimerField>
@@ -147,6 +146,6 @@ void RotateControlBase<a, t>::stop()
     stopAsync();
     while (this->isRunning())
     {
-        delay(1);
+        HAL_Delay(1); // not strictly necessary
     }
 }
