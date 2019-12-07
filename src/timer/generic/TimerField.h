@@ -1,14 +1,7 @@
 #pragma once
 
-#include "wiring.h"
-// //#include "imxrt.h"
-
 #include "TickTimer.h"
 #include "../TF_Handler.h"
-
-// //=========================
-// // Teensy 4
-// //=========================
 
 class TickTimerField
 {
@@ -56,7 +49,6 @@ TickTimerField::TickTimerField(TF_Handler *_handler)
 
 bool TickTimerField::begin()
 {
-    Serial.println("begin");
     TimerControl::begin();
     return true;
 }
