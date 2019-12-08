@@ -96,7 +96,7 @@ void RotateControlBase<a, t>::accTimerISR()
         {
             (*motor++)->toggleDir();
         }
-        delayMicroseconds(this->pulseWidth);
+        //delayMicroseconds(this->pulseWidth); // why is this necessary?
     }
     
     

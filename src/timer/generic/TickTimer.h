@@ -2,7 +2,9 @@
 
 // Including main.h ensures that the correct HAL headers are included.
 // STM32Step assumes the use of STM32Cube environment.
-#include "main.h"
+extern "C" {
+#include "tim.h"
+}
 
 #include <functional>
 #include <limits>
@@ -89,18 +91,20 @@ class OneShotTimer : public TimerBase
 class TimerControl
 {
   public:
-    static void begin(TIM_HandleTypeDef* htim)
+    static void begin()
     {
         static_assert((F_CPU % 1'000'000) == 0, "CPU frequency is not a multiple of 1 MHz as assumed");
+
+        // very temporary solution
+        TimerControl::htim = &htim2;
 
         // initialize 100 kHz timer interrupt generation
         htim->Init.Prescaler = F_CPU / 1'000'000 - 1; // ensure 1 MHz timer frequency
         htim->Init.Period = 10 - 1; // divide 1 MHz clock to 100 kHz
-        htim->Init.CounterMode = TIM_COUNTERMODE_DOWN;
+        htim->Init.CounterMode = TIM_COUNTERMODE_UP;
         htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
         htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         
-        TimerControl::htim = htim;
 
         HAL_TIM_Base_Init(htim);
         HAL_TIM_Base_Start_IT(htim);
@@ -162,7 +166,8 @@ class TimerControl
     {
         TimerBase *timer = firstTimer;
         
-        const uint32_t cnt = __HAL_TIM_GET_COUNTER(htim);
+        static uint32_t cnt = 0;
+        cnt += F_CPU / 100'000;
         
         while (timer != nullptr)
         {

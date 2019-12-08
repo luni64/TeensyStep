@@ -9,6 +9,7 @@ template <typename TimerField>
 class MotorControlBase : TF_Handler
 {
 public:
+  void begin();
   bool isRunning();
   inline int getCurrentSpeed()
   {
@@ -68,11 +69,15 @@ template <typename t>
 MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
     : timerField(this), mCnt(0)
 {
+  this->accUpdatePeriod = accUpdatePeriod;
+  this->pulseWidth = pulseWidth;
+}
+
+template <typename t>
+void MotorControlBase<t>::begin(){
   OK = timerField.begin();
   timerField.setPulseWidth(pulseWidth);
   timerField.setAccUpdatePeriod(accUpdatePeriod);
-  this->accUpdatePeriod = accUpdatePeriod;
-  this->pulseWidth = pulseWidth;
 }
  
 template <typename t>

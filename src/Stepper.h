@@ -1,7 +1,24 @@
 #pragma once
 
+// Including main.h ensures that the correct HAL headers are included.
+// STM32Step assumes the use of STM32Cube environment.
+extern "C" {
+#include "main.h"
+}
+
 #include <cstdint>
 #include <algorithm>
+
+/**
+ * Helper struct for communicating GPIO pins
+ * */
+struct GpioPin{
+    GPIO_TypeDef* port;
+    uint16_t pin;
+};
+#define REVERSE_POLARITY(polarity) ((!(polarity)) ? GPIO_PIN_SET : GPIO_PIN_RESET)
+#define GPIO_PIN(name) (GpioPin{name##_GPIO_Port,name##_Pin}) 
+
 
 class Stepper
 {
@@ -11,26 +28,26 @@ class Stepper
     static constexpr uint32_t aDefault = 2500;   // reasonably low (~0.5s for reaching the default speed)
 
   public:
-    Stepper(const int StepPin, const int DirPin);
+    Stepper(const GpioPin StepPin, const GpioPin DirPin);
 
     Stepper &setMaxSpeed(int32_t speed);   // steps/s
     Stepper &setAcceleration(uint32_t _a); // steps/s^2
 
-    Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
-    Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
+    Stepper &setStepPinPolarity(GPIO_PinState p);  // HIGH -> positive pulses, LOW -> negative pulses
+    Stepper &setDirectionPolarity(GPIO_PinState p); // Set pin state corresponding to positive direction
 
     void setTargetAbs(int32_t pos);   // Set target position absolute
     void setTargetRel(int32_t delta); // Set target position relative to current position
 
     inline int32_t getPosition() const { return current; }
     inline void setPosition(int32_t pos) { current = pos; }
-    int32_t dir;
+    int8_t dir;
 
   protected:
     inline void doStep();
     inline void clearStepPin() const;
 
-    inline void setDir(int d);
+    inline void setDir(int8_t d);
     inline void toggleDir();
 
     volatile int32_t current;
@@ -48,11 +65,8 @@ class Stepper
     static bool cmpVmax(const Stepper *a, const Stepper *b) { return std::abs(a->vMax) > std::abs(b->vMax); }
 
     // Pin & Dir registers
-    volatile uint32_t *stepPinActiveReg;
-    volatile uint32_t *stepPinInactiveReg;
-    volatile uint32_t *dirPinCwReg;
-    volatile uint32_t *dirPinCcwReg;
-    const int stepPin, dirPin;
+    const GpioPin stepPin, dirPin;
+    GPIO_PinState stepPinPolarity, directionPolarity;
 
     // Friends
     template <typename a, typename t>
@@ -69,18 +83,18 @@ class Stepper
 
 void Stepper::doStep()
 {
-    *stepPinActiveReg = 1;
+    HAL_GPIO_WritePin(stepPin.port, stepPin.pin, stepPinPolarity);
     current += dir;
 }
 void Stepper::clearStepPin() const
 {
-    *stepPinInactiveReg = 1;
+    HAL_GPIO_WritePin(stepPin.port, stepPin.pin, REVERSE_POLARITY(stepPinPolarity));
 }
 
-void Stepper::setDir(int d)
+void Stepper::setDir(int8_t d)
 {
     dir = d;
-    dir == 1 ? *dirPinCwReg = 1 : *dirPinCcwReg = 1;
+    HAL_GPIO_WritePin(dirPin.port, dirPin.pin, dir == 1 ? directionPolarity : REVERSE_POLARITY(directionPolarity));
 }
 
 void Stepper::toggleDir()
