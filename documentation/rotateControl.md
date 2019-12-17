@@ -86,7 +86,7 @@ chapters:
            controller.rotateAsync(s1);           
            while(controller.getCurrentSpeed() < 5000)
            {
-              Serial.printf("pos: %d, speed: %d\n", s1.getPosition(), controller.getCurrentSpeed));
+              Serial.printf("pos: %d, speed: %d\n", s1.getPosition(), controller.getCurrentSpeed());
               delay(50);
            }
            controller.stop();           
