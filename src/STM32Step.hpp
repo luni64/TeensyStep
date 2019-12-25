@@ -2,14 +2,12 @@
 
 #include "version.h"
 
-#include "RotateControlBase.h"
-#include "StepControlBase.h"
+#include "RotateControlBase.hpp"
+#include "StepControlBase.hpp"
 
 #include "accelerators/LinRotAccelerator.h"
 #include "accelerators/LinStepAccelerator.h"
 //#include "accelerators/SinRotAccelerator.h"
-
-#include "timer/generic/TimerField.h"
 
 using TimerField = TickTimerField;
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "timer/TF_Handler.h"
-#include "Stepper.h"
+#include "timer/TF_Handler.hpp"
+#include "Stepper.hpp"
 
 constexpr int MaxMotors = 10;
 

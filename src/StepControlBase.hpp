@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MotorControlBase.h"
+#include "MotorControlBase.hpp"
 #include <algorithm>
 
 template <typename Accelerator, typename TimerField>
