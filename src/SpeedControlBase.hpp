@@ -1,13 +1,18 @@
 #pragma once
 
-#include "MotorControlBase.hpp"
-#include <algorithm>
+//#include <algorithm>
+#include <cstdint>
+#include <cstddef> // include size_t
 
-template <typename Accelerator, typename TimerField>
-class RotateControlBase : public MotorControlBase<TimerField>
+#include "timer/TimerArray.hpp"
+
+template <typename Accelerator, typename MotorControl>
+class SpeedControlBase : public MotorControl
 {
   public:
-    RotateControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);    
+    using Stepper = typename MotorControl::Stepper;
+
+    SpeedControlBase(uint32_t pulseWidth = 5, uint32_t accUpdatePeriod = 5000);
 
     // Non-blocking movements ----------------
     template <typename... Steppers>
@@ -35,21 +40,21 @@ class RotateControlBase : public MotorControlBase<TimerField>
 
      Accelerator accelerator;
 
-     RotateControlBase(const RotateControlBase &) = delete;
-     RotateControlBase &operator=(const RotateControlBase &) = delete;
+     SpeedControlBase(const SpeedControlBase &) = delete;
+     SpeedControlBase &operator=(const SpeedControlBase &) = delete;
 };
 
 // Implementation *************************************************************************************************
 
-template <typename a, typename t>
-RotateControlBase<a, t>::RotateControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
-    : MotorControlBase<t>(pulseWidth, accUpdatePeriod)
+template <typename a, typename MotorControl>
+SpeedControlBase<a, MotorControl>::SpeedControlBase(uint32_t pulseWidth, uint32_t accUpdatePeriod)
+    : MotorControl(pulseWidth, accUpdatePeriod)
 {
-    this->mode = MotorControlBase<t>::Mode::notarget;
+    this->mode = MotorControl::Mode::notarget;
 }
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
+void SpeedControlBase<a, t>::doRotate(int N, float speedFactor)
 {
      //Calculate Bresenham parameters ----------------------------------------------------------------
     std::sort(this->motorList, this->motorList + N, Stepper::cmpVmax);
@@ -77,7 +82,7 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
 // ISR -----------------------------------------------------------------------------------------------------------
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::accTimerISR()
+void SpeedControlBase<a, t>::accTimerISR()
 {   
     int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
      
@@ -108,7 +113,7 @@ void RotateControlBase<a, t>::accTimerISR()
 
 template <typename a, typename t>
 template <typename... Steppers>
-void RotateControlBase<a, t>::rotateAsync(Steppers &... steppers)
+void SpeedControlBase<a, t>::rotateAsync(Steppers &... steppers)
 {
     this->attachStepper(steppers...);
     doRotate(sizeof...(steppers));
@@ -116,32 +121,32 @@ void RotateControlBase<a, t>::rotateAsync(Steppers &... steppers)
 
 template <typename a, typename t>
 template <size_t N>
-void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N]) 
+void SpeedControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N]) 
 {
     this->attachStepper(steppers);
     doRotate(N);
 }
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::overrideSpeed(float factor)
+void SpeedControlBase<a, t>::overrideSpeed(float factor)
 {
     accelerator.overrideSpeed(factor);
 }
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::overrideAcceleration(float factor)
+void SpeedControlBase<a, t>::overrideAcceleration(float factor)
 {
     accelerator.overrideAcceleration(factor);
 }
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::stopAsync()
+void SpeedControlBase<a, t>::stopAsync()
 {
     accelerator.initiateStopping(this->leadMotor->current);
 }
 
 template <typename a, typename t>
-void RotateControlBase<a, t>::stop()
+void SpeedControlBase<a, t>::stop()
 {
     stopAsync();
     while (this->isRunning())

@@ -2,38 +2,15 @@
 
 #include "version.h"
 
-#include "RotateControlBase.hpp"
-#include "StepControlBase.hpp"
+#include "step_control/GPIOStepControl.hpp"
 
-#include "accelerators/LinRotAccelerator.h"
-#include "accelerators/LinStepAccelerator.h"
-//#include "accelerators/SinRotAccelerator.h"
+#include "PositionControlBase.hpp"
+//#include "SpeedControlBase.hpp"
 
-using TimerField = TickTimerField;
+#include "accelerators/LinPositionAccelerator.h"
+#include "accelerators/LinSpeedAccelerator.h"
+//#include "accelerators/SinSpeedAccelerator.h"
 
-// Linear acceleration -----------------------------------------------------------------------------------------
+using PositionControl = PositionControlBase<LinPositionAccelerator, GPIOStepControl>;
+//using SpeedControl = SpeedControlBase<LinSpeedAccelerator, GPIOStepControl>;
 
-
-using MotorControl = MotorControlBase<TimerField>;
-
-using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
-using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
-
-using StepControlTick = StepControlBase<LinStepAccelerator,TickTimerField>;
-using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
-
-// Sine acceleration -------------------------------------------------------------------------------------------
-
-// template <unsigned stepPulseWidth = defPW, unsigned accUpdatePeriod = defAP>
-// using RotateControlSin = RotateControlBase<SinRotAccelerator, TimerField>;
-
-//template <unsigned p = defPW, unsigned a>
-//using StepControlSin = StepControlBase<SinStepAccelerator, p, a>;
-
-// Generic ==========================================================================================
-
-// template <unsigned stepPulseWidth = defPW, unsigned accUpdatePeriod = defAP>
-// using RotateControl_tick = RotateControlBase<LinRotAccelerator, stepPulseWidth, accUpdatePeriod>;
-
-// template <unsigned stepPulseWidth = defPW, unsigned a = defAP>
-// using StepControl_tick = StepControlBase<LinStepAccelerator, stepPulseWidth, a>;

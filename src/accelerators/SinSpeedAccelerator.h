@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 
-class SinRotAccelerator
+class SinSpeedAccelerator
 {
   public:
     inline int32_t prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor = 1.0);
@@ -12,11 +12,11 @@ class SinRotAccelerator
     inline int32_t initiateStopping(int32_t currentPosition);
     inline void overrideSpeed(float fac, int32_t currentPosition);
 
-    SinRotAccelerator() = default;
+    SinSpeedAccelerator() = default;
 
   protected:
-    SinRotAccelerator(const SinRotAccelerator &) = delete;
-    SinRotAccelerator &operator=(const SinRotAccelerator &) = delete;
+    SinSpeedAccelerator(const SinSpeedAccelerator &) = delete;
+    SinSpeedAccelerator &operator=(const SinSpeedAccelerator &) = delete;
 
     int32_t dir;
     int32_t a, two_a; 
@@ -33,7 +33,7 @@ class SinRotAccelerator
 
 // Implementation =====================================================================================================
 
-int32_t SinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor)
+int32_t SinSpeedAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor)
 {
     v_tgt_orig = targetSpeed;
     a = acceleration;
@@ -47,7 +47,7 @@ int32_t SinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targ
     return v_min;
 }
 
-int32_t SinRotAccelerator::updateSpeed(int32_t curPos)
+int32_t SinSpeedAccelerator::updateSpeed(int32_t curPos)
 {
     if (vstp == vstp_tgt) // already at target, keep spinning with target frequency
     {
@@ -62,7 +62,7 @@ int32_t SinRotAccelerator::updateSpeed(int32_t curPos)
     return signed_sqrt(two_a * vstp + v_min_sqr);
 }
 
-void SinRotAccelerator::overrideSpeed(float fac, int32_t curPos)
+void SinSpeedAccelerator::overrideSpeed(float fac, int32_t curPos)
 {
     // TODO: add interrupt handling
     //noInterrupts();
@@ -73,7 +73,7 @@ void SinRotAccelerator::overrideSpeed(float fac, int32_t curPos)
     //interrupts();
 }
 
-int32_t SinRotAccelerator::initiateStopping(int32_t curPos)
+int32_t SinSpeedAccelerator::initiateStopping(int32_t curPos)
 {
     overrideSpeed(0, curPos);
     return 0;
