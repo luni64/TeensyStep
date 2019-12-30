@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <algorithm>
+#include <algorithm>
 #include <cstdint>
 #include <cstddef> // include size_t
 
@@ -37,7 +37,7 @@ protected:
     static void accTimerISR(PositionControlBase* ctx);
 
     void doMove(int32_t N, bool mode = true);
-
+    
     ContextTimer<PositionControlBase> accTimer;
     Accelerator accelerator;
 

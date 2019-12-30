@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <algorithm>
+#include <algorithm>
 #include <cstdint>
 #include <cstddef> // include size_t
 
@@ -12,7 +12,7 @@ class SpeedControlBase : public MotorControl
   public:
     using Stepper = typename MotorControl::Stepper;
 
-    SpeedControlBase(uint32_t pulseWidth = 5, uint32_t accUpdatePeriod = 5000);
+    SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth = 5, uint32_t accUpdatePeriod = 5000);
 
     // Non-blocking movements ----------------
     template <typename... Steppers>
@@ -23,32 +23,34 @@ class SpeedControlBase : public MotorControl
 
     void stopAsync();
 
-     void emergencyStop() {
-         accelerator.eStop();
-         this->timerField.stepTimerStop();
-     }
+    void emergencyStop() {
+        accelerator.eStop();
+        this->stepTimeControl.stepTimerStop();
+    }
 
-     // Blocking movements --------------------
-     void stop();
+    // Blocking movements --------------------
+    void stop();
 
-     void overrideSpeed(float speedFac);
-     void overrideAcceleration(float accFac);
+    void overrideSpeed(float speedFac);
+    void overrideAcceleration(float accFac);
 
- protected:
-     void doRotate(int N, float speedFactor = 1.0);
-     void accTimerISR();
+protected:
+    void doRotate(int N, float speedFactor = 1.0);
+    static void accTimerISR(SpeedControlBase* ctx);
 
-     Accelerator accelerator;
+    ContextTimer<SpeedControlBase> accTimer;
+    Accelerator accelerator;
 
-     SpeedControlBase(const SpeedControlBase &) = delete;
-     SpeedControlBase &operator=(const SpeedControlBase &) = delete;
+    SpeedControlBase(const SpeedControlBase &) = delete;
+    SpeedControlBase &operator=(const SpeedControlBase &) = delete;
 };
 
 // Implementation *************************************************************************************************
 
 template <typename a, typename MotorControl>
-SpeedControlBase<a, MotorControl>::SpeedControlBase(uint32_t pulseWidth, uint32_t accUpdatePeriod)
-    : MotorControl(pulseWidth, accUpdatePeriod)
+SpeedControlBase<a, MotorControl>::SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
+    : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, accTimer),
+    accTimer(this, accTimerISR)
 {
     this->mode = MotorControl::Mode::notarget;
 }
@@ -75,28 +77,28 @@ void SpeedControlBase<a, t>::doRotate(int N, float speedFactor)
     
     // Start moving---------------------------------------------------------------------------------------  
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
-    this->timerField.setStepFrequency(0);    
-    this->timerField.accTimerStart();    
+    this->stepTimeControl.setStepFrequency(0);    
+    this->stepTimeControl.accTimerStart();    
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
 
 template <typename a, typename t>
-void SpeedControlBase<a, t>::accTimerISR()
+void SpeedControlBase<a, t>::accTimerISR(SpeedControlBase* ctx)
 {   
-    int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
+    int32_t newSpeed = ctx->accelerator.updateSpeed(ctx->leadMotor->current); // get new speed for the leading motor
      
     //Serial.printf("rc,curSpeed: %i newspd:%i\n",this->leadMotor->currentSpeed,  newSpeed);
 
-    if (this->leadMotor->currentSpeed == newSpeed)
+    if (ctx->leadMotor->currentSpeed == newSpeed)
     {         
         return; // nothing changed, just keep running
     }
 
     int dir = newSpeed >= 0 ? 1 : -1; // direction changed? -> toggle direction of all motors
-    if (dir != this->leadMotor->dir)
+    if (dir != ctx->leadMotor->dir)
     {
-        Stepper **motor = this->motorList;
+        Stepper **motor = ctx->motorList;
         while ((*motor) != nullptr)
         {
             (*motor++)->toggleDir();
@@ -105,8 +107,8 @@ void SpeedControlBase<a, t>::accTimerISR()
     }
     
     
-    this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer    
-    this->leadMotor->currentSpeed = newSpeed;   
+    ctx->stepTimeControl.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer    
+    ctx->leadMotor->currentSpeed = newSpeed;   
 }
 
 // ROTATE Commands -------------------------------------------------------------------------------
