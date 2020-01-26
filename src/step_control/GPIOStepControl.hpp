@@ -28,7 +28,7 @@ public:
 
 protected:
 
-  GPIOStepControl(TimerArrayControl& control, uint32_t pulseWidth, uint32_t accUpdatePeriod, Timer& _accTimer);
+  GPIOStepControl(TimerArrayControl& control, uint32_t pulseWidth, uint32_t accUpdatePeriod, Timer* _accTimer);
 
   template <size_t N>
   void attachStepper(Stepper *(&motors)[N]);
@@ -72,11 +72,11 @@ bool GPIOStepControl::isRunning()
   return stepTimeControl.stepTimerIsRunning();
 }
 
-GPIOStepControl::GPIOStepControl(TimerArrayControl& control, uint32_t _pulseWidth, uint32_t _accUpdatePeriod, Timer& _accTimer)
+GPIOStepControl::GPIOStepControl(TimerArrayControl& control, uint32_t _pulseWidth, uint32_t _accUpdatePeriod, Timer* _accTimer)
     : mCnt(0),
-    stepTimer(this, stepTimerISR),
-    delayTimer(this, pulseTimerISR),
-    stepTimeControl(control, stepTimer, delayTimer, _accTimer),
+    stepTimer(0, true, this, stepTimerISR),
+    delayTimer(0, false, this, pulseTimerISR),
+    stepTimeControl(control, &stepTimer, &delayTimer, _accTimer),
     accUpdatePeriod(_accUpdatePeriod),
     pulseWidth(_pulseWidth)
 {}

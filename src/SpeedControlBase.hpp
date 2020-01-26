@@ -12,7 +12,7 @@ class SpeedControlBase : public MotorControl
   public:
     using Stepper = typename MotorControl::Stepper;
 
-    SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth = 5, uint32_t accUpdatePeriod = 5000);
+    SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth = 25, uint32_t accUpdatePeriod = 5000);
 
     // Non-blocking movements ----------------
     template <typename... Steppers>
@@ -21,6 +21,7 @@ class SpeedControlBase : public MotorControl
     template <size_t N>
     void rotateAsync(Stepper *(&motors)[N]);
 
+    bool isMoving();
     void stopAsync();
 
     void emergencyStop() {
@@ -47,10 +48,16 @@ protected:
 
 // Implementation *************************************************************************************************
 
+template <typename a, typename t>
+bool SpeedControlBase<a, t>::isMoving()
+{ 
+  return accelerator.isMoving();
+}
+
 template <typename a, typename MotorControl>
 SpeedControlBase<a, MotorControl>::SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
-    : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, accTimer),
-    accTimer(this, accTimerISR)
+    : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, &accTimer),
+    accTimer(0, true, this, accTimerISR)
 {
     this->mode = MotorControl::Mode::notarget;
 }
@@ -77,8 +84,8 @@ void SpeedControlBase<a, t>::doRotate(int N, float speedFactor)
     
     // Start moving---------------------------------------------------------------------------------------  
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
-    this->stepTimeControl.setStepFrequency(0);    
-    this->stepTimeControl.accTimerStart();    
+    this->stepTimeControl.setStepFrequency(0);
+    this->stepTimeControl.accTimerStart();
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
@@ -149,9 +156,9 @@ void SpeedControlBase<a, t>::stopAsync()
 
 template <typename a, typename t>
 void SpeedControlBase<a, t>::stop()
-{
+{   
     stopAsync();
-    while (this->isRunning())
+    while (SpeedControlBase<a, t>::isMoving())
     {
         HAL_Delay(1); // not strictly necessary
     }

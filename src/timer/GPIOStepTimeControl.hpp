@@ -8,35 +8,46 @@
 class GPIOStepTimeControl
 {
   public:
-    inline GPIOStepTimeControl(TimerArrayControl& _control, Timer& _stepTimer, Timer& _delayTimer, Timer& _accTimer);
+    inline GPIOStepTimeControl(TimerArrayControl& _control, Timer* _stepTimer, Timer* _delayTimer, Timer* _accTimer);
     inline ~GPIOStepTimeControl();
 
     inline bool begin();
     inline void end();
 
-    inline void stepTimerStart() { control.attachTimer(&stepTimer); }
-    inline void stepTimerStop() { control.detachTimer(&stepTimer); }
-    inline bool stepTimerIsRunning() { return stepTimer.isRunning(); }
-    inline void setStepFrequency(unsigned f) { stepFrequency = control.fcnt / f; control.changeTimerDelay(&stepTimer, stepFrequency); }
-    inline unsigned getStepFrequency() { return stepFrequency; } // returns the actual step frequency
+    inline void stepTimerStart() { control.attachTimer(stepTimer); }
+    inline void stepTimerStop() { control.detachTimer(stepTimer); }
+    inline bool stepTimerIsRunning() { return stepTimer->isRunning(); }
+    inline void setStepFrequency(unsigned f) {
+      if (f == 0){
+        stepTimerStop();
+        return;
+      }
+      
+      stepPeriod = (control.fclk / control.clkdiv) / f;
+      control.changeTimerDelay(stepTimer, stepPeriod);
 
-    inline void accTimerStart() { control.attachTimer(&accTimer); }
-    inline void accTimerStop() { control.detachTimer(&accTimer); }
-    inline void setAccUpdatePeriod(uint32_t period) { control.changeTimerDelay(&accTimer, period); }
+      if (!stepTimerIsRunning()) stepTimerStart();
+    }
+    inline unsigned getStepFrequency() { return (control.fclk / control.clkdiv) / stepPeriod; } // returns the actual step frequency
 
-    inline void setPulseWidth(uint32_t delay) { control.changeTimerDelay(&delayTimer, delay); }
-    inline void triggerDelay() { control.attachTimer(&delayTimer); }
+    inline void accTimerStart() { control.attachTimer(accTimer); control.manualFire(accTimer); }
+    inline void accTimerStop() { control.detachTimer(accTimer); }
+    inline bool accTimerIsRunning() { return accTimer->isRunning(); }
+    inline void setAccUpdatePeriod(uint32_t period) { control.changeTimerDelay(accTimer, period); }
+
+    inline void setPulseWidth(uint32_t delay) { control.changeTimerDelay(delayTimer, delay); }
+    inline void triggerDelay() { control.attachTimerInSync(delayTimer, stepTimer); }
 
   protected:
-    uint32_t stepFrequency;
+    uint32_t stepPeriod;
 
     TimerArrayControl& control;
-    Timer& stepTimer, delayTimer, accTimer;
+    Timer* stepTimer; Timer* delayTimer; Timer* accTimer;
 };
 
 // IMPLEMENTATION ====================================================================
 
-GPIOStepTimeControl::GPIOStepTimeControl(TimerArrayControl& _control, Timer& _stepTimer, Timer& _delayTimer, Timer& _accTimer)
+GPIOStepTimeControl::GPIOStepTimeControl(TimerArrayControl& _control, Timer* _stepTimer, Timer* _delayTimer, Timer* _accTimer)
     : control(_control),
       stepTimer(_stepTimer),
       delayTimer(_delayTimer),

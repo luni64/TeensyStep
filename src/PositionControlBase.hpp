@@ -37,7 +37,7 @@ protected:
     static void accTimerISR(PositionControlBase* ctx);
 
     void doMove(int32_t N, bool mode = true);
-    
+
     ContextTimer<PositionControlBase> accTimer;
     Accelerator accelerator;
 
@@ -50,7 +50,7 @@ protected:
 template <typename a, typename MotorControl>
 PositionControlBase<a, MotorControl>::PositionControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
     : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, accTimer),
-    accTimer(this, accTimerISR)
+    accTimer(0, true, this, accTimerISR)
 {
     this->mode = MotorControl::Mode::target;
 }
