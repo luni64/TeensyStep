@@ -11,6 +11,7 @@ public:
     inline int32_t updateSpeed(int32_t currentPosition);
     inline uint32_t initiateStopping(int32_t currentPosition);
     inline void overrideSpeed(float fac, int32_t currentPosition);
+    inline bool isMoving();
 
     LinPositionAccelerator() = default;
 
@@ -23,6 +24,7 @@ protected:
     uint32_t accLength, decStart;
     uint32_t two_a;
     uint32_t v_tgt, v_min2;
+    bool moving = false;
 };
 
 // Inline Implementation =====================================================================================================
@@ -38,6 +40,8 @@ int32_t LinPositionAccelerator::prepareMovement(int32_t currentPos, int32_t targ
     uint32_t ae = (float)v_tgt * v_tgt / two_a - 0.5f; // length of acceleration phase (we use a float here to avoid overflow in v_tgt^2). Use (1) and vmin^2 = 2a
     accLength = std::min(ae, delta_tgt / 2);           // limit acceleration phase to half of total steps
     decStart = delta_tgt - accLength;
+
+    moving = true;
 
     return accLength == 0 ? v_tgt : (int32_t)sqrtf(v_min2);
 }
@@ -57,6 +61,8 @@ int32_t LinPositionAccelerator::updateSpeed(int32_t curPos)
     //deceleration phase --------------------------------------
     if(stepsDone < delta_tgt)
         return sqrtf(two_a * ((stepsDone < delta_tgt - 1) ? delta_tgt - stepsDone - 2 : 0) + v_min2);
+
+    moving = false;
 
     //we are done, make sure to return 0 to stop the step timer
     return 0; 
@@ -82,4 +88,9 @@ uint32_t LinPositionAccelerator::initiateStopping(int32_t curPos)
     {
         return delta_tgt - stepsDone;       // return steps to go
     }
+}
+
+bool LinPositionAccelerator::isMoving()
+{
+    return moving;
 }

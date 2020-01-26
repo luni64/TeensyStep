@@ -11,6 +11,7 @@ class SinSpeedAccelerator
     inline int32_t updateSpeed(int32_t currentPosition);
     inline int32_t initiateStopping(int32_t currentPosition);
     inline void overrideSpeed(float fac, int32_t currentPosition);
+    inline bool isMoving();
 
     SinSpeedAccelerator() = default;
 
@@ -77,4 +78,9 @@ int32_t SinSpeedAccelerator::initiateStopping(int32_t curPos)
 {
     overrideSpeed(0, curPos);
     return 0;
+}
+
+bool SinSpeedAccelerator::isMoving()
+{
+    return vstp != 0;
 }

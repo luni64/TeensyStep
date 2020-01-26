@@ -13,6 +13,7 @@ public:
     inline void eStop();
     inline void overrideSpeed(float factor);
     inline void overrideAcceleration(float factor);
+    inline bool isMoving();
 
     LinSpeedAccelerator() = default;
 
@@ -87,5 +88,10 @@ void LinSpeedAccelerator::eStop()
     v_cur = 0.0f;
     v_tgt = 0.0f;
     //interrupts();
+}
+
+bool LinSpeedAccelerator::isMoving()
+{
+    return v_cur != 0.0f;
 }
    
