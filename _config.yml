@@ -45,7 +45,7 @@ author:
   name:                Lutz Niggl
   # email:               lutz.niggl@lunoptics.com
   # Used by `jekyll-seo-tag`:
-  # twitter:            luni_64
+  twitter:            luni_64
   github:             luni64/TeensyStep  
 
 # Add links to the sidebar.
