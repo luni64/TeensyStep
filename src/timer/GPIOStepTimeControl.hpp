@@ -23,12 +23,12 @@ class GPIOStepTimeControl
         return;
       }
       
-      stepPeriod = (control.fclk / control.clkdiv) / f;
+      stepPeriod = ((float)control.fclk / control.clkdiv) / f;
       control.changeTimerDelay(stepTimer, stepPeriod);
 
       if (!stepTimerIsRunning()) stepTimerStart();
     }
-    inline unsigned getStepFrequency() { return (control.fclk / control.clkdiv) / stepPeriod; } // returns the actual step frequency
+    inline unsigned getStepFrequency() { return ((float)control.fclk / control.clkdiv) / stepPeriod; } // returns the actual step frequency
 
     inline void accTimerStart() { control.attachTimer(accTimer); control.manualFire(accTimer); }
     inline void accTimerStop() { control.detachTimer(accTimer); }

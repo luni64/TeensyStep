@@ -12,7 +12,7 @@ class PositionControlBase : public MotorControl
 public:
     using Stepper = typename MotorControl::Stepper;
 
-    PositionControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth = 5, uint32_t accUpdatePeriod = 5000);
+    PositionControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth = 25, uint32_t accUpdatePeriod = 5000);
 
     // Non-blocking movements ----------------
     template <typename... Steppers>
@@ -20,6 +20,8 @@ public:
 
     template <size_t N>
     void moveAsync(Stepper *(&motors)[N]);
+
+    bool isMoving();
     void stopAsync();
 
     // Blocking movements --------------------
@@ -47,9 +49,15 @@ protected:
 
 // Implementation *************************************************************************************************
 
+template <typename a, typename t>
+bool PositionControlBase<a, t>::isMoving()
+{ 
+  return accelerator.isMoving();
+}
+
 template <typename a, typename MotorControl>
 PositionControlBase<a, MotorControl>::PositionControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
-    : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, accTimer),
+    : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, &accTimer),
     accTimer(0, true, this, accTimerISR)
 {
     this->mode = MotorControl::Mode::target;
@@ -84,7 +92,7 @@ void PositionControlBase<a, t>::doMove(int32_t N, bool move)
 template <typename a, typename t>
 void PositionControlBase<a, t>::accTimerISR(PositionControlBase* ctx)
 {
-    if (ctx->isRunning())
+    if (ctx->isMoving())
     {
         ctx->stepTimeControl.setStepFrequency(ctx->accelerator.updateSpeed(ctx->leadMotor->current));
     }
@@ -115,7 +123,7 @@ template <typename... Steppers>
 void PositionControlBase<a, t>::move(Steppers &... steppers)
 {
     moveAsync(steppers...);
-    while (this->stepTimeControl.stepTimerIsRunning())
+    while (PositionControlBase<a, t>::isMoving())
     {
         HAL_Delay(1);
     }
@@ -126,7 +134,7 @@ template <size_t N>
 void PositionControlBase<a, t>::move(Stepper *(&motors)[N])
 {
     moveAsync(motors);
-    while (this->isRunning())
+    while (PositionControlBase<a, t>::isMoving())
     {
         HAL_Delay(1);
     }
@@ -143,7 +151,7 @@ template <typename a, typename t>
 void PositionControlBase<a, t>::stop()
 {
     stopAsync();
-    while (this->isRunning())
+    while (PositionControlBase<a, t>::isMoving())
     {
         HAL_Delay(1);
     }
