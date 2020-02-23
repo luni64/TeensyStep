@@ -20,13 +20,6 @@ public:
   virtual ~MotorControlBase();
   bool isOk() const { return OK; }
 
-  void setup(void (*stepCallback)(void), void (*accCallback)(void), void (*delayCallback)(void))
-  {
-    timerField.setupStepTimer(stepCallback);
-    timerField.setupAccTimer(accCallback);
-    timerField.setupDelayTimer(delayCallback);
-  }
-
   void stepTimerISR();
   void pulseTimerISR();
   

@@ -10,8 +10,6 @@
 // // ESP 32
 // //=========================
 
-//
-
 class TimerField
 {
 public:
@@ -33,11 +31,9 @@ public:
   inline void setPulseWidth(unsigned delay) { timerAlarmWrite(stepTimer, delay, false); }
   inline void triggerDelay() { timerAlarmEnable(delayTimer); }
 
-  void setupStepTimer(void (*cb)(void));
-  void setupAccTimer(void (*cb)(void));
-  void setupDelayTimer(void (*cb)(void));
+
 protected:
-  TF_Handler *handler;
+  static TF_Handler* handler;
   hw_timer_t *stepTimer;
   hw_timer_t *accTimer;
   hw_timer_t *delayTimer;
@@ -47,29 +43,17 @@ protected:
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler)
-    : handler(_handler),
-      stepTimer(timerBegin(0, 80, true)),
+    : stepTimer(timerBegin(0, 80, true)),
       accTimer(timerBegin(1, 80, true)),
       delayTimer(timerBegin(2, 80, true)),
       stepTimerRunning(false)
 {
-}
-
-void TimerField::setupStepTimer(void (*cb)(void))
-{
-  timerAttachInterrupt(stepTimer, cb, true);
+  handler = _handler;
+  timerAttachInterrupt(stepTimer,[]{handler->stepTimerISR();}, true);
   timerAlarmWrite(stepTimer, 1, true);
-}
-
-void TimerField::setupAccTimer(void (*cb)(void))
-{
-  timerAttachInterrupt(accTimer, cb, true);
+  timerAttachInterrupt(accTimer, []{handler->accTimerISR();}, true);
   timerAlarmWrite(accTimer, 1, true);
-}
-
-void TimerField::setupDelayTimer(void (*cb)(void))
-{
-  timerAttachInterrupt(delayTimer, cb, true);
+  timerAttachInterrupt(delayTimer, []{handler->pulseTimerISR();}, true);
   timerAlarmWrite(delayTimer, 1, false);
 }
 
