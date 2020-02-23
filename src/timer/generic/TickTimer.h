@@ -53,7 +53,7 @@ class PeriodicTimer : public TimerBase
 
     inline void setPeriod(uint32_t microSeconds)
     {
-        deltaCnt = F_CPU / 1'000'000 * microSeconds;
+        deltaCnt = F_CPU / 1000000 * microSeconds;
     }
 
     static constexpr float minFrequency = (float)F_CPU / std::numeric_limits<uint32_t>::max();
@@ -69,7 +69,7 @@ class OneShotTimer : public TimerBase
 
     void setDelay(unsigned microSeconds)
     {
-        deltaCnt = F_CPU / 1'000'000 * microSeconds;
+        deltaCnt = F_CPU / 1000000 * microSeconds;
     }
 };
 

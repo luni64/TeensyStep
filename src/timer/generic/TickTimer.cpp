@@ -1,3 +1,4 @@
+#ifndef ARDUINO_ARCH_ESP32
 #include "TickTimer.h"
 
 void std::__throw_bad_function_call()
@@ -7,3 +8,4 @@ void std::__throw_bad_function_call()
 
 TimerBase* TimerControl::firstTimer = nullptr;
 TimerBase* TimerControl::lastTimer = nullptr;
+#endif

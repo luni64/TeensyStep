@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef ARDUINO_ARCH_ESP32
 #include "wiring.h"
+#endif
 // //#include "imxrt.h"
 
 #include "TickTimer.h"

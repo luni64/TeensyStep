@@ -28,8 +28,8 @@ public:
     // Misc ----------------------------------
     void setCallback(void (*_callback)()) { this->callback = _callback; }
 
-protected:
     void accTimerISR();
+protected:
 
     void doMove(int N, bool mode = true);
 
