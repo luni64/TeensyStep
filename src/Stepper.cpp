@@ -1,25 +1,32 @@
 #include "Stepper.h"
+
+#ifdef ARDUINO_ARCH_ESP32
+#include "esp32-hal-gpio.h"
+#elif
 #include "core_pins.h"
+#endif
 
 Stepper::Stepper(const int _stepPin, const int _dirPin)
     : current(0),  stepPin(_stepPin), dirPin(_dirPin)
 {
+    pinMode(stepPin, OUTPUT);
+    pinMode(dirPin, OUTPUT);
+
     setStepPinPolarity(HIGH);
     setInverseRotation(false);
     setAcceleration(aDefault);
     setMaxSpeed(vMaxDefault);
-
-    pinMode(stepPin, OUTPUT);
-    pinMode(dirPin, OUTPUT);
 }
 
 Stepper &Stepper::setStepPinPolarity(int polarity)
 {
+    #ifdef ARDUINO_ARCH_ESP32
+    this->polarity = polarity;
+    #elif
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[stepPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);              //GPIO_PSOR = GPIO_PDOR + 4
     uint32_t *pinClearReg = (uint32_t *)(pinRegAddr + 8 * 32);            //GPIO_PCOR = GPIO_PDOR + 8
-
     // Assign registers according to step option
     if (polarity == LOW)
     {
@@ -31,12 +38,16 @@ Stepper &Stepper::setStepPinPolarity(int polarity)
         stepPinActiveReg = pinSetReg;
         stepPinInactiveReg = pinClearReg;
     }
+    #endif
     clearStepPin(); // set step pin to inactive state
     return *this;
 }
 
 Stepper &Stepper::setInverseRotation(bool reverse)
 {
+    #ifdef ARDUINO_ARCH_ESP32
+    this->reverse = reverse;
+    #elif
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[dirPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);             //GPIO_PSOR = GPIO_PDOR + 4
@@ -52,6 +63,7 @@ Stepper &Stepper::setInverseRotation(bool reverse)
         dirPinCwReg = pinSetReg;
         dirPinCcwReg = pinClearReg;
     }
+    #endif
     return *this;
 }
 

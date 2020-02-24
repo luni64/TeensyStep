@@ -1,6 +1,8 @@
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+
 #include "PIT.h"
- 
- #include "../TF_Handler.h"
+
+#include "../TF_Handler.h"
 
 namespace
 {
@@ -59,3 +61,4 @@ void PIT::setupChannel()
         break;
     }
 }
+#endif

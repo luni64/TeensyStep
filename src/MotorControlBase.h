@@ -20,6 +20,9 @@ public:
   virtual ~MotorControlBase();
   bool isOk() const { return OK; }
 
+  void stepTimerISR();
+  void pulseTimerISR();
+  
 protected:
   TimerField timerField;
   MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
@@ -30,9 +33,6 @@ protected:
   void attachStepper(Stepper &stepper, Steppers &... steppers);
   void attachStepper(Stepper &stepper);
 
-  void stepTimerISR();
-  //void accTimerISR() { Serial.println("df"); }
-  void pulseTimerISR();
 
   Stepper *motorList[MaxMotors + 1];
   Stepper *leadMotor;

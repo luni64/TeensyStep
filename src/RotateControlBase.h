@@ -2,7 +2,10 @@
 
 #include "MotorControlBase.h"
 #include <algorithm>
+
+#ifndef ARDUINO_ARCH_ESP32
 #include "core_pins.h"
+#endif
 
 template <typename Accelerator, typename TimerField>
 class RotateControlBase : public MotorControlBase<TimerField>
