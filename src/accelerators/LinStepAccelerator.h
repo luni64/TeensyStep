@@ -48,7 +48,7 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 
     // acceleration phase -------------------------------------
     if (stepsDone < accLength)
-        return sqrtf(two_a * stepsDone + v_min2);
+        return sqrt(two_a * stepsDone + v_min2);
 
     // constant speed phase ------------------------------------
     if (stepsDone < decStart)
@@ -56,7 +56,7 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 
     //deceleration phase --------------------------------------
     if(stepsDone < delta_tgt)
-        return sqrtf(two_a * ((stepsDone < delta_tgt - 1) ? delta_tgt - stepsDone - 2 : 0) + v_min2);
+        return sqrt(two_a * ((stepsDone < delta_tgt - 1) ? delta_tgt - stepsDone - 2 : 0) + v_min2);
 
     //we are done, make sure to return 0 to stop the step timer
     return 0; 
