@@ -1,13 +1,9 @@
-# TeensyStep V2 - Fast Stepper Library for PJRC Teensy boards
+# ESP32Step - Fast Stepper Library for ESP32 boards
 
-Please note: This is version 2 of the library. This version has a new user interface. The version 1 is still available in the branch [Version-1](https://github.com/luni64/TeensyStep/tree/Version-1).
-
-
-## Detailed Documentation can be found here [https://luni64.github.io/TeensyStep/](https://luni64.github.io/TeensyStep/)
-
+Fork of [TeensyStep V2 library](https://luni64.github.io/TeensyStep/) adopted for ESP32 boards. It uses the timers 0, 1, 2 via the esp32-arduino interface.
 
 ## Purpose of the Library
-**TeensyStep** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
+**ESP32Step** is an efficient Arduino library compatible with ESP32 and Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **ESP32Step** specifications (taken over from TeensyStep, not yet verified for ESP32):
 
 | Description                                | Specification             | Default          |
 |:-------------------------------------------|:-------------------------:|:----------------:|
@@ -20,9 +16,5 @@ Please note: This is version 2 of the library. This version has a new user inter
 | Settable step pulse width                  | 1-100µs                   | 5µs              |
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
-Here a quick demonstration video showing two motors running in sync with 160'000 steps/sec
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=Fzt75I_Zi14
-" target="_blank"><img src="http://img.youtube.com/vi/Fzt75I_Zi14/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="600" height="450" border="10" /></a>
-
+## Architecture
+The base idea is to use one reloading interval timer for setting the step pin at a stepper velocity based frequency, one non-reloading (one shot) timer for clearing the step pin and thus defining the pulse width, and one (slower) reloading interval timer for updating the step timer frequency for acceleration / deceleration. 
