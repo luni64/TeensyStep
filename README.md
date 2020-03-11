@@ -18,3 +18,6 @@ Fork of [TeensyStep V2 library](https://luni64.github.io/TeensyStep/) adopted fo
 
 ## Architecture
 The base idea is to use one reloading interval timer for setting the step pin at a stepper velocity based frequency, one non-reloading (one shot) timer for clearing the step pin and thus defining the pulse width, and one (slower) reloading interval timer for updating the step timer frequency for acceleration / deceleration. 
+
+## TODO
+Currently, the ESP32 timers 0, 1, 2 are hard-coded. In consequence only one motor controller can run at the same time. I'll wait for an update of TeensyStep for a more general timer interface (e.g. [TeensyTimerTool](https://github.com/luni64/TeensyTimerTool)).
