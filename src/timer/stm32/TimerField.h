@@ -19,11 +19,12 @@ public:
   inline unsigned getStepFrequency() { return stepTimer.getTimerClkFreq(); } //  clock of timer  or overflow?
   inline bool stepTimerIsRunning() const { return stepTimerRunning; }
 
-  inline void accTimerStart() { accTimer.resume(); }
+  inline void accTimerStart() { accTimer.resume(); accTimer.refresh(); }
   inline void accTimerStop() { accTimer.pause(); }
-  inline void setAccUpdatePeriod(unsigned period) { accTimer.setOverflow(period, MICROSEC_FORMAT); } //timerAlarmWrite(accTimer, period, true); }
+  inline void setAccUpdatePeriod(unsigned period);
 
-  inline void setPulseWidth(unsigned pulseWidth) { pulseTimer.setOverflow(pulseWidth, MICROSEC_FORMAT); } // pause/stop or configure on the go works?
+  inline void triggerDelay();
+  inline void setPulseWidth(unsigned pulseWidth);
 
 protected:
   static TF_Handler *handler;
@@ -62,6 +63,20 @@ void TimerField::stepTimerStop()
   stepTimerRunning = false;
 }
 
+void TimerField::setAccUpdatePeriod(unsigned period)
+{
+  accTimer.setOverflow(period, MICROSEC_FORMAT);
+}
+
+void TimerField::triggerDelay() {
+  pulseTimer.resume();
+}
+
+void TimerField::setPulseWidth(unsigned pulseWidth)
+{
+  pulseTimer.setOverflow(pulseWidth, MICROSEC_FORMAT);
+}
+
 void TimerField::setStepFrequency(unsigned f)
 {
   if(f == 0){
@@ -69,13 +84,6 @@ void TimerField::setStepFrequency(unsigned f)
     return;
   }
   stepTimer.setOverflow(f, HERTZ_FORMAT);
- // stepTimer.refresh();
-    /*
-    m_timer.pause();
-    m_timer.setOverflow(micros, MICROSEC_FORMAT);
-    m_timer.refresh();
-    m_timer.resume();
-    */
 }
 
 bool TimerField::begin()
