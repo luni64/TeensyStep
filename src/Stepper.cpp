@@ -2,8 +2,8 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp32-hal-gpio.h"
-#elif
-#include "core_pins.h"
+#else
+//#include "core_pins.h"
 #endif
 
 Stepper::Stepper(const int _stepPin, const int _dirPin)
@@ -20,9 +20,7 @@ Stepper::Stepper(const int _stepPin, const int _dirPin)
 
 Stepper &Stepper::setStepPinPolarity(int polarity)
 {
-    #ifdef ARDUINO_ARCH_ESP32
-    this->polarity = polarity;
-    #elif
+    #ifdef TEENSY
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[stepPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);              //GPIO_PSOR = GPIO_PDOR + 4
@@ -38,6 +36,8 @@ Stepper &Stepper::setStepPinPolarity(int polarity)
         stepPinActiveReg = pinSetReg;
         stepPinInactiveReg = pinClearReg;
     }
+    #else
+    this->polarity = polarity;
     #endif
     clearStepPin(); // set step pin to inactive state
     return *this;
@@ -45,9 +45,7 @@ Stepper &Stepper::setStepPinPolarity(int polarity)
 
 Stepper &Stepper::setInverseRotation(bool reverse)
 {
-    #ifdef ARDUINO_ARCH_ESP32
-    this->reverse = reverse;
-    #elif
+    #ifdef TEENSY
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[dirPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);             //GPIO_PSOR = GPIO_PDOR + 4
@@ -63,6 +61,8 @@ Stepper &Stepper::setInverseRotation(bool reverse)
         dirPinCwReg = pinSetReg;
         dirPinCcwReg = pinClearReg;
     }
+    #else
+    this->reverse = reverse;
     #endif
     return *this;
 }
