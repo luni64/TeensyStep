@@ -31,8 +31,8 @@ protected:
   HardwareTimer stepTimer;
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
-  bool stepTimerRunning;
-  unsigned lastF;
+  volatile bool stepTimerRunning;
+  volatile unsigned lastF;
 };
 
 // IMPLEMENTATION ====================================================================
