@@ -35,10 +35,16 @@ protected:
 };
 
 // TODO:
-// Known bug: Second interrupt always happens after 20ms, no mather what acceleration is set. This causes
+// * Known bug: Second interrupt always happens after 20ms, no mather what acceleration is set. This causes
 // all other interrupts to be slightly delayed. With default acceleration the second interrupt happens
 // after 20ms instead of after 11.6ms.
-// The implementation is hardcoded to use TIM7,TIM8 and TIM9, should be configurable.
+// All acceleration inerrupts are shifted by one step,
+//
+// Example with 10 steps(ms, offset to each  other):
+//  Teensy35 has steps: 0, 11.6, 9.0, 7.6, 6.6, 7.6, 9.0, 11.6, 20.0, 20.0
+//  stm32f4 has steps : 0, 20.0, 11.6, 9.0, 7.6, 6.6, 7.5 9, 11.6 20.0
+
+// * The implementation is hardcoded to use TIM7,TIM8 and TIM9, should be configurable.
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler) :
