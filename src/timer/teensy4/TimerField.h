@@ -1,3 +1,4 @@
+#if defined(TEENSY4)
 #pragma once
 
 #include "wiring.h"
@@ -156,3 +157,5 @@ void TimerField::delayISR(unsigned channel)
   //   handler->accTimerISR();
 //  }
 }
+
+#endif

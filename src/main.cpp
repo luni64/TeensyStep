@@ -13,8 +13,8 @@ void setup(){
     digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(STATUS_PIN, LOW);
 
-    #ifdef TEENSY
-    Serial.println("TEENSY");
+    #ifdef TEENSY3
+    Serial.println("TEENSY3");
     #else
     Serial.println("STM32F4");
     #endif

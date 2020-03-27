@@ -1,3 +1,4 @@
+#if defined(ARDUINO_ARCH_ESP32)
 #pragma once
 
 #include "Arduino.h"
@@ -91,3 +92,4 @@ void TimerField::end()
   timerAlarmDisable(accTimer);
   timerAlarmDisable(pulseTimer);
 }
+#endif

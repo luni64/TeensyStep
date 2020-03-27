@@ -49,7 +49,7 @@ class Stepper
     static bool cmpVmax(const Stepper *a, const Stepper *b) { return std::abs(a->vMax) > std::abs(b->vMax); }
 
     // Pin & Dir registers
-    #ifdef TEENSY
+    #if defined(TEENSY3)
     volatile uint32_t *stepPinActiveReg;
     volatile uint32_t *stepPinInactiveReg;
     volatile uint32_t *dirPinCwReg;
@@ -72,7 +72,7 @@ class Stepper
 };
 
 // Inline implementation -----------------------------------------
-#if TEENSY
+#if defined(TEENSY3)
 void Stepper::doStep()
 {
     *stepPinActiveReg = 1;

@@ -26,7 +26,7 @@ Stepper::Stepper(const int _stepPin, const int _dirPin)
 
 Stepper &Stepper::setStepPinPolarity(int polarity)
 {
-    #ifdef TEENSY
+    #ifdef TEENSY3
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[stepPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);              //GPIO_PSOR = GPIO_PDOR + 4
@@ -51,7 +51,7 @@ Stepper &Stepper::setStepPinPolarity(int polarity)
 
 Stepper &Stepper::setInverseRotation(bool reverse)
 {
-    #ifdef TEENSY
+    #ifdef TEENSY3
     // Calculate adresses of bitbanded pin-set and pin-clear registers
     uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[dirPin].reg; //GPIO_PDOR
     uint32_t *pinSetReg = (uint32_t *)(pinRegAddr + 4 * 32);             //GPIO_PSOR = GPIO_PDOR + 4

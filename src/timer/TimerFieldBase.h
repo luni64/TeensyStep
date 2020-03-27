@@ -1,3 +1,4 @@
+#if defined(TEENSY4)
 #include "TF_Handler.h"
 
 class ITimerField
@@ -20,3 +21,5 @@ public:
   virtual void setPulseWidth(unsigned delay)=0;
   virtual void triggerDelay()=0;
 };
+
+#endif

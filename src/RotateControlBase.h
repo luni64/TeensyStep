@@ -3,7 +3,7 @@
 #include "MotorControlBase.h"
 #include <algorithm>
 
-#ifdef TEENSY
+#ifdef TEENSY3
 #include "core_pins.h"
 #endif
 

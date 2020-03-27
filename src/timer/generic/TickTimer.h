@@ -22,7 +22,7 @@ class TimerBase
     };
 
     static inline uint32_t get_cycles(){
-        #ifdef TEENSY
+        #if defined(TEENSY3)
             return ARM_DWT_CYCCNT;
         #else
             return dwt_getCycles();

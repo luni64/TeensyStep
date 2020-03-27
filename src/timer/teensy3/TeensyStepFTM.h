@@ -1,3 +1,4 @@
+#if defined(TEENSY3)
 #pragma once
 #include "config.h"
 
@@ -32,4 +33,5 @@ namespace TeensyStepFTM
 		}                                                    // isFTM is a compile time constant -> compiler completely optimizes the not valid case away
 		timer->CH[channel].SC = FTM_CSC_MSA | FTM_CSC_CHIE;
 	}
-}
+}}
+#endif

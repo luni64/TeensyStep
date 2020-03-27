@@ -1,3 +1,4 @@
+#if defined(STM32F4xx)
 #pragma once
 
 #include <Arduino.h>
@@ -109,3 +110,5 @@ void TimerField::end()
   accTimer.pause();
   pulseTimer.pause();
 }
+
+#endif

@@ -1,3 +1,4 @@
+#if defined(TEENSY3)
 #pragma once
 
 #include "IntervalTimer.h"
@@ -34,3 +35,4 @@ public:
 	void setupChannel();
 
 };
+#endif

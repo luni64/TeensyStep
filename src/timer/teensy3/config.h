@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#if defined(TEENSY3)
+#pragma once
 
 #include <kinetis.h>
 #include <core_pins.h>
@@ -170,3 +171,5 @@ namespace TeensyStepFTM
         return  mu * 1E-6 * _timer_frequency / (1 << prescale) + 0.5;
     }
 }
+
+#endif
