@@ -34,6 +34,11 @@ protected:
   volatile bool stepTimerRunning;
 };
 
+// TODO:
+// Known bug: Second interrupt always happens after 20ms, no mather what acceleration is set. This causes
+// all other interrupts to be slightly delayed. With default acceleration the second interrupt happens
+// after 20ms instead of after 11.6ms.
+// The implementation is hardcoded to use TIM7,TIM8 and TIM9, should be configurable.
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler) :
