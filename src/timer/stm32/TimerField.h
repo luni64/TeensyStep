@@ -23,7 +23,6 @@ public:
   inline void accTimerStop() { accTimer.pause(); }
   inline void setAccUpdatePeriod(unsigned period) { accTimer.setOverflow(period, MICROSEC_FORMAT); } //timerAlarmWrite(accTimer, period, true); }
 
-  inline void triggerDelay() { pulseTimer.resume(); }
   inline void setPulseWidth(unsigned pulseWidth) { pulseTimer.setOverflow(pulseWidth, MICROSEC_FORMAT); } // pause/stop or configure on the go works?
 
 protected:
@@ -45,7 +44,7 @@ TimerField::TimerField(TF_Handler *_handler) :
   handler = _handler;
   stepTimer.attachInterrupt([] { handler->stepTimerISR(); });
   accTimer.attachInterrupt([] { handler->accTimerISR(); });
-  pulseTimer.attachInterrupt([] { handler->pulseTimerISR(); });
+  pulseTimer.attachInterrupt([this] { handler->pulseTimerISR(); this->pulseTimer.pause(); }); // one-shot mode
 }
 
 void TimerField::stepTimerStart()
