@@ -1,6 +1,6 @@
 # ESP32Step - Fast Stepper Library for ESP32 boards
 
-Fork of [TeensyStep V2 library](https://luni64.github.io/TeensyStep/) adopted for ESP32 boards. It uses the timers 0, 1, 2 via the esp32-arduino interface.
+Fork of [TeensyStep V2 library](https://luni64.github.io/TeensyStep/) adopted for STM32F4, ESP32 boards. It uses the timers 0, 1, 2 via the esp32-arduino interface and timer 7,8,9 for STM32F4.
 
 ## Purpose of the Library
 **ESP32Step** is an efficient Arduino library compatible with ESP32 and Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **ESP32Step** specifications (taken over from TeensyStep, not yet verified for ESP32):
@@ -17,7 +17,7 @@ Fork of [TeensyStep V2 library](https://luni64.github.io/TeensyStep/) adopted fo
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
 ## Architecture
-The base idea is to use one reloading interval timer for setting the step pin at a stepper velocity based frequency, one non-reloading (one shot) timer for clearing the step pin and thus defining the pulse width, and one (slower) reloading interval timer for updating the step timer frequency for acceleration / deceleration. 
+The base idea is to use one reloading interval timer for setting the step pin at a stepper velocity based frequency, one non-reloading (one shot) timer for clearing the step pin and thus defining the pulse width, and one (slower) reloading interval timer for updating the step timer frequency for acceleration / deceleration.
 
 ## TODO
 Currently, the ESP32 timers 0, 1, 2 are hard-coded. In consequence only one motor controller can run at the same time. I'll wait for an update of TeensyStep for a more general timer interface (e.g. [TeensyTimerTool](https://github.com/luni64/TeensyTimerTool)).
