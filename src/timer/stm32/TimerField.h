@@ -50,6 +50,9 @@ TimerField::TimerField(TF_Handler *_handler) :
 void TimerField::stepTimerStart()
 {
   stepTimer.resume();
+  // force reload of all timer's registers here saves 1.2ms in startup time
+  // https://github.com/stm32duino/wiki/wiki/HardwareTimer-library
+  stepTimer.refresh();
   stepTimerRunning = true;
 }
 
