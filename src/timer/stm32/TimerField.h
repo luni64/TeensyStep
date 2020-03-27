@@ -32,7 +32,6 @@ protected:
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
   volatile bool stepTimerRunning;
-  volatile unsigned lastF;
 };
 
 // IMPLEMENTATION ====================================================================
@@ -41,8 +40,7 @@ TimerField::TimerField(TF_Handler *_handler) :
       stepTimer(TIM7),
       accTimer(TIM8),
       pulseTimer(TIM9),
-      stepTimerRunning(false),
-      lastF(0)
+      stepTimerRunning(false)
 {
   handler = _handler;
   stepTimer.attachInterrupt([] { handler->stepTimerISR(); });
