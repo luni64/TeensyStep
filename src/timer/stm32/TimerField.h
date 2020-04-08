@@ -32,7 +32,7 @@ public:
 protected:
   static int instances;
   static TIM_TypeDef* timer_mapping[MAX_TIMERS];
-  static TF_Handler *handler;
+  TF_Handler *handler;
   HardwareTimer stepTimer;
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
@@ -52,7 +52,8 @@ protected:
 //  Teensy35 has steps: 0, 11.6, 9.0, 7.6, 6.6, 7.6, 9.0, 11.6, 20.0, 20.0
 //  stm32f4 has steps : 0, 20.0, 11.6, 9.0, 7.6, 6.6, 7.5 9, 11.6 20.0
 
-// * The implementation is hardcoded to use TIM7,TIM8 and TIM9, should be configurable.
+// * Maximum 4 instances can be used, if more than four are initialized the first will break
+// as its interrupt is reused.
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler) :
@@ -62,8 +63,8 @@ TimerField::TimerField(TF_Handler *_handler) :
       stepTimerRunning(false)
 {
   handler = _handler;
-  stepTimer.attachInterrupt([] { handler->stepTimerISR(); });
-  accTimer.attachInterrupt([] { handler->accTimerISR(); });
+  stepTimer.attachInterrupt([this] { handler->stepTimerISR(); });
+  accTimer.attachInterrupt([this] { handler->accTimerISR(); });
   pulseTimer.attachInterrupt([this] { handler->pulseTimerISR(); this->pulseTimer.pause(); }); // one-shot mode
 }
 
