@@ -20,8 +20,8 @@ class Stepper
     Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
     Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
 
-    void setTargetAbs(int32_t pos);   // Set target position absolute
-    void setTargetRel(int32_t delta); // Set target position relative to current position
+    virtual void setTargetAbs(int32_t pos);   // Set target position absolute
+    virtual void setTargetRel(int32_t delta); // Set target position relative to current position
 
     inline int32_t getPosition() const { return current; }
     inline void setPosition(int32_t pos) { current = pos; }
