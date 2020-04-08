@@ -1,3 +1,5 @@
+
+#ifdef TEST
 #include <Arduino.h>
 #include "TeensyStep.h"
 
@@ -32,3 +34,5 @@ void loop(){
     digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(STATUS_PIN, LOW);
 }
+
+#endif
