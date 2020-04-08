@@ -6,6 +6,8 @@
 
 #include "../TF_Handler.h"
 
+
+#define MAX_TIMERS 12
 class TimerField
 {
 public:
@@ -28,13 +30,18 @@ public:
   inline void setPulseWidth(unsigned pulseWidth);
 
 protected:
+  static int instances;
+  static TIM_TypeDef* timer_mapping[MAX_TIMERS];
   static TF_Handler *handler;
   HardwareTimer stepTimer;
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
   volatile bool stepTimerRunning;
-};
 
+  TIM_TypeDef* get_timer() {
+    return instances >= MAX_TIMERS ? TIM1 : timer_mapping[instances++];
+  }
+};
 // TODO:
 // * Known bug: Second interrupt always happens after 20ms, no mather what acceleration is set. This causes
 // all other interrupts to be slightly delayed. With default acceleration the second interrupt happens
@@ -49,9 +56,9 @@ protected:
 // IMPLEMENTATION ====================================================================
 
 TimerField::TimerField(TF_Handler *_handler) :
-      stepTimer(TIM7),
-      accTimer(TIM8),
-      pulseTimer(TIM9),
+      stepTimer(get_timer()),
+      accTimer(get_timer()),
+      pulseTimer(get_timer()),
       stepTimerRunning(false)
 {
   handler = _handler;
