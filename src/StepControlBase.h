@@ -61,7 +61,7 @@ void StepControlBase<a, t>::doMove(int N, bool move)
     }
 
     // Calculate acceleration parameters --------------------------------------------------------------
-    uint32_t targetSpeed = std::abs((*std::min_element(this->motorList, this->motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
+    uint32_t targetSpeed = abs((*std::min_element(this->motorList, this->motorList + N, Stepper::cmpVmin))->vMax); // use the lowest max frequency for the move, scale by relSpeed
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a;              // use the lowest acceleration for the move
     if (this->leadMotor->A == 0 || targetSpeed == 0)
         return;

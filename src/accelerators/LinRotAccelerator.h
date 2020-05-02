@@ -1,10 +1,8 @@
 #pragma once
 
-#include "wiring.h"
 
-#include <cmath>
-#include <cstdint>
-#include <algorithm>
+#include "Arduino.h"
+
 
 class LinRotAccelerator
 {
@@ -34,7 +32,7 @@ protected:
 void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t a, uint32_t accUpdatePeriod, float speedFactor)
 {
     v_tgt_orig = targetSpeed;
-    dv_orig = ((float)a * accUpdatePeriod) / 1E6;  
+    dv_orig = ((float)a * accUpdatePeriod) / 1E6;
     v_cur = 0;
 
     overrideAcceleration(1.0f);
@@ -44,7 +42,7 @@ void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetS
 void LinRotAccelerator::overrideSpeed(float factor)
 {
     //Serial.printf("a:------ %d\n", a);
-
+    
     noInterrupts();
     v_tgt = v_tgt_orig * factor;
     dv = v_tgt > v_cur ? dv_cur : -dv_cur;
@@ -87,4 +85,3 @@ void LinRotAccelerator::eStop()
     v_tgt = 0.0f;
     interrupts();
 }
-   

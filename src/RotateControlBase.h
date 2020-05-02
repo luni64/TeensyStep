@@ -1,19 +1,19 @@
 #pragma once
 
 #include "MotorControlBase.h"
-#include <algorithm>
+//#include <algorithm>
 #include "core_pins.h"
 
 template <typename Accelerator, typename TimerField>
 class RotateControlBase : public MotorControlBase<TimerField>
 {
   public:
-    RotateControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);    
+    RotateControlBase(unsigned pulseWidth = 5, unsigned accUpdatePeriod = 5000);
 
     // Non-blocking movements ----------------
     template <typename... Steppers>
     void rotateAsync(Steppers &... steppers);
-   
+
     template <size_t N>
     void rotateAsync(Stepper *(&motors)[N]);
 
@@ -59,33 +59,33 @@ void RotateControlBase<a, t>::doRotate(int N, float speedFactor)
     if (this->leadMotor->vMax == 0)
         return;
 
-    this->leadMotor->currentSpeed = 0; 
+    this->leadMotor->currentSpeed = 0;
 
-    this->leadMotor->A = std::abs(this->leadMotor->vMax);
+    this->leadMotor->A = abs(this->leadMotor->vMax);
     for (int i = 1; i < N; i++)
     {
-        this->motorList[i]->A = std::abs(this->motorList[i]->vMax);
+        this->motorList[i]->A = abs(this->motorList[i]->vMax);
         this->motorList[i]->B = 2 * this->motorList[i]->A - this->leadMotor->A;
     }
     uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
-    
-    // Start moving---------------------------------------------------------------------------------------  
+
+    // Start moving---------------------------------------------------------------------------------------
     accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
-    this->timerField.setStepFrequency(0);    
-    this->timerField.accTimerStart();    
+    this->timerField.setStepFrequency(0);
+    this->timerField.accTimerStart();
 }
 
 // ISR -----------------------------------------------------------------------------------------------------------
 
 template <typename a, typename t>
 void RotateControlBase<a, t>::accTimerISR()
-{   
+{
     int32_t newSpeed = accelerator.updateSpeed(this->leadMotor->current); // get new speed for the leading motor
-     
+
     //Serial.printf("rc,curSpeed: %i newspd:%i\n",this->leadMotor->currentSpeed,  newSpeed);
 
     if (this->leadMotor->currentSpeed == newSpeed)
-    {         
+    {
         return; // nothing changed, just keep running
     }
 
@@ -99,10 +99,10 @@ void RotateControlBase<a, t>::accTimerISR()
         }
         delayMicroseconds(this->pulseWidth);
     }
-    
-    
-    this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer    
-    this->leadMotor->currentSpeed = newSpeed;   
+
+
+    this->timerField.setStepFrequency(abs(newSpeed)); // speed changed, update timer
+    this->leadMotor->currentSpeed = newSpeed;
 }
 
 // ROTATE Commands -------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ void RotateControlBase<a, t>::rotateAsync(Steppers &... steppers)
 
 template <typename a, typename t>
 template <size_t N>
-void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N]) 
+void RotateControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N])
 {
     this->attachStepper(steppers);
     doRotate(N);
