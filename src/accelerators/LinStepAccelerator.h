@@ -21,7 +21,7 @@ protected:
     int32_t s_0;
     uint32_t delta_tgt;
     uint32_t accLength, decStart;
-    uint32_t two_a;
+    float two_a;
     uint32_t v_tgt, v_min2;
 };
 
@@ -59,23 +59,23 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
         return sqrtf(two_a * ((stepsDone < delta_tgt - 1) ? delta_tgt - stepsDone - 2 : 0) + v_min2);
 
     //we are done, make sure to return 0 to stop the step timer
-    return 0; 
+    return 0;
 }
 
 uint32_t LinStepAccelerator::initiateStopping(int32_t curPos)
 {
     uint32_t stepsDone = std::abs(s_0 - curPos);
-    
+
     if (stepsDone < accLength)              // still accelerating
-    {        
-        accLength = decStart = 0;           // start deceleration 
+    {
+        accLength = decStart = 0;           // start deceleration
         delta_tgt = 2 * stepsDone;          // we need the same way to decelerate as we traveled so far
         return stepsDone;                   // return steps to go
     }
     else if (stepsDone < decStart)          // constant speed phase
     {
         decStart = 0;                       // start deceleration
-        delta_tgt = stepsDone + accLength;  // normal deceleration distance 
+        delta_tgt = stepsDone + accLength;  // normal deceleration distance
         return accLength;                   // return steps to go
     }
     else                                    // already decelerating
