@@ -1,7 +1,5 @@
 #pragma once
 
-#include "version.h"
-
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
 

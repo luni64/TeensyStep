@@ -7,10 +7,10 @@ namespace TeensyStepFTM
 {
 
 
-//========================================================================== 
-// Available timer modules for the Teensy XX boards. Please note that those 
-// timers are also used by the core libraries for PWM and AnalogWrite. 
-// Therefore, choose a timer which isn't attached to the pins you need for 
+//==========================================================================
+// Available timer modules for the Teensy XX boards. Please note that those
+// timers are also used by the core libraries for PWM and AnalogWrite.
+// Therefore, choose a timer which isn't attached to the pins you need for
 // PWM or AnalogWrite. (TEENSY LC not yet supported)
 //
 // D: Default, X: available
@@ -32,14 +32,14 @@ namespace TeensyStepFTM
 
 
 //==========================================================================
-// Nothing to be changed below here 
+// Nothing to be changed below here
 //==========================================================================
 
 
 
 #if USE_TIMER == TIMER_DEFAULT
 #undef USE_TIMER
-#if defined __MKL26Z64__    
+#if defined __MKL26Z64__
 #define USE_TIMER TIMER_TPM0
 #else
 #define USE_TIMER TIMER_FTM0
@@ -57,15 +57,15 @@ namespace TeensyStepFTM
         T_LC, T_30, T31_2, T_35, T_36
     };
 
-#if defined __MKL26Z64__      
+#if defined __MKL26Z64__
     constexpr _boards board = _boards::T_LC;
-#elif defined __MK20DX128__    
+#elif defined __MK20DX128__
     constexpr _boards board = _boards::T_30;
-#elif defined __MK20DX256__     
+#elif defined __MK20DX256__
     constexpr _boards board = _boards::T31_2;
-#elif defined __MK64FX512__    
+#elif defined __MK64FX512__
     constexpr _boards board = _boards::T_35;
-#elif defined __MK66FX1M0__    
+#elif defined __MK66FX1M0__
     constexpr _boards board = _boards::T_36;
 #endif
 
@@ -138,33 +138,33 @@ namespace TeensyStepFTM
         8,  // FTM3
         6,  // TPM0
         2,  // TPM1
-        2,  // TPM2 
+        2,  // TPM2
     };
 
     constexpr uintptr_t timerAddr = TimerBaseAddr[(int)board][selTimer];
-    constexpr volatile FTM_t* timer = __builtin_constant_p((FTM_t*)timerAddr) ? (FTM_t*)timerAddr : (FTM_t*)timerAddr; // base address for register block of selected timer
-    constexpr unsigned irq = IRQ_Number[(int)board][selTimer];                     // IRQ number of selected timer
-    constexpr unsigned maxChannel = _nrOfChannels[selTimer];                        // Number of channels for selected timer
+    volatile FTM_t *const timer = (FTM_t *)timerAddr;                   // base address for register block of selected timer
+    constexpr unsigned irq = IRQ_Number[(int)board][selTimer];          // IRQ number of selected timer
+    constexpr unsigned maxChannel = _nrOfChannels[selTimer];            // Number of channels for selected timer
 
-    static_assert(timer != nullptr && irq != 0, "Board does not support choosen timer");  //Generate compiler error in case the board does not support the selected timer
+    static_assert(timerAddr != 0 && irq != 0, "Board does not support choosen timer");  //Generate compiler error in case the board does not support the selected timer
 
     //-----------------------------------------------------------------------------------
-    //Frequency dependent settings 
+    //Frequency dependent settings
 
     constexpr unsigned _timer_frequency = isFTM ? F_BUS : 16000000;  // FTM timers are clocked with F_BUS, the TPM timers are clocked with OSCERCLK (16MHz for all teensies)
 
     // Choose prescaler such that one timer cycle corresponds to about 1µs
-    constexpr unsigned prescale = 
+    constexpr unsigned prescale =
         _timer_frequency > 120000000 ? 0b111 :
         _timer_frequency > 60000000 ? 0b110 :
-        _timer_frequency > 30000000 ? 0b101 : 
+        _timer_frequency > 30000000 ? 0b101 :
         _timer_frequency > 15000000 ? 0b100 :
         _timer_frequency > 8000000 ? 0b011 :
         _timer_frequency > 4000000 ? 0b010 :
         _timer_frequency > 2000000 ? 0b001 : 0b000;
 
-    // Calculates required reload value to get a delay of mu microseconds. 
-    // this will be completely evaluated by the compiler as long as mu is known at compile time 
+    // Calculates required reload value to get a delay of mu microseconds.
+    // this will be completely evaluated by the compiler as long as mu is known at compile time
     constexpr int microsToReload(const float mu)
     {
         return  mu * 1E-6 * _timer_frequency / (1 << prescale) + 0.5;

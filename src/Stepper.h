@@ -5,10 +5,10 @@
 
 class Stepper
 {
-    static constexpr int32_t vMaxMax = 300000;   // largest speed possible (steps/s)
-    static constexpr uint32_t aMax = 500000;     // speed up to 500kHz within 1 s (steps/s^2)
-    static constexpr uint32_t vMaxDefault = 800; // should work with every motor (1 rev/sec in 1/4-step mode)
-    static constexpr uint32_t aDefault = 2500;   // reasonably low (~0.5s for reaching the default speed)
+    static const int32_t vMaxMax;      // largest speed possible (steps/s)
+    static const uint32_t aMax;        // speed up to 500kHz within 1 s (steps/s^2)
+    static const uint32_t vMaxDefault; // should work with every motor (1 rev/sec in 1/4-step mode)
+    static const uint32_t aDefault;    // reasonably low (~0.5s for reaching the default speed)
 
   public:
     Stepper(const int StepPin, const int DirPin);
@@ -34,7 +34,7 @@ class Stepper
     inline void toggleDir();
 
     volatile int32_t current;
-    volatile int32_t currentSpeed; 
+    volatile int32_t currentSpeed;
     volatile int32_t target;
 
     int32_t A, B; // Bresenham paramters
@@ -44,8 +44,8 @@ class Stepper
     // compare functions
     static bool cmpDelta(const Stepper *a, const Stepper *b) { return a->A > b->A; }
     static bool cmpAcc(const Stepper *a, const Stepper *b) { return a->a < b->a; }
-    static bool cmpVmin(const Stepper *a, const Stepper *b) { return std::abs(a->vMax) < std::abs(b->vMax); }
-    static bool cmpVmax(const Stepper *a, const Stepper *b) { return std::abs(a->vMax) > std::abs(b->vMax); }
+    static bool cmpVmin(const Stepper *a, const Stepper *b) { return abs(a->vMax) < abs(b->vMax); }
+    static bool cmpVmax(const Stepper *a, const Stepper *b) { return abs(a->vMax) > abs(b->vMax); }
 
     // Pin & Dir registers
     volatile uint32_t *stepPinActiveReg;

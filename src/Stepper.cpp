@@ -79,3 +79,8 @@ void Stepper::setTargetRel(int32_t delta)
     target = current + delta;
     A = std::abs(delta);
 }
+
+const int32_t  Stepper::vMaxMax = 300000;  // largest speed possible (steps/s)
+const uint32_t Stepper::aMax = 500000;     // speed up to 500kHz within 1 s (steps/s^2)
+const uint32_t Stepper::vMaxDefault = 800; // should work with every motor (1 rev/sec in 1/4-step mode)
+const uint32_t Stepper::aDefault = 2500;   // reasonably low (~0.5s for reaching the default speed)

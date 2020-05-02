@@ -30,7 +30,7 @@ protected:
 int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t a)
 {
     s_0 = currentPos;
-    delta_tgt = std::abs(targetPos - currentPos);
+    delta_tgt = abs(targetPos - currentPos);
     v_tgt = targetSpeed;
     two_a = 2 * a;
     v_min2 = a;
@@ -44,7 +44,7 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
 
 int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 {
-    uint32_t stepsDone = std::abs(s_0 - curPos);
+    uint32_t stepsDone = abs(s_0 - curPos);
 
     // acceleration phase -------------------------------------
     if (stepsDone < accLength)
@@ -64,7 +64,7 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
 
 uint32_t LinStepAccelerator::initiateStopping(int32_t curPos)
 {
-    uint32_t stepsDone = std::abs(s_0 - curPos);
+    uint32_t stepsDone = abs(s_0 - curPos);
 
     if (stepsDone < accLength)              // still accelerating
     {
