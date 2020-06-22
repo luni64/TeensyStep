@@ -10,7 +10,6 @@ public:
     inline void prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, uint32_t accUpdatePeriod, float speedFactor = 1.0);
     inline int32_t updateSpeed(int32_t currentPosition);
     inline int32_t initiateStopping(int32_t currentPosition);
-    inline void eStop();
     inline void overrideSpeed(float factor);
     inline void overrideAcceleration(float factor);
 
@@ -42,7 +41,7 @@ void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetS
 void LinRotAccelerator::overrideSpeed(float factor)
 {
     //Serial.printf("a:------ %d\n", a);
-    
+
     noInterrupts();
     v_tgt = v_tgt_orig * factor;
     dv = v_tgt > v_cur ? dv_cur : -dv_cur;
@@ -78,10 +77,11 @@ int32_t LinRotAccelerator::initiateStopping(int32_t curPos)
     return 0;
 }
 
-void LinRotAccelerator::eStop()
-{
-    noInterrupts();
-    v_cur = 0.0f;
-    v_tgt = 0.0f;
-    interrupts();
-}
+// void LinRotAccelerator::eStop()
+// {
+//     noInterrupts();
+//     v_cur = 0.0f;
+//     v_tgt = 0.0f;
+//     interrupts();
+// }
+

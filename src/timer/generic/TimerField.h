@@ -13,7 +13,7 @@
 class TickTimerField
 {
   public:
-    inline TickTimerField(TF_Handler *);
+    inline TickTimerField(TeensyStep::TF_Handler *);
 
     inline bool begin();
     inline void end();
@@ -32,7 +32,7 @@ class TickTimerField
     inline void triggerDelay() { delayTimer.start(); }
 
   protected:
-    TF_Handler *handler;
+    TeensyStep::TF_Handler *handler;
 
     PeriodicTimer stepTimer, accTimer;
     OneShotTimer delayTimer;
@@ -40,7 +40,7 @@ class TickTimerField
 
 // IMPLEMENTATION ====================================================================
 
-TickTimerField::TickTimerField(TF_Handler *_handler)
+TickTimerField::TickTimerField(TeensyStep::TF_Handler *_handler)
     : handler(_handler),
       stepTimer([this] { handler->stepTimerISR(); }),
       //stepTimer(test),

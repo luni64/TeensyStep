@@ -1,36 +1,116 @@
 #pragma once
 
+#include "../../ErrorHandler.h"
 #include "IntervalTimer.h"
 
-class IPitHandler
+namespace TeensyStep
 {
-public:
-	virtual void pitISR() = 0;
-};
+    class TF_Handler;
 
-class TF_Handler;
+    class PIT : ErrorHandler
+    {
 
-class PIT
-{
-public:	
-	bool begin(TF_Handler*);
+     public:
+        pitErr begin(TF_Handler*);
 
-	inline void end() { timer.end(); }
-	inline void start() const { channel->TFLG = 1; channel->TCTRL = 0; channel->TCTRL = 3; }
-	inline void stop() const { channel->TCTRL &= ~PIT_TCTRL_TIE; }	
-	inline void enableInterupt() const { channel->TFLG = 1; channel->TCTRL |= PIT_TCTRL_TIE; }
-	inline void setFrequency(uint32_t val) const {  channel->LDVAL = F_BUS/val;}
-	inline void setThisReload(uint32_t ldval) const { channel->TCTRL = 0, channel->TFLG = 1;channel->LDVAL = ldval, channel->TCTRL = 3;}
-	inline void setNextReload(uint32_t ldval) const { channel->LDVAL = ldval; }
-	inline uint32_t getLDVAL() const { return channel->LDVAL; }
-	inline uint32_t getCVAL() const { return channel->CVAL; }
-	inline void clearTIF()const { channel->TFLG = 1; }
-	inline bool isRunning() const { return channel->TCTRL & PIT_TCTRL_TIE; }
-	
-	KINETISK_PIT_CHANNEL_t* channel = nullptr;
+        inline void end();
+        inline void start() const;
+        inline void stop() const;
+        inline void enableInterupt() const;
+        inline void setFrequency(uint32_t val) const;
+        inline void setThisReload(uint32_t ldval) const;
+        inline void setNextReload(uint32_t ldval) const;
+        inline uint32_t getLDVAL() const;
+        inline uint32_t getCVAL() const;
+        inline void clearTIF() const;
+        inline bool isRunning() const;
+        inline bool isAllocated() const;
 
-  protected:	
-	IntervalTimer timer;
-	void setupChannel();
+     protected:
+        KINETISK_PIT_CHANNEL_t* channel = nullptr;
+        IntervalTimer timer;
+        int setupChannel();
 
-};
+        inline pitErr err(pitErr code) const { return (pitErr)error(errModule::PIT, (int)code); }
+    };
+
+
+    // Inline implementation ======================================================================
+
+    void PIT::end()
+    {
+        timer.end();
+        channel = nullptr;
+    }
+
+    void PIT::start() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+
+        channel->TFLG = 1;
+        channel->TCTRL = 0;
+        channel->TCTRL = 3;
+    }
+
+    void PIT::stop() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->TCTRL &= ~PIT_TCTRL_TIE;
+    }
+
+    void PIT::enableInterupt() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->TFLG = 1;
+        channel->TCTRL |= PIT_TCTRL_TIE;
+    }
+
+    void PIT::setFrequency(uint32_t val) const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->LDVAL = F_BUS / val;
+    }
+
+    void PIT::setThisReload(uint32_t ldval) const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->TCTRL = 0;
+        channel->TFLG = 1;
+        channel->LDVAL = ldval;
+        channel->TCTRL = 3;
+    }
+
+    void PIT::setNextReload(uint32_t ldval) const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->LDVAL = ldval;
+    }
+
+    uint32_t PIT::getLDVAL() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        return channel->LDVAL;
+    }
+
+    uint32_t PIT::getCVAL() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        return channel->CVAL;
+    }
+
+    void PIT::clearTIF() const
+    {
+        if (channel == nullptr) err(pitErr::notAllocated);
+        channel->TFLG = 1;
+    }
+
+    bool PIT::isRunning() const
+    {
+        return isAllocated();// && true;// (channel->TCTRL & PIT_TCTRL_TIE);
+    }
+    
+    bool PIT::isAllocated() const
+    {
+        return channel != nullptr;
+    }
+}

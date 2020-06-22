@@ -1,89 +1,97 @@
 #pragma once
 
-#include <cstdint>
 #include <algorithm>
+#include <cstdint>
 
-class Stepper
+namespace TeensyStep
 {
-    static const int32_t vMaxMax;      // largest speed possible (steps/s)
-    static const uint32_t aMax;        // speed up to 500kHz within 1 s (steps/s^2)
-    static const uint32_t vMaxDefault; // should work with every motor (1 rev/sec in 1/4-step mode)
-    static const uint32_t aDefault;    // reasonably low (~0.5s for reaching the default speed)
 
-  public:
-    Stepper(const int StepPin, const int DirPin);
+    class Stepper
+    {
+        static constexpr int32_t vMaxMax = 300000;   // largest speed possible (steps/s)
+        static constexpr uint32_t aMax = 500000;     // speed up to 500kHz within 1 s (steps/s^2)
+        static constexpr uint32_t vMaxDefault = 800; // should work with every motor (1 rev/sec in 1/4-step mode)
+        static constexpr uint32_t vPullInOutDefault = 100;
+        static constexpr uint32_t aDefault = 2500; // reasonably low (~0.5s for reaching the default speed)
 
-    Stepper &setMaxSpeed(int32_t speed);   // steps/s
-    Stepper &setAcceleration(uint32_t _a); // steps/s^2
+     public:
+        Stepper(const int StepPin, const int DirPin);
 
-    Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
-    Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
+        Stepper& setMaxSpeed(int32_t speed);                                  // steps/s
+        Stepper& setPullInSpeed(int32_t speed);                               // steps/s
+        Stepper& setPullInOutSpeed(int32_t pullInpeed, int32_t pullOutSpeed); // steps/s
+        Stepper& setAcceleration(uint32_t _a);                                // steps/s^2
 
-    void setTargetAbs(int32_t pos);   // Set target position absolute
-    void setTargetRel(int32_t delta); // Set target position relative to current position
+        Stepper& setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
+        Stepper& setInverseRotation(bool b); // Change polarity of the dir pulse
 
-    inline int32_t getPosition() const { return current; }
-    inline void setPosition(int32_t pos) { current = pos; }
-    int32_t dir;
+        void setTargetAbs(int32_t pos);   // Set target position absolute
+        void setTargetRel(int32_t delta); // Set target position relative to current position
 
-  protected:
-    inline void doStep();
-    inline void clearStepPin() const;
+        inline int32_t getPosition() const { return current; }
+        inline void setPosition(int32_t pos) { current = pos; }
+        int32_t dir;
 
-    inline void setDir(int d);
-    inline void toggleDir();
+     protected:
+        inline void doStep();
+        inline void clearStepPin() const;
 
-    volatile int32_t current;
-    volatile int32_t currentSpeed;
-    volatile int32_t target;
+        inline void setDir(int d);
+        inline void toggleDir();
 
-    int32_t A, B; // Bresenham paramters
-    int32_t vMax;
-    uint32_t a;
+        volatile int32_t current;
+        volatile int32_t currentSpeed;
+        volatile int32_t target;
 
-    // compare functions
-    static bool cmpDelta(const Stepper *a, const Stepper *b) { return a->A > b->A; }
-    static bool cmpAcc(const Stepper *a, const Stepper *b) { return a->a < b->a; }
-    static bool cmpVmin(const Stepper *a, const Stepper *b) { return abs(a->vMax) < abs(b->vMax); }
-    static bool cmpVmax(const Stepper *a, const Stepper *b) { return abs(a->vMax) > abs(b->vMax); }
+        int32_t A, B; // Bresenham paramters
+        int32_t vMax;
+        int32_t vPullIn, vPullOut;
+        uint32_t a;
 
-    // Pin & Dir registers
-    volatile uint32_t *stepPinActiveReg;
-    volatile uint32_t *stepPinInactiveReg;
-    volatile uint32_t *dirPinCwReg;
-    volatile uint32_t *dirPinCcwReg;
-    const int stepPin, dirPin;
+        // compare functions
+        static bool cmpDelta(const Stepper* a, const Stepper* b) { return a->A > b->A; }
+        static bool cmpAcc(const Stepper* a, const Stepper* b) { return a->a < b->a; }
+        static bool cmpVmin(const Stepper* a, const Stepper* b) { return std::abs(a->vMax) < std::abs(b->vMax); }
+        static bool cmpVmax(const Stepper* a, const Stepper* b) { return std::abs(a->vMax) > std::abs(b->vMax); }
 
-    // Friends
-    template <typename a, typename t>
-    friend class StepControlBase;
+        // Pin & Dir registers
+        volatile uint32_t* stepPinActiveReg;
+        volatile uint32_t* stepPinInactiveReg;
+        volatile uint32_t* dirPinCwReg;
+        volatile uint32_t* dirPinCcwReg;
+        const int stepPin, dirPin;
 
-    template <typename a, typename t>
-    friend class RotateControlBase;
+        // Friends
+        template <typename a, typename t>
+        friend class StepControlBase;
 
-    template <typename t>
-    friend class MotorControlBase;
-};
+        template <typename a, typename t>
+        friend class RotateControlBase;
 
-// Inline implementation -----------------------------------------
+        template <typename t>
+        friend class MotorControlBase;
+    };
 
-void Stepper::doStep()
-{
-    *stepPinActiveReg = 1;
-    current += dir;
-}
-void Stepper::clearStepPin() const
-{
-    *stepPinInactiveReg = 1;
-}
+    // Inline implementation -----------------------------------------
 
-void Stepper::setDir(int d)
-{
-    dir = d;
-    dir == 1 ? *dirPinCwReg = 1 : *dirPinCcwReg = 1;
-}
+    void Stepper::doStep()
+    {
+        *stepPinActiveReg = 1;
+        current += dir;
+    }
+    void Stepper::clearStepPin() const
+    {
+        *stepPinInactiveReg = 1;
+    }
 
-void Stepper::toggleDir()
-{
-    setDir(-dir);
+    void Stepper::setDir(int d)
+    {
+        dir = d;
+        dir == 1 ? * dirPinCwReg = 1 : * dirPinCcwReg = 1;
+    }
+
+    void Stepper::toggleDir()
+    {
+        setDir(-dir);
+    }
 }
