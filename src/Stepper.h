@@ -14,17 +14,17 @@ class Stepper
 
     Stepper(const int StepPin, const int DirPin);
 
-    Stepper &setMaxSpeed(int32_t speed);   // steps/s
-    Stepper &setAcceleration(uint32_t _a); // steps/s^2
+    virtual Stepper &setMaxSpeed(int32_t speed);   // steps/s
+    virtual Stepper &setAcceleration(uint32_t _a); // steps/s^2
 
-    Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
-    Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
+    virtual Stepper &setStepPinPolarity(int p);  // HIGH -> positive pulses, LOW -> negative pulses
+    virtual Stepper &setInverseRotation(bool b); // Change polarity of the dir pulse
 
     virtual void setTargetAbs(int32_t pos);   // Set target position absolute
     virtual void setTargetRel(int32_t delta); // Set target position relative to current position
 
-    inline int32_t getPosition() const { return current; }
-    inline void setPosition(int32_t pos) { current = pos; }
+    virtual int32_t getPosition() const { return current; }
+    virtual void setPosition(int32_t pos) { current = pos; }
     int32_t dir;
 
   protected:
