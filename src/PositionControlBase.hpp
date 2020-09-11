@@ -42,6 +42,7 @@ protected:
 
     ContextTimer<PositionControlBase> accTimer;
     Accelerator accelerator;
+    TimerArrayControl& _timerControl;
 
     PositionControlBase(const PositionControlBase &) = delete;
     PositionControlBase &operator=(const PositionControlBase &) = delete;
@@ -58,7 +59,8 @@ bool PositionControlBase<a, t>::isMoving()
 template <typename a, typename MotorControl>
 PositionControlBase<a, MotorControl>::PositionControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
     : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, &accTimer),
-    accTimer(0, true, this, accTimerISR)
+    accTimer(0, true, this, accTimerISR),
+    _timerControl(_timerControl)
 {
     this->mode = MotorControl::Mode::target;
 }
@@ -83,7 +85,6 @@ void PositionControlBase<a, t>::doMove(int32_t N, bool move)
 
     // Start move---------------------------------------------------------------------------------------
     this->stepTimeControl.setStepFrequency(accelerator.prepareMovement(this->leadMotor->current, this->leadMotor->target, targetSpeed, acceleration));
-    this->stepTimeControl.stepTimerStart();
     this->stepTimeControl.accTimerStart();
 }
 
@@ -96,6 +97,11 @@ void PositionControlBase<a, t>::accTimerISR(PositionControlBase* ctx)
     {
         ctx->stepTimeControl.setStepFrequency(ctx->accelerator.updateSpeed(ctx->leadMotor->current));
     }
+    else
+    {
+        ctx->stepTimeControl.accTimerStop();
+    }
+    
 }
 
 // MOVE ASYNC Commands -------------------------------------------------------------------------------------------------
@@ -104,16 +110,20 @@ template <typename a, typename t>
 template <typename... Steppers>
 void PositionControlBase<a, t>::moveAsync(Steppers &... steppers)
 {
+    _timerControl.disableInterrupt();
     this->attachStepper(steppers...);
     doMove(sizeof...(steppers));
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
 template <size_t N>
 void PositionControlBase<a, t>::moveAsync(Stepper *(&motors)[N]) //move up to maxMotors motors synchronously
 {
+    _timerControl.disableInterrupt();
     this->attachStepper(motors);
     doMove(N);
+    _timerControl.enableInterrupt();
 }
 
 // MOVE Commands -------------------------------------------------------------------------------------------------
@@ -127,6 +137,7 @@ void PositionControlBase<a, t>::move(Steppers &... steppers)
     {
         HAL_Delay(1);
     }
+    this->stepTimeControl.stepTimerStop();
 }
 
 template <typename a, typename t>
@@ -138,13 +149,16 @@ void PositionControlBase<a, t>::move(Stepper *(&motors)[N])
     {
         HAL_Delay(1);
     }
+    this->stepTimeControl.stepTimerStop();
 }
 
 template <typename a, typename t>
 void PositionControlBase<a, t>::stopAsync()
 {
+    _timerControl.disableInterrupt();
     uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
     this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
@@ -155,4 +169,5 @@ void PositionControlBase<a, t>::stop()
     {
         HAL_Delay(1);
     }
+    this->stepTimeControl.stepTimerStop();
 }

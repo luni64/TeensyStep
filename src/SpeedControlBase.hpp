@@ -41,6 +41,7 @@ protected:
 
     ContextTimer<SpeedControlBase> accTimer;
     Accelerator accelerator;
+    TimerArrayControl& _timerControl;
 
     SpeedControlBase(const SpeedControlBase &) = delete;
     SpeedControlBase &operator=(const SpeedControlBase &) = delete;
@@ -57,7 +58,8 @@ bool SpeedControlBase<a, t>::isMoving()
 template <typename a, typename MotorControl>
 SpeedControlBase<a, MotorControl>::SpeedControlBase(TimerArrayControl& _timerControl, uint32_t pulseWidth, uint32_t accUpdatePeriod)
     : MotorControl(_timerControl, pulseWidth, accUpdatePeriod, &accTimer),
-    accTimer(0, true, this, accTimerISR)
+    accTimer(0, true, this, accTimerISR),
+    _timerControl(_timerControl)
 {
     this->mode = MotorControl::Mode::notarget;
 }
@@ -124,34 +126,44 @@ template <typename a, typename t>
 template <typename... Steppers>
 void SpeedControlBase<a, t>::rotateAsync(Steppers &... steppers)
 {
+    _timerControl.disableInterrupt();
     this->attachStepper(steppers...);
     doRotate(sizeof...(steppers));
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
 template <size_t N>
 void SpeedControlBase<a, t>::rotateAsync(Stepper *(&steppers)[N]) 
 {
+    _timerControl.disableInterrupt();
     this->attachStepper(steppers);
     doRotate(N);
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
 void SpeedControlBase<a, t>::overrideSpeed(float factor)
 {
+    _timerControl.disableInterrupt();
     accelerator.overrideSpeed(factor);
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
 void SpeedControlBase<a, t>::overrideAcceleration(float factor)
 {
+    _timerControl.disableInterrupt();
     accelerator.overrideAcceleration(factor);
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>
 void SpeedControlBase<a, t>::stopAsync()
 {
+    _timerControl.disableInterrupt();
     accelerator.initiateStopping(this->leadMotor->current);
+    _timerControl.enableInterrupt();
 }
 
 template <typename a, typename t>

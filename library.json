@@ -15,7 +15,7 @@
     "maintainer": true
   },
   "dependencies": {
-    "STM32TimerArray": ">=0.4.3"
+    "STM32TimerArray": ">=0.4.4"
   },
   "version": "0.1.0",
   "frameworks": "STM32Cube",

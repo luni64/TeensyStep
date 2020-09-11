@@ -44,11 +44,8 @@ void LinSpeedAccelerator::overrideSpeed(float factor)
 {
     //Serial.printf("a:------ %d\n", a);
 
-    // TODO: add interrupt handling
-    //noInterrupts();
     v_tgt = v_tgt_orig * factor;
     dv = v_tgt > v_cur ? dv_cur : -dv_cur;
-    //interrupts();
 }
 
 void LinSpeedAccelerator::overrideAcceleration(float factor)
@@ -56,11 +53,8 @@ void LinSpeedAccelerator::overrideAcceleration(float factor)
     //Serial.printf("a:------ %d\n", a);
     if (factor > 0)
     {
-        // TODO: add interrupt handling
-        //noInterrupts();
         dv_cur = dv_orig * factor;
         dv *= factor;
-        //interrupts();
     }
 }
 
@@ -83,15 +77,12 @@ int32_t LinSpeedAccelerator::initiateStopping(int32_t curPos)
 
 void LinSpeedAccelerator::eStop()
 {
-    // TODO: add interrupt handling
-    //noInterrupts();
     v_cur = 0.0f;
     v_tgt = 0.0f;
-    //interrupts();
 }
 
 bool LinSpeedAccelerator::isMoving()
 {
-    return v_cur != 0.0f;
+    return v_cur != 0.0f || dv != 0;
 }
    
