@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 
-class LinRotAccelerator
+class LinSpeedAccelerator
 {
 public:
     inline void prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, uint32_t accUpdatePeriod, float speedFactor = 1.0);
@@ -13,12 +13,13 @@ public:
     inline void eStop();
     inline void overrideSpeed(float factor);
     inline void overrideAcceleration(float factor);
+    inline bool isMoving();
 
-    LinRotAccelerator() = default;
+    LinSpeedAccelerator() = default;
 
 protected:
-    LinRotAccelerator(const LinRotAccelerator &) = delete;
-    LinRotAccelerator &operator=(const LinRotAccelerator &) = delete;
+    LinSpeedAccelerator(const LinSpeedAccelerator &) = delete;
+    LinSpeedAccelerator &operator=(const LinSpeedAccelerator &) = delete;
 
     // int32_t v_tgt, v_cur;
     // int32_t v_tgt_orig, dv_orig, dv;
@@ -29,7 +30,7 @@ protected:
 
 // Inline Implementation =====================================================================================================
 
-void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t a, uint32_t accUpdatePeriod, float speedFactor)
+void LinSpeedAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t a, uint32_t accUpdatePeriod, float speedFactor)
 {
     v_tgt_orig = targetSpeed;
     dv_orig = ((float)a * accUpdatePeriod) / 1E6;  
@@ -39,31 +40,25 @@ void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetS
     overrideSpeed(speedFactor);
 }
 
-void LinRotAccelerator::overrideSpeed(float factor)
+void LinSpeedAccelerator::overrideSpeed(float factor)
 {
     //Serial.printf("a:------ %d\n", a);
 
-    // TODO: add interrupt handling
-    //noInterrupts();
     v_tgt = v_tgt_orig * factor;
     dv = v_tgt > v_cur ? dv_cur : -dv_cur;
-    //interrupts();
 }
 
-void LinRotAccelerator::overrideAcceleration(float factor)
+void LinSpeedAccelerator::overrideAcceleration(float factor)
 {
     //Serial.printf("a:------ %d\n", a);
     if (factor > 0)
     {
-        // TODO: add interrupt handling
-        //noInterrupts();
         dv_cur = dv_orig * factor;
         dv *= factor;
-        //interrupts();
     }
 }
 
-int32_t LinRotAccelerator::updateSpeed(int32_t curPos)
+int32_t LinSpeedAccelerator::updateSpeed(int32_t curPos)
 {
     if (v_cur == v_tgt)
         return (int32_t)v_tgt; // already at target, keep spinning with target frequency
@@ -74,18 +69,20 @@ int32_t LinRotAccelerator::updateSpeed(int32_t curPos)
     return (int32_t)v_cur;
 }
 
-int32_t LinRotAccelerator::initiateStopping(int32_t curPos)
+int32_t LinSpeedAccelerator::initiateStopping(int32_t curPos)
 {
     overrideSpeed(0);
     return 0;
 }
 
-void LinRotAccelerator::eStop()
+void LinSpeedAccelerator::eStop()
 {
-    // TODO: add interrupt handling
-    //noInterrupts();
     v_cur = 0.0f;
     v_tgt = 0.0f;
-    //interrupts();
+}
+
+bool LinSpeedAccelerator::isMoving()
+{
+    return v_cur != 0.0f || dv != 0;
 }
    
