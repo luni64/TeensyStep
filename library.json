@@ -14,7 +14,10 @@
     "url": "https://github.com/RockerM4NHUN",
     "maintainer": true
   },
-  "version": "0.2.0",
+  "dependencies": {
+    "STM32TimerArray": ">=0.4.4"
+  },
+  "version": "0.3.0",
   "frameworks": "STM32Cube",
   "platforms": "ststm32"
 }
