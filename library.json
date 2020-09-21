@@ -1,7 +1,7 @@
 {
   "name": "TeensyStep",
-  "keywords": "teensy, stm32f4, esp32, stepper, motor, high-speed",
-  "description": "High speed stepper driver for teensy boards (T3.0 - T3.6), STM32F4 and ESP32",
+  "keywords": "teensy, stm32f4, stepper, motor, high-speed",
+  "description": "High speed stepper driver for teensy boards (T3.0 - T3.6) and STM32F4",
   "repository":
   {
     "type": "git",
@@ -15,9 +15,9 @@
     "maintainer": true
   },
   "homepage": "https://luni64.github.io/TeensyStep",
-  "version": "2.1.1",
+  "version": "2.1",
   "frameworks": "arduino",
-  "platforms": ["Teensy", "stm32", "esp32"],
+  "platforms": ["Teensy", "stm32"],
   "build": {
     "srcFilter": [
         "+<*>",

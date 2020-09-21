@@ -61,7 +61,7 @@ class PeriodicTimer : public TimerBase
 
     inline void setPeriod(uint32_t microSeconds)
     {
-        deltaCnt = F_CPU / 1000000 * microSeconds;
+        deltaCnt = F_CPU / 1'000'000 * microSeconds;
     }
 
     static float minFrequency;
@@ -77,7 +77,7 @@ class OneShotTimer : public TimerBase
 
     void setDelay(unsigned microSeconds)
     {
-        deltaCnt = F_CPU / 1000000 * microSeconds;
+        deltaCnt = F_CPU / 1'000'000 * microSeconds;
     }
 };
 
@@ -86,10 +86,10 @@ class TimerControl
   public:
     static void begin()
     {
-        #ifdef TEENSY
+#ifdef TEENSY3
         ARM_DEMCR |= ARM_DEMCR_TRCENA;
         ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA;
-        #endif
+#endif
     }
 
     static void attachTimer(TimerBase *timer)
@@ -140,7 +140,7 @@ class TimerControl
 
     static inline void tick()
     {
-        digitalWrite(2,HIGH);
+        digitalWrite(2,HIGH) ;
         TimerBase *timer = firstTimer;
 
         while (timer != nullptr)
@@ -160,7 +160,7 @@ class TimerControl
             timer = timer->next;
         }
 
-        digitalWrite(2,LOW);
+        digitalWrite(2,LOW) ;
     }
 
   protected:

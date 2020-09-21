@@ -6,10 +6,10 @@
 
 using std::vector;
 
-#define ENABLE_PIN D8
+#define ENABLE_PIN 8
 
-Stepper stepper_x(D2, D5);       // STEP pin: 2, DIR pin: 3
-Stepper stepper_y(D3, D6);
+Stepper stepper_x(2, 5);       // STEP pin: 2, DIR pin: 3
+Stepper stepper_y(3, 6);
 StepControl controller;    // Use default settings
 
 

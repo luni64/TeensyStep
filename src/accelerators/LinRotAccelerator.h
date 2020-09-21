@@ -1,12 +1,8 @@
 #pragma once
 
-#ifndef ARDUINO_ARCH_ESP32
-#include "wiring.h"
-#endif
 
-#include <cmath>
-#include <cstdint>
-#include <algorithm>
+#include "Arduino.h"
+
 
 class LinRotAccelerator
 {
@@ -14,7 +10,6 @@ public:
     inline void prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, uint32_t accUpdatePeriod, float speedFactor = 1.0);
     inline int32_t updateSpeed(int32_t currentPosition);
     inline int32_t initiateStopping(int32_t currentPosition);
-    inline void eStop();
     inline void overrideSpeed(float factor);
     inline void overrideAcceleration(float factor);
 
@@ -36,7 +31,7 @@ protected:
 void LinRotAccelerator::prepareRotation(int32_t currentPosition, int32_t targetSpeed, uint32_t a, uint32_t accUpdatePeriod, float speedFactor)
 {
     v_tgt_orig = targetSpeed;
-    dv_orig = ((float)a * accUpdatePeriod) / 1E6;  
+    dv_orig = ((float)a * accUpdatePeriod) / 1E6;
     v_cur = 0;
 
     overrideAcceleration(1.0f);
@@ -82,11 +77,11 @@ int32_t LinRotAccelerator::initiateStopping(int32_t curPos)
     return 0;
 }
 
-void LinRotAccelerator::eStop()
-{
-    noInterrupts();
-    v_cur = 0.0f;
-    v_tgt = 0.0f;
-    interrupts();
-}
-   
+// void LinRotAccelerator::eStop()
+// {
+//     noInterrupts();
+//     v_cur = 0.0f;
+//     v_tgt = 0.0f;
+//     interrupts();
+// }
+

@@ -11,10 +11,11 @@
 class TimerField
 {
 public:
-  inline TimerField(TF_Handler *_handler);
+  inline TimerField(TeensyStep::TF_Handler *_handler);
 
   inline bool begin();
   inline void end();
+  inline void endAfterPulse(); // not nice look for better solution
 
   inline void stepTimerStart();
   inline void stepTimerStop();
@@ -32,7 +33,7 @@ public:
 protected:
   static int instances;
   static TIM_TypeDef* timer_mapping[MAX_TIMERS];
-  TF_Handler *handler;
+  TeensyStep::TF_Handler *handler;
   HardwareTimer stepTimer;
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
@@ -56,7 +57,7 @@ protected:
 // as its interrupt is reused.
 // IMPLEMENTATION ====================================================================
 
-TimerField::TimerField(TF_Handler *_handler) :
+TimerField::TimerField(TeensyStep::TF_Handler *_handler) :
       stepTimer(get_timer()),
       accTimer(get_timer()),
       pulseTimer(get_timer()),
@@ -108,7 +109,6 @@ void TimerField::setStepFrequency(unsigned f)
 
 bool TimerField::begin()
 {
-  Serial.println("begin");
   return true;
 }
 
@@ -117,6 +117,11 @@ void TimerField::end()
   stepTimer.pause();
   accTimer.pause();
   pulseTimer.pause();
+}
+
+void TimerField::endAfterPulse()
+{
+    //lastPulse = true;
 }
 
 #endif

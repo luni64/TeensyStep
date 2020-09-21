@@ -1,16 +1,14 @@
 #pragma once
 
-#include "version.h"
-
 #include "RotateControlBase.h"
 #include "StepControlBase.h"
-
+#include "Stepper.h"
 #include "accelerators/LinRotAccelerator.h"
 #include "accelerators/LinStepAccelerator.h"
+#include "version.h"
 //#include "accelerators/SinRotAccelerator.h"
 
-//#include "timer/generic/TimerField.h"
-
+#include "timer/generic/TimerField.h"
 
 // TEENSY 3.0 - Teensy 3.6 ==================================================================================
 
@@ -22,32 +20,26 @@
 #elif defined(__IMXRT1052__)
 #include "timer/teensy4/TimerField.h"
 
-// STM32 ====================================================================================================
+//STM32 ====================================================================================================
 
 #elif defined(STM32F4xx)
 #include "timer/stm32/TimerField.h"
 
-// ESP32 ======================================================================================
-
-#elif defined(ARDUINO_ARCH_ESP32)
-#include "Arduino.h"
-#include "timer/esp32/TimerField.h"
-
-// Some other hardware ======================================================================================
+//Some other hardware ======================================================================================
 
 #elif defined(__someHardware_TBD__)
 #include "timers/someHardware/TimerField2.h"
-using StepControlTick = StepControlBase<LinStepAccelerator,TickTimerField>;
-using RotateControlTick = RotateControlBase<LinStepAccelerator,TickTimerField>;
 #endif
 
 // Linear acceleration -----------------------------------------------------------------------------------------
 
+//using MotorControl = TeensyStep::MotorControlBase<TimerField>;
 
-using MotorControl = MotorControlBase<TimerField>;
+using RotateControl = TeensyStep::RotateControlBase<LinRotAccelerator, TimerField>;
+using StepControl = TeensyStep::StepControlBase<LinStepAccelerator, TimerField>;
 
-using RotateControl = RotateControlBase<LinRotAccelerator, TimerField>;
-using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
+using StepControlTick = TeensyStep::StepControlBase<LinStepAccelerator, TickTimerField>;
+using RotateControlTick = TeensyStep::RotateControlBase<LinStepAccelerator, TickTimerField>;
 
 // Sine acceleration -------------------------------------------------------------------------------------------
 
@@ -64,3 +56,5 @@ using StepControl = StepControlBase<LinStepAccelerator, TimerField>;
 
 // template <unsigned stepPulseWidth = defPW, unsigned a = defAP>
 // using StepControl_tick = StepControlBase<LinStepAccelerator, stepPulseWidth, a>;
+
+using Stepper = TeensyStep::Stepper;

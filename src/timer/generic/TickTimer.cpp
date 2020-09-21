@@ -1,4 +1,3 @@
-#ifndef ARDUINO_ARCH_ESP32
 #include "TickTimer.h"
 
 void std::__throw_bad_function_call()
@@ -9,4 +8,3 @@ void std::__throw_bad_function_call()
 float PeriodicTimer::minFrequency = (float)F_CPU / std::numeric_limits<uint32_t>::max();
 TimerBase* TimerControl::firstTimer = nullptr;
 TimerBase* TimerControl::lastTimer = nullptr;
-#endif
