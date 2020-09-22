@@ -1,10 +1,9 @@
-#if defined(TEENSY4)
 #include "TF_Handler.h"
 
 class ITimerField
 {
 public:
-  ITimerField(TF_Handler *);
+  ITimerField(TeensyStep::TF_Handler *);
 
   virtual bool begin()=0;
   virtual void end()=0;
@@ -21,5 +20,3 @@ public:
   virtual void setPulseWidth(unsigned delay)=0;
   virtual void triggerDelay()=0;
 };
-
-#endif

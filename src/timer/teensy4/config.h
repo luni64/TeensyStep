@@ -1,4 +1,4 @@
-﻿#if defined(TEENSY4)
+﻿#if defined(__IMXRT1052__)
 #pragma once
 
 #include <arduino.h>
