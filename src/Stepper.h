@@ -55,7 +55,7 @@ namespace TeensyStep
         static bool cmpVmax(const Stepper* a, const Stepper* b) { return std::abs(a->vMax) > std::abs(b->vMax); }
 
         // Pin & Dir registers
-#if defined(TEENSY3)
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         volatile uint32_t* stepPinActiveReg;
         volatile uint32_t* stepPinInactiveReg;
         volatile uint32_t* dirPinCwReg;
@@ -78,7 +78,7 @@ namespace TeensyStep
     };
 
     // Inline implementation -----------------------------------------
-#if defined(TEENSY3)
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     void Stepper::doStep()
     {
         *stepPinActiveReg = 1;

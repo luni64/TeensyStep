@@ -22,11 +22,11 @@ class TimerBase
     };
 
     static inline uint32_t get_cycles(){
-        #if defined(TEENSY3)
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
             return ARM_DWT_CYCCNT;
-        #else
+#else
             return dwt_getCycles();
-        #endif
+#endif
     }
 
     inline void start() { startCnt = get_cycles(); run = true; }
@@ -86,7 +86,7 @@ class TimerControl
   public:
     static void begin()
     {
-#ifdef TEENSY3
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         ARM_DEMCR |= ARM_DEMCR_TRCENA;
         ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA;
 #endif

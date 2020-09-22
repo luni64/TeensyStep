@@ -18,7 +18,7 @@ namespace TeensyStep
 
     Stepper& Stepper::setStepPinPolarity(int polarity)
     {
-#ifdef TEENSY3
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         // Calculate adresses of bitbanded pin-set and pin-clear registers
         uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[stepPin].reg; //GPIO_PDOR
         uint32_t* pinSetReg = (uint32_t*)(pinRegAddr + 4 * 32);               //GPIO_PSOR = GPIO_PDOR + 4
@@ -45,7 +45,7 @@ namespace TeensyStep
 
     Stepper& Stepper::setInverseRotation(bool reverse)
     {
-#ifdef TEENSY3
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         // Calculate adresses of bitbanded pin-set and pin-clear registers
         uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[dirPin].reg; //GPIO_PDOR
         uint32_t* pinSetReg = (uint32_t*)(pinRegAddr + 4 * 32);              //GPIO_PSOR = GPIO_PDOR + 4
