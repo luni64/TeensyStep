@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "Stream.h"
 
 namespace TeensyStep
 {

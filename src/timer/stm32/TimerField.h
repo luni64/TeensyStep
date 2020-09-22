@@ -1,7 +1,7 @@
 #if defined(STM32F4xx)
 #pragma once
 
-#include <Arduino.h>
+#include <wiring.h>
 #include <functional>
 
 #include "../TF_Handler.h"
