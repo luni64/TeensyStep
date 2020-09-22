@@ -1,3 +1,4 @@
+#if defined(TEENSY3)
 #include "PIT.h"
 #include "../TF_Handler.h"
 
@@ -62,3 +63,4 @@ namespace TeensyStep
         }
     }
 }
+#endif
