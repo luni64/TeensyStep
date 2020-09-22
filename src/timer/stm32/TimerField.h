@@ -47,11 +47,11 @@ protected:
 // * Known bug: Second interrupt always happens after 20ms, no mather what acceleration is set. This causes
 // all other interrupts to be slightly delayed. With default acceleration the second interrupt happens
 // after 20ms instead of after 11.6ms.
-// All acceleration inerrupts are shifted by one step,
+// All acceleration interrupts are shifted by one step,
 //
 // Example with 10 steps(ms, offset to each  other):
-//  Teensy35 has steps: 0, 11.6, 9.0, 7.6, 6.6, 7.6, 9.0, 11.6, 20.0, 20.0
-//  stm32f4 has steps : 0, 20.0, 11.6, 9.0, 7.6, 6.6, 7.5 9, 11.6 20.0
+//  Teensy35 has steps: 0, 11.6, 9.0,  7.6, 6.6, 7.6, 9.0, 11.6, 20.0, 20.0
+//  stm32f4 has steps : 0, 20.0, 11.6, 9.0, 7.6, 6.6, 7.5,  9.0, 11.6, 20.0
 
 // * Maximum 4 instances can be used, if more than four are initialized the first will break
 // as its interrupt is reused.
