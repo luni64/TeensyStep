@@ -55,10 +55,15 @@ namespace TeensyStep
         static bool cmpVmax(const Stepper* a, const Stepper* b) { return std::abs(a->vMax) > std::abs(b->vMax); }
 
         // Pin & Dir registers
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         volatile uint32_t* stepPinActiveReg;
         volatile uint32_t* stepPinInactiveReg;
         volatile uint32_t* dirPinCwReg;
         volatile uint32_t* dirPinCcwReg;
+#else
+        volatile uint8_t polarity;
+        volatile uint8_t reverse;
+#endif
         const int stepPin, dirPin;
 
         // Friends
@@ -73,12 +78,13 @@ namespace TeensyStep
     };
 
     // Inline implementation -----------------------------------------
-
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     void Stepper::doStep()
     {
         *stepPinActiveReg = 1;
         current += dir;
     }
+
     void Stepper::clearStepPin() const
     {
         *stepPinInactiveReg = 1;
@@ -87,8 +93,26 @@ namespace TeensyStep
     void Stepper::setDir(int d)
     {
         dir = d;
-        dir == 1 ? * dirPinCwReg = 1 : * dirPinCcwReg = 1;
+        dir == 1 ? *dirPinCwReg = 1 : *dirPinCcwReg = 1;
     }
+#else
+    void Stepper::doStep()
+    {
+        digitalWrite(stepPin, polarity);
+        current += dir;
+    }
+
+    void Stepper::clearStepPin() const
+    {
+        digitalWrite(stepPin, !polarity);
+    }
+
+    void Stepper::setDir(int d)
+    {
+        dir = d;
+        digitalWrite(dirPin, dir == 1 ? reverse : !reverse);
+    }
+#endif
 
     void Stepper::toggleDir()
     {

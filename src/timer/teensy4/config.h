@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#if defined(__IMXRT1052__)
+#pragma once
 
 #include <arduino.h>
 #include <core_pins.h>
@@ -170,3 +171,4 @@ namespace TeensyStepFTM
         return  mu * 1E-6 * _timer_frequency / (1 << prescale) + 0.5;
     }
 }
+#endif

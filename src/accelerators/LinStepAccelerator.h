@@ -68,7 +68,7 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
         // hack, call some error callback instead
         while (1)
         {
-            digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN));
+            digitalToggle(LED_BUILTIN);
             delay(25);
         }
     }

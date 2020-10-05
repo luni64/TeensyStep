@@ -22,8 +22,8 @@
 
 //STM32 ====================================================================================================
 
-#elif defined(__STM32_TBD__)
-#include "timers/STM32/TimerField.h"
+#elif defined(STM32F4xx)
+#include "timer/stm32/TimerField.h"
 
 //Some other hardware ======================================================================================
 

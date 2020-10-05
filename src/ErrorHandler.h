@@ -12,7 +12,7 @@ namespace TeensyStep
     {
      public:
         static int error(errModule module, int code)
-        {            
+        {
             if (callback != nullptr) callback((int)module, code);
             return code;
         }
@@ -27,7 +27,7 @@ namespace TeensyStep
     enum class errModule {
         PIT = 1,
         MC,
-        RB 
+        RB
     };
 
     enum class pitErr {
@@ -35,11 +35,11 @@ namespace TeensyStep
         argErr,
         notAllocated,
         outOfTimers,
-        
+
     };
 
     enum class mcErr {
         OK,
-        alrdyMoving,        
+        alrdyMoving,
     };
 }

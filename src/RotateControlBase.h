@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MotorControlBase.h"
-#include "core_pins.h"
 #include <algorithm>
+#include <Arduino.h>
+#include "MotorControlBase.h"
 
 namespace TeensyStep
 {

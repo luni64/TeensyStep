@@ -1,5 +1,5 @@
+#include <Arduino.h>
 #include "Stepper.h"
-#include "core_pins.h"
 
 namespace TeensyStep
 {
@@ -18,6 +18,7 @@ namespace TeensyStep
 
     Stepper& Stepper::setStepPinPolarity(int polarity)
     {
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         // Calculate adresses of bitbanded pin-set and pin-clear registers
         uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[stepPin].reg; //GPIO_PDOR
         uint32_t* pinSetReg = (uint32_t*)(pinRegAddr + 4 * 32);               //GPIO_PSOR = GPIO_PDOR + 4
@@ -33,12 +34,18 @@ namespace TeensyStep
             stepPinActiveReg = pinSetReg;
             stepPinInactiveReg = pinClearReg;
         }
+#else
+        this->polarity = polarity;
+#endif
+        clearStepPin(); // set step pin to inactive state
+        return *this;
         clearStepPin(); // set step pin to inactive state
         return *this;
     }
 
     Stepper& Stepper::setInverseRotation(bool reverse)
     {
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         // Calculate adresses of bitbanded pin-set and pin-clear registers
         uint32_t pinRegAddr = (uint32_t)digital_pin_to_info_PGM[dirPin].reg; //GPIO_PDOR
         uint32_t* pinSetReg = (uint32_t*)(pinRegAddr + 4 * 32);              //GPIO_PSOR = GPIO_PDOR + 4
@@ -53,6 +60,9 @@ namespace TeensyStep
             dirPinCwReg = pinSetReg;
             dirPinCcwReg = pinClearReg;
         }
+#else
+        this->reverse = reverse;
+#endif
         return *this;
     }
 

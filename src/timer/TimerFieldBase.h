@@ -3,7 +3,7 @@
 class ITimerField
 {
 public:
-  ITimerField(TF_Handler *);
+  ITimerField(TeensyStep::TF_Handler *);
 
   virtual bool begin()=0;
   virtual void end()=0;

@@ -7,7 +7,7 @@ Please note: This is version 2 of the library. This version has a new user inter
 
 
 ## Purpose of the Library
-**TeensyStep** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5 and 3.6. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
+**TeensyStep** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5, 3.6 and STM32F4. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
 
 | Description                                | Specification             | Default          |
 |:-------------------------------------------|:-------------------------:|:----------------:|

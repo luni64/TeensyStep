@@ -29,7 +29,7 @@ class SinRotAccelerator
 
     inline float signed_sqrt(int32_t x) // signed square root
     {
-        return x > 0 ? sqrtf(x) : -sqrtf(-x);
+        return x > 0 ? sqrt(x) : -sqrt(-x);
     }
 };
 

@@ -1,5 +1,6 @@
-#include "Arduino.h"
+#if defined(__IMXRT1052__)
 #include <functional>
+#include "Arduino.h"
 //#include <vector>
 
 using callback_t = void (*)();
@@ -96,3 +97,5 @@ void tickTimer::setFrequency(unsigned f)
 }
 
 channelInfo *tickTimer::channels = new channelInfo[tickTimer::maxTimers + 1];
+
+#endif

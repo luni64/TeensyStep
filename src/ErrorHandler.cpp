@@ -1,12 +1,12 @@
-#include "ErrorHandler.h"
 #include <Arduino.h>
+#include "ErrorHandler.h"
 
 namespace TeensyStep
-{    
-    static Stream* stream;   
+{
+    static Stream* stream;
 
     static void vHandler(int module, int code)
-    {       
+    {
         const char* mod;
         const char* txt;
 
@@ -20,8 +20,8 @@ namespace TeensyStep
                     case pitErr::argErr:      txt = "BUG, argument error"; break;
                     case pitErr::notAllocated:txt = "BUG, timer not allocated"; break;
                     default:                  txt = "unknown"; break;
-                }                
-                break;           
+                }
+                break;
 
             case errModule::MC: //------------------------------------------
                 mod = "CTRL";
@@ -29,7 +29,7 @@ namespace TeensyStep
                 {
                     case mcErr::alrdyMoving:  txt = "Started while moving"; break;
                     default:                  txt = "unknown"; break;
-                }                
+                }
                 break;
 
             default: //------------------------------------------------------
@@ -41,7 +41,7 @@ namespace TeensyStep
 
         while (true)
         {
-            digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN));
+            digitalToggle(LED_BUILTIN);
             delay(50);
         }
     }

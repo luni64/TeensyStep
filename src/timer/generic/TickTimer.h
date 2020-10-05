@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <functional>
 #include <limits>
 
@@ -21,7 +21,15 @@ class TimerBase
         prev = next = nullptr;
     };
 
-    inline void start() { startCnt = ARM_DWT_CYCCNT; run = true; }
+    static inline uint32_t get_cycles(){
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+            return ARM_DWT_CYCCNT;
+#else
+            return dwt_getCycles();
+#endif
+    }
+
+    inline void start() { startCnt = get_cycles(); run = true; }
     inline void stop() { run = false; }
     inline bool isRunning() const {return run;}
 
@@ -39,9 +47,9 @@ class TimerBase
 class PeriodicTimer : public TimerBase
 {
   public:
-    PeriodicTimer(callback_t cb) : TimerBase(cb, true) 
+    PeriodicTimer(callback_t cb) : TimerBase(cb, true)
     {
-        
+
     }
 
     inline void setFrequency(float hz)
@@ -56,13 +64,13 @@ class PeriodicTimer : public TimerBase
         deltaCnt = F_CPU / 1'000'000 * microSeconds;
     }
 
-    static constexpr float minFrequency = (float)F_CPU / std::numeric_limits<uint32_t>::max();
+    static float minFrequency;
 };
 
 class OneShotTimer : public TimerBase
 {
   public:
-    OneShotTimer(callback_t cb, unsigned delay = 0) : TimerBase(cb, false) 
+    OneShotTimer(callback_t cb, unsigned delay = 0) : TimerBase(cb, false)
     {
         setDelay(delay);
     }
@@ -78,8 +86,10 @@ class TimerControl
   public:
     static void begin()
     {
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         ARM_DEMCR |= ARM_DEMCR_TRCENA;
         ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA;
+#endif
     }
 
     static void attachTimer(TimerBase *timer)
@@ -129,19 +139,19 @@ class TimerControl
     }
 
     static inline void tick()
-    {       
-        digitalWriteFast(2,HIGH) ;
+    {
+        digitalWrite(2,HIGH) ;
         TimerBase *timer = firstTimer;
-        
+
         while (timer != nullptr)
         {
             //Serial.printf("cnt: %d\n", ARM_DWT_CYCCNT );
 
-            if (timer->run && (ARM_DWT_CYCCNT - timer->startCnt >= timer->deltaCnt))
+            if (timer->run && (TimerBase::get_cycles() - timer->startCnt >= timer->deltaCnt))
 
             {
                 if (timer->isPeriodic)
-                    timer->startCnt = ARM_DWT_CYCCNT;
+                    timer->startCnt = TimerBase::get_cycles();
                 else
                     timer->run = false;
 
@@ -150,7 +160,7 @@ class TimerControl
             timer = timer->next;
         }
 
-        digitalWriteFast(2,LOW) ;
+        digitalWrite(2,LOW) ;
     }
 
   protected:
