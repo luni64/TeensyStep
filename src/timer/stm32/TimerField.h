@@ -72,9 +72,6 @@ TimerField::TimerField(TeensyStep::TF_Handler *_handler) :
 void TimerField::stepTimerStart()
 {
   stepTimer.resume();
-  // force reload of all timer's registers here saves 1.2ms in startup time
-  // https://github.com/stm32duino/wiki/wiki/HardwareTimer-library
-  stepTimer.refresh();
   stepTimerRunning = true;
 }
 
@@ -109,6 +106,9 @@ void TimerField::setStepFrequency(unsigned f)
 
 bool TimerField::begin()
 {
+  stepTimer.setPreloadEnable(false);
+  accTimer.setPreloadEnable(false);
+  pulseTimer.setPreloadEnable(false);
   return true;
 }
 
