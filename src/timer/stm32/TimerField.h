@@ -72,6 +72,8 @@ TimerField::TimerField(TeensyStep::TF_Handler *_handler) :
 void TimerField::stepTimerStart()
 {
   stepTimer.resume();
+  // Force update on the step timer registers as it might be slow(>50ms sometimes) to start otherwise.
+  stepTimer.refresh();
   stepTimerRunning = true;
 }
 
