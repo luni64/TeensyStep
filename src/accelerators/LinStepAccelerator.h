@@ -69,7 +69,16 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
             sa += se;
             se = 0;
         }
-    //    Serial.printf("recalculating, new v: %d, sa: %d, se: %d\r\n",(int32_t)sqrtf(vt_sqr) ,sa, se);
+
+        if(sa + se != ds){
+            // catch truncation in above calculations. The acc/dec phase may differ with one due to
+            // truncation so we catch it here and add it to either acc or dec.
+            // If we don't catch it the updateSpeed function will enter constant speed and return the
+            // target speed no matter what speed the acc phase ended at and could case a way too
+            // high acceleration for a short period before entering the dec phase.
+            sa != 0 ? sa++ : se++;
+        }
+        //Serial.printf("recalculating, new v: %d, sa: %d, se: %d\r\n",(int32_t)sqrtf(vt_sqr) ,sa, se);
     }
     accEnd = sa;
     decStart = ds - se;
@@ -93,6 +102,7 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
     // constant speed phase ------------------------------------
     if (s < decStart)
     {
+        //Serial.printf("constant vt: %d, s: %d\r\n", vt, s);
         return vt;
     }
 
