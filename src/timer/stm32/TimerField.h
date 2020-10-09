@@ -108,8 +108,6 @@ void TimerField::setStepFrequency(unsigned f)
 
 bool TimerField::begin()
 {
-  stepTimer.setPreloadEnable(false);
-  accTimer.setPreloadEnable(false);
   pulseTimer.setPreloadEnable(false);
   return true;
 }
