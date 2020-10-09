@@ -30,8 +30,8 @@ protected:
 int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a)
 {
     vt = targetSpeed;
-    vs = pullInSpeed;  // v_start
-    ve = pullOutSpeed; // v_end
+    vs = std::min(pullInSpeed, vt);  // v_start
+    ve = std::min(pullOutSpeed, vt); // v_end
     two_a = 2 * a;
 
     s_0 = currentPos;

@@ -86,8 +86,8 @@ namespace TeensyStep
 
     Stepper& Stepper::setPullInOutSpeed(int32_t pullInSpeed, int32_t pullOutSpeed)
     {
-        vPullIn = std::min(std::abs(pullInSpeed), vMax);
-        vPullOut = std::min(std::abs(pullOutSpeed), vMax);
+        vPullIn = std::abs(pullInSpeed);
+        vPullOut = std::abs(pullOutSpeed);
         return *this;
     }
 
