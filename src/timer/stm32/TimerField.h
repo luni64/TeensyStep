@@ -38,6 +38,7 @@ protected:
   HardwareTimer accTimer;
   HardwareTimer pulseTimer;
   volatile bool stepTimerRunning;
+  bool lastPulse = false;
 
   TIM_TypeDef* get_timer() {
     return instances >= MAX_TIMERS ? TIM1 : timer_mapping[instances++];
@@ -63,10 +64,18 @@ TimerField::TimerField(TeensyStep::TF_Handler *_handler) :
       pulseTimer(get_timer()),
       stepTimerRunning(false)
 {
-  handler = _handler;
-  stepTimer.attachInterrupt([this] { handler->stepTimerISR(); });
-  accTimer.attachInterrupt([this] { handler->accTimerISR(); });
-  pulseTimer.attachInterrupt([this] { handler->pulseTimerISR(); this->pulseTimer.pause(); }); // one-shot mode
+    handler = _handler;
+    stepTimer.attachInterrupt([this] { handler->stepTimerISR(); });
+    accTimer.attachInterrupt([this] { handler->accTimerISR(); });
+
+    pulseTimer.attachInterrupt([this] {
+        handler->pulseTimerISR();
+        this->pulseTimer.pause();
+        if(lastPulse)
+        {
+            end();
+        }
+    }); // one-shot mode
 }
 
 void TimerField::stepTimerStart()
@@ -99,17 +108,14 @@ void TimerField::setPulseWidth(unsigned pulseWidth)
 
 void TimerField::setStepFrequency(unsigned f)
 {
-  if(f == 0){
-    stepTimerStop();
-    return;
-  }
-  stepTimer.setOverflow(f, HERTZ_FORMAT);
+  f == 0 ? end() : stepTimer.setOverflow(f, HERTZ_FORMAT);
 }
 
 bool TimerField::begin()
 {
-  pulseTimer.setPreloadEnable(false);
-  return true;
+    pulseTimer.setPreloadEnable(false);
+    lastPulse = false;
+    return true;
 }
 
 void TimerField::end()
@@ -117,11 +123,12 @@ void TimerField::end()
   stepTimer.pause();
   accTimer.pause();
   pulseTimer.pause();
+  stepTimerRunning = false;
 }
 
 void TimerField::endAfterPulse()
 {
-    //lastPulse = true;
+    lastPulse = true;
 }
 
 #endif
