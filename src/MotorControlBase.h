@@ -95,7 +95,7 @@ namespace TeensyStep{
     template <typename t>
     MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
         : timerField(this), mCnt(0)
-    {        
+    {
         timerField.setPulseWidth(pulseWidth);
         timerField.setAccUpdatePeriod(accUpdatePeriod);
         this->accUpdatePeriod = accUpdatePeriod;
