@@ -78,6 +78,7 @@ namespace TeensyStep
         isStopping = false;
         this->timerField.begin();
         accelerator.prepareRotation(this->leadMotor->current, this->leadMotor->vMax, acceleration, this->accUpdatePeriod, speedFactor);
+        this->timerField.stepTimerStart();
         this->timerField.accTimerStart();
     }
 
