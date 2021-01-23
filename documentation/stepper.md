@@ -44,7 +44,7 @@ chapters:
         - name: polarity
           type: int
 
-    - name: setInversRotation
+    - name: setInverseRotation
       shortDesc: Use this function to change the polarity of the generated direction signal. ```setInversRotation(true)``` sets the DIR pin to LOW if the motor runs in 'upward direction'
       returnType: Stepper&
       parameter:
