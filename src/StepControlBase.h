@@ -156,6 +156,8 @@ namespace TeensyStep
         {
             uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
             this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
+
+            if (this->leadMotor->target == this->leadMotor->current) this->timerField.end();
         }
     }
 
