@@ -26,8 +26,8 @@ namespace TeensyStep
         inline bool isRunning() const;
         inline bool isAllocated() const;
 
-     protected:
         KINETISK_PIT_CHANNEL_t* channel = nullptr;
+     protected:
         IntervalTimer timer;
         int setupChannel();
 
@@ -108,7 +108,7 @@ namespace TeensyStep
     {
         return isAllocated();// && true;// (channel->TCTRL & PIT_TCTRL_TIE);
     }
-    
+
     bool PIT::isAllocated() const
     {
         return channel != nullptr;
