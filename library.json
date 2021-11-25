@@ -9,13 +9,12 @@
   },
   "authors":
   {
-    "name": "Lutz Niggl",
-    "email": "lutz.niggl@lunoptics.com",
+    "name": "luni64",
     "url": "https://github.com/luni64",
     "maintainer": true
   },
   "homepage": "https://luni64.github.io/TeensyStep",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "frameworks": "arduino",
   "platforms": ["Teensy", "stm32"]
 }

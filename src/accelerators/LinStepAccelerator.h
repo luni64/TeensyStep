@@ -1,12 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <algorithm>
 
 class LinStepAccelerator
 {
-public:
+ public:
     inline int32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a);
     inline int32_t updateSpeed(int32_t currentPosition);
     inline uint32_t initiateStopping(int32_t currentPosition);
@@ -14,9 +14,9 @@ public:
 
     LinStepAccelerator() = default;
 
-protected:
-    LinStepAccelerator(const LinStepAccelerator &) = delete;
-    LinStepAccelerator &operator=(const LinStepAccelerator &) = delete;
+ protected:
+    LinStepAccelerator(const LinStepAccelerator&) = delete;
+    LinStepAccelerator& operator=(const LinStepAccelerator&) = delete;
 
     int32_t s_0, ds;
     uint32_t vs, ve, vt;
@@ -29,17 +29,17 @@ protected:
 
 int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a)
 {
-    vt = targetSpeed;
-    vs = pullInSpeed;  // v_start
-    ve = pullOutSpeed; // v_end
+    vt    = targetSpeed;
+    vs    = pullInSpeed;  // v_start
+    ve    = pullOutSpeed; // v_end
     two_a = 2 * a;
 
     s_0 = currentPos;
-    ds = std::abs(targetPos - currentPos);
+    ds  = std::abs(targetPos - currentPos);
 
-    vs_sqr = vs * vs;
-    ve_sqr = ve * ve;
-    vt_sqr = vt * vt;
+    vs_sqr = (int64_t)vs * vs;
+    ve_sqr = (int64_t)ve * ve;
+    vt_sqr = (int64_t)vt * vt;
 
     int32_t sm = ((ve_sqr - vs_sqr) / two_a + ds) / 2; // position where acc and dec curves meet
 
@@ -51,9 +51,9 @@ int32_t LinStepAccelerator::prepareMovement(int32_t currentPos, int32_t targetPo
     if (sm >= 0 && sm <= ds) // we can directly reach the target with the given values vor v0, ve and a
     {
         int32_t sa = (vt_sqr - vs_sqr) / two_a; // required distance to reach target speed
-        if (sa < sm)                              // target speed can be reached
+        if (sa < sm)                            // target speed can be reached
         {
-            accEnd = sa;
+            accEnd   = sa;
             decStart = sm + (sm - sa);
             //Serial.printf("reachable accEnd: %i decStart:%i\n", accEnd, decStart);
         }
@@ -83,20 +83,23 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
     // acceleration phase -------------------------------------
     if (s < accEnd)
     {
-        return sqrtf(two_a * s + vs_sqr);
+        // digitalWriteFast(3, HIGH);
+        // digitalWriteFast(5, HIGH);
+        return sqrtf((float)two_a * s + vs_sqr);
     }
 
     // constant speed phase ------------------------------------
     if (s < decStart)
     {
+        //digitalWriteFast(3, LOW);
         return vt;
     }
 
     //deceleration phase --------------------------------------
     if (s < ds)
     {
-        //  return sqrtf(two_a * ((stepsDone < ds - 1) ? ds - stepsDone - 2 : 0) + vs_sqr);
-        return sqrtf(ve_sqr + (ds - s - 1) * two_a);
+        // digitalWriteFast(5, LOW);
+        return sqrtf((float)two_a * (ds - s - 1) + ve_sqr);
     }
 
     //we are done, make sure to return 0 to stop the step timer
@@ -107,20 +110,20 @@ uint32_t LinStepAccelerator::initiateStopping(int32_t curPos)
 {
     int32_t stepsDone = std::abs(s_0 - curPos);
 
-    if (stepsDone < accEnd) // still accelerating
-    {
-        accEnd = decStart = 0; // start deceleration
-        ds = 2 * stepsDone;    // we need the same way to decelerate as we traveled so far
-        return stepsDone;      // return steps to go
-    }
-    else if (stepsDone < decStart) // constant speed phase
-    {
-        decStart = 0;            // start deceleration
-        ds = stepsDone + accEnd; // normal deceleration distance
-        return accEnd;           // return steps to go
-    }
-    else // already decelerating
-    {
-        return ds - stepsDone; // return steps to go
+    if (stepsDone < accEnd)                // still accelerating
+    {                                      //
+        accEnd = decStart = 0;             // start deceleration
+        ds                = 2 * stepsDone; // we need the same way to decelerate as we traveled so far
+        return stepsDone;                  // return steps to go
+    }                                      //
+    else if (stepsDone < decStart)         // constant speed phase
+    {                                      //
+        decStart = 0;                      // start deceleration
+        ds       = stepsDone + accEnd;     // normal deceleration distance
+        return accEnd;                     // return steps to go
+    }                                      //
+    else                                   // already decelerating
+    {                                      //
+        return ds - stepsDone;             // return steps to go
     }
 }
