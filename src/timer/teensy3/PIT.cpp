@@ -29,11 +29,12 @@ namespace TeensyStep
     {
         if (timer.begin(dummyISR, 1E6)) // try to reserve a timer
         {
-            const int channelNr = setupChannel();    // find pit channel of reserved timer            
+            const int channelNr = setupChannel();    // find pit channel of reserved timer
             Handler[channelNr] = handler;            // store handler
             timer.priority(32);
             timer.begin(dispatcher[channelNr], 1E6); // attach an ISR which will call the stored handler
             stop();                                  // stop doesn't clear TEN, we want to keep the IntervalTimer reserved
+            running = true;
             return pitErr::OK;
         }
         return err(pitErr::outOfTimers);
@@ -46,7 +47,7 @@ namespace TeensyStep
         {
             case IRQ_PIT_CH0:
                 channel = KINETISK_PIT_CHANNELS + 0;
-                return 0;                
+                return 0;
             case IRQ_PIT_CH1:
                 channel = KINETISK_PIT_CHANNELS + 1;
                 return 1;
@@ -59,7 +60,7 @@ namespace TeensyStep
             default:
                 channel = nullptr;
                 err(pitErr::argErr);
-                return -1;                
+                return -1;
         }
     }
 }

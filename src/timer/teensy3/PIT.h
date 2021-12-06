@@ -29,6 +29,8 @@ namespace TeensyStep
         KINETISK_PIT_CHANNEL_t* channel = nullptr;
 
      protected:
+        volatile bool running = false;
+
         IntervalTimer timer;
         int setupChannel();
 
@@ -41,6 +43,7 @@ namespace TeensyStep
     {
         timer.end();
         channel = nullptr;
+        running = false;
     }
 
     void PIT::start() const
@@ -89,8 +92,9 @@ namespace TeensyStep
 
     uint32_t PIT::getLDVAL() const
     {
-        if (channel == nullptr) err(pitErr::notAllocated);
-        return channel->LDVAL;
+        return channel == nullptr ? 0 : channel->LDVAL;
+        // if (channel == nullptr) err(pitErr::notAllocated);
+        // return channel->LDVAL;
     }
 
     uint32_t PIT::getCVAL() const
@@ -107,11 +111,11 @@ namespace TeensyStep
 
     bool PIT::isRunning() const
     {
-        return isAllocated();// && true;// (channel->TCTRL & PIT_TCTRL_TIE);
+        return running;
     }
 
     bool PIT::isAllocated() const
     {
-        return channel != nullptr;
+        return running;
     }
 }

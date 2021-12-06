@@ -59,9 +59,9 @@ TimerField::~TimerField()
 
 bool TimerField::begin()
 {
-    //digitalWriteFast(4,HIGH);
-    lastPulse = false;
-    accLoopDelayChannel = TeensyStepFTM::addDelayChannel(this);
+    // digitalWriteFast(4,HIGH);
+    lastPulse            = false;
+    accLoopDelayChannel  = TeensyStepFTM::addDelayChannel(this);
     pinResetDelayChannel = TeensyStepFTM::addDelayChannel(this);
     TeensyStepFTM::begin();
     return stepTimer.begin(handler) == TeensyStep::pitErr::OK;
@@ -94,14 +94,17 @@ void TimerField::stepTimerStop()
 
 unsigned TimerField::getStepFrequency() const
 {
-    return F_BUS / stepTimer.getLDVAL();
+    if (stepTimer.getLDVAL() > 0)
+        return F_BUS / stepTimer.getLDVAL();
+    else
+        return 0;
 }
 
 void TimerField::setStepFrequency(unsigned f)
 {
     if (f != 0)
     {
-        if(stepTimer.channel->TCTRL & PIT_TCTRL_TIE)
+        if (stepTimer.channel->TCTRL & PIT_TCTRL_TIE)
         {
             uint32_t ldval = stepTimer.getLDVAL();
 
@@ -111,22 +114,25 @@ void TimerField::setStepFrequency(unsigned f)
                 return;
             }
 
-            uint32_t newReload = F_BUS / f;
+            uint32_t newReload           = F_BUS / f;
             uint32_t cyclesSinceLastStep = ldval - stepTimer.getCVAL();
             if (cyclesSinceLastStep <= newReload) // time between last pulse and now less than required new period -> wait
             {
                 stepTimer.setThisReload(newReload - cyclesSinceLastStep);
                 stepTimer.setNextReload(newReload);
-            } else
+            }
+            else
             {
                 stepTimer.setThisReload(newReload);
                 handler->stepTimerISR();
             }
-        } else // not running
+        }
+        else // not running
         {
             stepTimer.setThisReload(F_BUS / f); // restarts implicitly
         }
-    } else //f==0
+    }
+    else // f==0
     {
         stepTimer.stop();
     }
