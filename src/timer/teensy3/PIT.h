@@ -27,13 +27,13 @@ namespace TeensyStep
         inline bool isAllocated() const;
 
         KINETISK_PIT_CHANNEL_t* channel = nullptr;
+
      protected:
         IntervalTimer timer;
         int setupChannel();
 
         inline pitErr err(pitErr code) const { return (pitErr)error(errModule::PIT, (int)code); }
     };
-
 
     // Inline implementation ======================================================================
 
@@ -47,7 +47,7 @@ namespace TeensyStep
     {
         if (channel == nullptr) err(pitErr::notAllocated);
 
-        channel->TFLG = 1;
+        channel->TFLG  = 1;
         channel->TCTRL = 0;
         channel->TCTRL = 3;
     }
@@ -56,6 +56,7 @@ namespace TeensyStep
     {
         if (channel == nullptr) err(pitErr::notAllocated);
         channel->TCTRL &= ~PIT_TCTRL_TIE;
+        channel->LDVAL = 0;
     }
 
     void PIT::enableInterupt() const
@@ -75,7 +76,7 @@ namespace TeensyStep
     {
         if (channel == nullptr) err(pitErr::notAllocated);
         channel->TCTRL = 0;
-        channel->TFLG = 1;
+        channel->TFLG  = 1;
         channel->LDVAL = ldval;
         channel->TCTRL = 3;
     }
