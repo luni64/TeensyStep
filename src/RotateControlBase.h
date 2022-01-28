@@ -93,6 +93,7 @@ namespace TeensyStep
             this->timerField.end();
             this->leadMotor->currentSpeed = 0;
             isStopping = false;
+            if (this->callback) this->callback();
             return;
         }
 

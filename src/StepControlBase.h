@@ -56,8 +56,8 @@ namespace TeensyStep
 
         // Misc ---------------------------------------------------------
 
-        // set callback function to be called when target is reached
-        void setCallback(void (*_callback)()) { this->callback = _callback; }
+        // // set callback function to be called when target is reached
+         //void setCallback(void (*_callback)()) { this->callback = _callback; }
 
      protected:
         void accTimerISR();
