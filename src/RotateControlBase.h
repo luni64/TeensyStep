@@ -66,10 +66,10 @@ namespace TeensyStep
 
         this->leadMotor->currentSpeed = 0;
 
-        this->leadMotor->A = std::abs(this->leadMotor->vMax);
+        this->leadMotor->A = abs(this->leadMotor->vMax);
         for (int i = 1; i < N; i++)
         {
-            this->motorList[i]->A = std::abs(this->motorList[i]->vMax);
+            this->motorList[i]->A = abs(this->motorList[i]->vMax);
             this->motorList[i]->B = 2 * this->motorList[i]->A - this->leadMotor->A;
         }
         uint32_t acceleration = (*std::min_element(this->motorList, this->motorList + N, Stepper::cmpAcc))->a; // use the lowest acceleration for the move
@@ -113,7 +113,7 @@ namespace TeensyStep
             delayMicroseconds(this->pulseWidth); // dir signal need some lead time
         }
 
-        this->timerField.setStepFrequency(std::abs(newSpeed)); // speed changed, update timer
+        this->timerField.setStepFrequency(abs(newSpeed)); // speed changed, update timer
         this->leadMotor->currentSpeed = newSpeed;
     }
 
