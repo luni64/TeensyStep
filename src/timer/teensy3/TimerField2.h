@@ -23,7 +23,7 @@ class TimerField : public IDelayHandler
     inline bool stepTimerIsRunning() const;
     inline bool stepTimerIsAllocated() const;
     inline void setStepFrequency(unsigned f);
-    inline unsigned getStepFrequency();
+    inline unsigned getStepFrequency() const;
 
     inline void accTimerStart();
     inline void accTimerStop();
@@ -92,7 +92,7 @@ void TimerField::stepTimerStop()
     stepTimer.stop();
 }
 
-unsigned TimerField::getStepFrequency()
+unsigned TimerField::getStepFrequency() const
 {
     return F_BUS / stepTimer.getLDVAL();
 }
@@ -101,7 +101,7 @@ void TimerField::setStepFrequency(unsigned f)
 {
     if (f != 0)
     {
-        if (stepTimer.isRunning())
+        if(stepTimer.channel->TCTRL & PIT_TCTRL_TIE)
         {
             uint32_t ldval = stepTimer.getLDVAL();
 

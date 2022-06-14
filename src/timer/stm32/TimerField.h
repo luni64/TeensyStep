@@ -6,8 +6,7 @@
 
 #include "../TF_Handler.h"
 
-
-#define MAX_TIMERS 12
+#define MAX_TIMERS 22
 class TimerField
 {
 public:
@@ -41,7 +40,9 @@ protected:
   bool lastPulse = false;
 
   TIM_TypeDef* get_timer() {
-    return instances >= MAX_TIMERS ? TIM1 : timer_mapping[instances++];
+    TIM_TypeDef* res;
+    while((res = timer_mapping[instances++]) == nullptr && instances < MAX_TIMERS);
+    return res != nullptr ? res : TIM1;
   }
 };
 // TODO:
