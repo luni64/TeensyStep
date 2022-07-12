@@ -6,8 +6,15 @@
 
 #include "../TF_Handler.h"
 
-
+// --- Different boards:
+#if defined(STM32F429xx)
 #define MAX_TIMERS 12
+#elif defined(STM32F411xE)
+#define MAX_TIMERS 7
+#else
+#error Board not currently supported. See: https://github.com/luni64/TeensyStep/issues/137
+#endif
+
 class TimerField
 {
 public:
