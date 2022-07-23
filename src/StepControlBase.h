@@ -102,10 +102,10 @@ namespace TeensyStep
         // target speed----
 
         float x = 0;
-        float leadSpeed = abs(this->leadMotor->vMax);
+        float leadSpeed = abs(this->leadMotor->vMax * speedOverride);
         for (int i = 0; i < N; i++)
         {
-            float relDist = this->motorList[i]->A / (float)this->leadMotor->A * leadSpeed / abs(this->motorList[i]->vMax);
+            float relDist = this->motorList[i]->A / (float)this->leadMotor->A * leadSpeed / abs(this->motorList[i]->vMax*speedOverride);
             if (relDist > x) x = relDist;
            // Serial.printf("%d %f\n", i, relDist);
         }
