@@ -16,7 +16,7 @@ class TimerField : public IDelayHandler
 
     inline bool begin();
     inline void end();
-    inline void endAfterPulse(); // not nice look for better solution
+    inline void endAfterPulse(void (*callback)()=nullptr); // not nice look for better solution
 
     inline void stepTimerStart();
     inline void stepTimerStop();
@@ -44,6 +44,7 @@ class TimerField : public IDelayHandler
     unsigned pinResetDelayChannel;
 
     bool lastPulse = false;
+    void (*callback)();
 };
 
 // IMPLEMENTATION ====================================================================
@@ -75,9 +76,10 @@ void TimerField::end()
     TeensyStepFTM::removeDelayChannel(pinResetDelayChannel);
 }
 
-void TimerField::endAfterPulse()
+void TimerField::endAfterPulse(void (*cb)())
 {
     lastPulse = true;
+    callback  = cb;
 }
 
 // Step Timer ------------------------------------------------------
@@ -176,7 +178,12 @@ void TimerField::delayISR(unsigned channel)
     if (channel == pinResetDelayChannel)
     {
         handler->pulseTimerISR();
-        if (lastPulse) end();
+        if (lastPulse)
+        {
+            end();
+            if (callback != nullptr)
+                callback();
+        }
     }
 
     else if (channel == accLoopDelayChannel)

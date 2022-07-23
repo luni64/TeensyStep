@@ -132,9 +132,9 @@ namespace TeensyStep{
         if (mode == Mode::target && (leadMotor->current == leadMotor->target)) // stop timer and call callback if we reached target
         {
             //timerField.stepTimerStop();
-            timerField.endAfterPulse();
-            if (callback != nullptr)
-                callback();
+            timerField.endAfterPulse(callback);
+            // if (callback != nullptr)
+            //     callback();
         }
     }
 
