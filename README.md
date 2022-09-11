@@ -1,10 +1,5 @@
 # TeensyStep V2.1 - Fast Stepper Library for PJRC Teensy boards
 
-Please note: This is version 2 of the library. This version has a new user interface. The version 1 is still available in the branch [Version-1](https://github.com/luni64/TeensyStep/tree/Version-1).
-
-
-## Detailed Documentation can be found here [https://luni64.github.io/TeensyStep/](https://luni64.github.io/TeensyStep/)
-
 
 ## Purpose of the Library
 **TeensyStep** is an efficient Arduino library compatible with Teensy 3.0, 3.1, 3.2, 3.5, 3.6 and STM32F4. The library is able to handle synchronous and independent movement and continuous rotation of steppers with pulse rates of up to 300'000 steps per second. The following table shows a summary of the **TeensyStep** specification:
@@ -21,8 +16,3 @@ Please note: This is version 2 of the library. This version has a new user inter
 | Settable direction signal polarity         | cw / ccw                  | cw               |
 
 Here a quick demonstration video showing two motors running in sync with 160'000 steps/sec
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=Fzt75I_Zi14
-" target="_blank"><img src="http://img.youtube.com/vi/Fzt75I_Zi14/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="600" height="450" border="10" /></a>
-
