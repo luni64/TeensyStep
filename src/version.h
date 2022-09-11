@@ -1,7 +1,8 @@
-#pragma once
+#ifndef _TEENSYSTEP_VERSION_H__
+#define _TEENSYSTEP_VERSION_H__
 
-namespace TeensyStep
-{
-    constexpr const char* version = "V2.1";
-    constexpr const char* branch = "master";
-} // namespace TeensyStep
+
+// static const char* version = "V2.1";
+// static const char* branch = "master";
+
+#endif

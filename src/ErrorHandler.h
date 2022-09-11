@@ -1,45 +1,39 @@
-#pragma once
-#include "Stream.h"
+#ifndef _ERRORHANDLER_H__
+#define _ERRORHANDLER_H__
 
-namespace TeensyStep
-{
-    using errCallback_t = void(int, int);
+#include <stddef.h>
 
-    enum class errModule;
-    enum class pitERR;
+typedef void(*errCallback_t)(int, int);
 
-    class ErrorHandler
-    {
-     public:
-        static int error(errModule module, int code)
-        {
-            if (callback != nullptr) callback((int)module, code);
-            return code;
-        }
-        static void attachCallback(errCallback_t* cb) { callback = cb; }
+typedef enum {
+    eM_PIT = 1,
+    eM_MC,
+    eM_RB
+}errModule;
 
-     protected:
-        static errCallback_t* callback;
-    };
+typedef enum {
+    pE_OK,
+    pE_argErr,
+    pE_notAllocated,
+    pE_outOfTimers,
 
-    extern errCallback_t* verboseHandler(Stream&);
+}pitErr;
 
-    enum class errModule {
-        PIT = 1,
-        MC,
-        RB
-    };
+typedef enum {
+    mE_OK,
+    mE_alrdyMoving,
+}mcErr;
 
-    enum class pitErr {
-        OK,
-        argErr,
-        notAllocated,
-        outOfTimers,
 
-    };
+int error(errModule module, int code);
 
-    enum class mcErr {
-        OK,
-        alrdyMoving,
-    };
-}
+void attachCallback(errCallback_t cb);
+
+void vHandler(int module, int code);
+
+#ifdef USE_FULL_ASSERT
+
+#else
+#define ASSERT(x)     (void)(x)
+#endif
+#endif

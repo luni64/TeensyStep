@@ -1,182 +1,92 @@
-#pragma once
+#ifndef _MOTORCONTROLBASE_H__
+#define _MOTORCONTROLBASE_H__
 
 #include "ErrorHandler.h"
 #include "Stepper.h"
 #include "timer/TF_Handler.h"
 
-namespace TeensyStep{
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
-    enum ErrCode {
-        err_OK,
-        err_movment_not_possible,
-        err_too_much_motors
-    };
+#ifndef MaxMotors
+#define MaxMotors         10
+#endif
 
-    using ErrFunc = void (*)(ErrCode);
+typedef enum {
+    err_OK,
+    err_movment_not_possible,
+    err_too_much_motors
+}ErrCode;
 
-    constexpr int MaxMotors = 10;
+typedef enum {
+    target,
+    notarget
+}Mode;
 
-    template <typename TimerField>
-    class MotorControlBase : TF_Handler, ErrorHandler
-    {
-     public:
-        bool isOk() const { return OK; }
-        bool isRunning() const;
-        bool isAllocated() const;
-        int getCurrentSpeed() const;
+typedef void (*ErrFunc)(ErrCode);
+typedef void (*CallbackFunc)(int32_t);
 
-        void emergencyStop() { timerField.end(); }
+typedef struct {
+    bool OK;
+    uint8_t mCnt;
+    Mode mode;
+    
+    uint32_t accUpdatePeriod;
+    uint32_t pulseWidth;
 
-          // set callback function to be called when target is reached
-        void setCallback(void (*_callback)()) { this->callback = _callback; }
+    TimerField timerField;
 
-        virtual ~MotorControlBase();
+    Stepper* motorList[MaxMotors + 1];
+    Stepper* leadMotor;
 
-        void attachErrorFunction(ErrFunc ef) { errFunc = ef; }
+    CallbackFunc reachedTargetCallback;
+}MotorControlBase;
 
-     protected:
-        TimerField timerField;
-        MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod);
 
-        template <size_t N>
-        void attachStepper(Stepper* (&motors)[N]);
-        template <typename... Steppers>
-        void attachStepper(Stepper& stepper, Steppers&... steppers);
-        void attachStepper(Stepper& stepper);
+typedef struct {
+    uint32_t accUpdatePeriod;
+    uint32_t pulseWidth;
+    CallbackFunc reachedTargetCallback;
+}MotorControlBase_Init_TypeDef;
 
-        void stepTimerISR();
-        void pulseTimerISR();
+void Error(ErrCode e);
+void attachErrorFunction(ErrFunc ef);
 
-        Stepper* motorList[MaxMotors + 1];
-        Stepper* leadMotor;
+static inline mcErr err(mcErr code){
+    return (mcErr)error(eM_MC, (int)code);
+}
 
-        void (*callback)() = nullptr;
-        ErrFunc errFunc = nullptr;
-        inline void Error(ErrCode e)
-        {
-            if (errFunc != nullptr) errFunc(e);
-        }
 
-        bool OK = false;
+static inline bool Controller_isOK(const MotorControlBase * controller){
 
-        unsigned mCnt;
+    return controller->OK;
+}
 
-        enum class Mode {
-            target,
-            notarget
-        } mode = Mode::notarget;
+MotorControlBase* Controller_init(MotorControlBase* controller, const MotorControlBase_Init_TypeDef *config);
 
-        uint32_t accUpdatePeriod;
-        uint32_t pulseWidth;
+static inline bool Controller_isRunning(MotorControlBase *controller){
+    return stepTimerIsRunning(&controller->timerField);
+}
 
-        inline mcErr err(mcErr code) const { return (mcErr)error(errModule::MC, (int)code); }
+static inline bool Controller_isAllocated(MotorControlBase *controller){
+    return stepTimerIsAllocated(&controller->timerField);
+}
 
-        MotorControlBase(const MotorControlBase&) = delete;
-        MotorControlBase& operator=(const MotorControlBase&) = delete;
-    };
+int32_t Controller_getCurrentSpeed(MotorControlBase *controller);
 
-    // Implementation ============================================================================
+static inline void Controller_emergencyStop(MotorControlBase *controller){
+    timerEnd(&controller->timerField);
+}
 
-    template <typename t>
-    bool MotorControlBase<t>::isRunning() const
-    {
-        return timerField.stepTimerIsRunning();
-    }
+static inline void Controller_stop(MotorControlBase* controller){
+    Controller_emergencyStop(controller);
+}
 
-    template <typename t>
-    bool MotorControlBase<t>::isAllocated() const
-    {
-        return timerField.stepTimerIsAllocated();
-    }
+void Controller_attachStepper(MotorControlBase *controller, uint8_t N, Stepper* *steppers);
 
-    template <typename t>
-    int MotorControlBase<t>::getCurrentSpeed() const
-    {
-        return timerField.getStepFrequency();
-    }
+void vController_attachStepper(MotorControlBase *controller, uint8_t N, ...);
 
-    template <typename t>
-    MotorControlBase<t>::MotorControlBase(unsigned pulseWidth, unsigned accUpdatePeriod)
-        : timerField(this), mCnt(0)
-    {
-        timerField.setPulseWidth(pulseWidth);
-        timerField.setAccUpdatePeriod(accUpdatePeriod);
-        this->accUpdatePeriod = accUpdatePeriod;
-        this->pulseWidth = pulseWidth;
-    }
 
-    template <typename t>
-    MotorControlBase<t>::~MotorControlBase()
-    {
-        if (OK)
-            emergencyStop();
-    }
-
-    template <typename t>
-    void MotorControlBase<t>::stepTimerISR()
-    {
-        leadMotor->doStep(); // move master motor
-
-        Stepper** slave = motorList;
-        while (*(++slave) != nullptr) // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
-        {
-            if ((*slave)->B >= 0)
-            {
-                (*slave)->doStep();
-                (*slave)->B -= leadMotor->A;
-            }
-            (*slave)->B += (*slave)->A;
-        }
-        timerField.triggerDelay(); // start delay line to dactivate all step pins
-
-        if (mode == Mode::target && (leadMotor->current == leadMotor->target)) // stop timer and call callback if we reached target
-        {
-            //timerField.stepTimerStop();
-            timerField.endAfterPulse();
-            if (callback != nullptr)
-                callback();
-        }
-    }
-
-    template <typename t>
-    void MotorControlBase<t>::pulseTimerISR()
-    {
-        Stepper** motor = motorList;
-        while ((*motor) != nullptr)
-        {
-            (*motor++)->clearStepPin();
-        }
-    }
-
-    template <typename t>
-    void MotorControlBase<t>::attachStepper(Stepper& stepper)
-    {
-        motorList[mCnt++] = &stepper;
-        motorList[mCnt] = nullptr;
-        mCnt = 0;
-    }
-
-    template <typename t>
-    template <typename... Steppers>
-    void MotorControlBase<t>::attachStepper(Stepper& stepper, Steppers&... steppers)
-    {
-        static_assert(sizeof...(steppers) < MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-        motorList[this->mCnt++] = &stepper;
-        attachStepper(steppers...);
-    }
-
-    template <typename t>
-    template <size_t N>
-    void MotorControlBase<t>::attachStepper(Stepper* (&motors)[N])
-    {
-        static_assert(N <= MaxMotors, "Too many motors used. Please increase MaxMotors in file MotorControlBase.h");
-
-        for (size_t i = 0; i < N; i++)
-        {
-            this->motorList[i] = motors[i];
-        }
-        this->motorList[N] = nullptr;
-    }
-
-} // namespace TeensyStep
+#endif
