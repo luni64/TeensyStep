@@ -10,8 +10,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#ifndef MaxMotors
-#define MaxMotors         10
+#ifndef MAXMOTORS
+#define MAXMOTORS         10
 #endif
 
 typedef enum {
@@ -21,8 +21,8 @@ typedef enum {
 }ErrCode;
 
 typedef enum {
-    target,
-    notarget
+    MOTOR_TARGET,
+    MOTOR_NOTARGET
 }Mode;
 
 typedef void (*ErrFunc)(ErrCode);
@@ -38,7 +38,7 @@ typedef struct {
 
     TimerField timerField;
 
-    Stepper* motorList[MaxMotors + 1];
+    Stepper* motorList[MAXMOTORS + 1];
     Stepper* leadMotor;
 
     CallbackFunc reachedTargetCallback;

@@ -52,8 +52,8 @@ Stepper* Stepper_setAcceleration(Stepper* stepper, uint32_t _a);                
 Stepper* Stepper_setStepPinPolarity(Stepper* stepper, int p);  // HIGH -> positive pulses, LOW -> negative pulses
 Stepper* Stepper_setInverseRotation(Stepper* stepper, bool b); // Change polarity of the dir pulse
 
-void Stepper_setTargetAbs(Stepper* stepper, int32_t pos);   // Set target position absolute
-void Stepper_setTargetRel(Stepper* stepper, int32_t delta); // Set target position relative to current position
+void Stepper_setTargetAbs(Stepper* stepper, int32_t pos);   // Set MOTOR_TARGET position absolute
+void Stepper_setTargetRel(Stepper* stepper, int32_t delta); // Set MOTOR_TARGET position relative to current position
 
 static inline int32_t Stepper_getPosition(Stepper* stepper) { return stepper->current; }
 static inline void Stepper_setPosition(Stepper* stepper, int32_t pos) { stepper->current = pos; }

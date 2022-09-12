@@ -23,7 +23,7 @@ int32_t Controller_getCurrentSpeed(MotorControlBase *controller){
 
 void Controller_attachStepper(MotorControlBase *controller, uint8_t numbers, Stepper* *steppers){
 
-    ASSERT(numbers <= MaxMotors);
+    ASSERT(numbers <= MAXMOTORS);
 
     for(size_t i = 0; i < numbers; i++){
         controller->motorList[i] = steppers[i];
@@ -32,7 +32,7 @@ void Controller_attachStepper(MotorControlBase *controller, uint8_t numbers, Ste
 }
 
 void vController_attachStepper(MotorControlBase *controller, uint8_t numbers, ...){
-    ASSERT(numbers <= MaxMotors);
+    ASSERT(numbers <= MAXMOTORS);
 
     va_list mlist;
 

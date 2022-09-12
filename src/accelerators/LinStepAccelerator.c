@@ -40,10 +40,10 @@ int32_t Accelerator_prepareMovement(LinStepAccelerator *_accelerator, int32_t cu
     // Serial.printf("ds: %d\n", ds);
     // Serial.printf("sm: %i\n", sm);
 
-    if (sm >= 0 && sm <= accelerator->ds) // we can directly reach the target with the given values vor v0, ve and a
+    if (sm >= 0 && sm <= accelerator->ds) // we can directly reach the MOTOR_TARGET with the given values vor v0, ve and a
     {
-        int32_t sa = (accelerator->vt_sqr - accelerator->vs_sqr) / accelerator->two_a; // required distance to reach target speed
-        if (sa < sm)                              // target speed can be reached
+        int32_t sa = (accelerator->vt_sqr - accelerator->vs_sqr) / accelerator->two_a; // required distance to reach MOTOR_TARGET speed
+        if (sa < sm)                              // MOTOR_TARGET speed can be reached
         {
             accelerator->accEnd = sa;
             accelerator->decStart = sm + (sm - sa);

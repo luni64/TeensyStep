@@ -15,7 +15,7 @@ typedef struct {
 static inline void StepControl_init(StepControl *controller, const StepControl_Init_TypeDef *config){
     // TODO
     Controller_init(&controller->controller, config);
-    controller->controller.mode = target;
+    controller->controller.mode = MOTOR_TARGET;
 }
 
  // Non-blocking movements ------------------------------------------

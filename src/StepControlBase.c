@@ -55,7 +55,7 @@ static void doMove(StepControl *_controller, int N, float speedOverride){
 
     if ((controller->leadMotor->A == 0) || (targetSpeed == 0)) return;
 
-    // target speed----
+    // MOTOR_TARGET speed----
 
     float x = 0;
     float leadSpeed = labs(controller->leadMotor->vMax);
@@ -89,7 +89,7 @@ void StepControl_moveAsync(StepControl *_controller, float speedOverride, uint8_
 void vStepControl_moveAsync(StepControl *_controller, float speedOverride, uint8_t N, ...){
     MotorControlBase *controller = &_controller->controller;
     va_list mlist;
-    Stepper* stepperArr[MaxMotors] = { NULL };
+    Stepper* stepperArr[MAXMOTORS] = {NULL };
 
     va_start(mlist, N);
     for(int i = 0; i < N; i++){
@@ -132,7 +132,7 @@ void StepControl_move(StepControl *_controller, float speedOverride, uint8_t N, 
 void vStepControl_move(StepControl *_controller, float speedOverride, uint8_t N, ...){
     MotorControlBase *controller = &_controller->controller;
     va_list mlist;
-    Stepper* stepperArr[MaxMotors] = { NULL };
+    Stepper* stepperArr[MAXMOTORS] = {NULL };
 
     va_start(mlist, N);
     for(int i = 0; i < N; i++){
@@ -177,8 +177,8 @@ void stepTimerISR(StepControl *_controller){
 
     TimerField_triggerDelay(&controller->timerField);  // start delay line to dactivate all step pins
     
-    // stop timer and call callback if we reached target
-    if((controller->mode == target) && (controller->leadMotor->current == controller->leadMotor->target)){
+    // stop timer and call callback if we reached MOTOR_TARGET
+    if((controller->mode == MOTOR_TARGET) && (controller->leadMotor->current == controller->leadMotor->target)){
         TimerField_stepTimerStop(&controller->timerField);
         TimerField_timerEndAfterPulse(&controller->timerField);
         if(controller->reachedTargetCallback)

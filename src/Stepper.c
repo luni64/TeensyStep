@@ -64,11 +64,11 @@ Stepper* Stepper_setInverseRotation(Stepper* stepper, bool b){  // Change polari
     return stepper;
 }
 
-void Stepper_setTargetAbs(Stepper* stepper, int32_t pos){   // Set target position absolute
+void Stepper_setTargetAbs(Stepper* stepper, int32_t pos){   // Set MOTOR_TARGET position absolute
     
     Stepper_setTargetRel(stepper, pos - stepper->current);
 }
-void Stepper_setTargetRel(Stepper* stepper, int32_t delta){   // Set target position relative to current position
+void Stepper_setTargetRel(Stepper* stepper, int32_t delta){   // Set MOTOR_TARGET position relative to current position
     
     Stepper_setDir(stepper, (delta < 0) ? -1 : 1);
     stepper->target = stepper->current + delta;
