@@ -20,11 +20,11 @@ Stepper* stepperInit(Stepper *stepper, const Stepper_InitTypeDef *config){
     digitalPinOutputMode(stepper->stepPin);
     digitalPinOutputMode(stepper->dirPin);
     
-	  stepper->current = 0;
+	stepper->current = 0;
     setStepPinPolarity(stepper, HIGH);
     setInverseRotation(stepper, false);
-    setAcceleration(stepper, min(aDefault, config->aMax));
-    setMaxSpeed(stepper, min(vMaxDefault, config->vMaxMax));
+    setAcceleration(stepper, aDefault);
+    setMaxSpeed(stepper, vMaxDefault);
     setPullInSpeed(stepper, vPullInOutDefault);
 
     return stepper;

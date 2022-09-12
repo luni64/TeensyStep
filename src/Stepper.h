@@ -34,12 +34,12 @@ typedef struct {
 }Stepper;
 
 typedef struct {
-    int32_t vMaxMax;
-    uint32_t aMax;
+    // int32_t vMaxMax;
+    // uint32_t aMax;
+    // uint32_t a;
 
     gpio_pin_t stepPin;
     gpio_pin_t dirPin;
-
 }Stepper_InitTypeDef;
 
 Stepper* stepperInit(Stepper *stepper, const Stepper_InitTypeDef *config);
@@ -76,6 +76,7 @@ static inline void setDir(Stepper* stepper, int d){
     stepper->dir = d;
     digitalWritePin(stepper->dirPin, (stepper->dir == 1) ? stepper->reverse : !stepper->reverse);
 }
+
 static inline void toggleDir(Stepper* stepper){
     setDir(stepper, -1 * stepper->dir);
 }

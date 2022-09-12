@@ -179,14 +179,14 @@ void stepTimerISR(StepControl *_controller){
     
     // stop timer and call callback if we reached target
     if((controller->mode == target) && (controller->leadMotor->current == controller->leadMotor->target)){
-        // stepTimerStop(&controller->timerField);
+        stepTimerStop(&controller->timerField);
         timerEndAfterPulse(&controller->timerField);
         if(controller->reachedTargetCallback)
             controller->reachedTargetCallback((int32_t)controller->leadMotor->current);
     }
-    if(controller->timerField.lastPulse){
-        stepTimerStop(&controller->timerField);
-    }
+    // if(controller->timerField.lastPulse){
+    //     stepTimerStop(&controller->timerField);
+    // }
 }
 
 
@@ -200,6 +200,7 @@ void pulseTimerISR(StepControl *_controller){
     if(controller->timerField.lastPulse){
         // timerEnd(&controller->timerField);
         pulseTimerStop(&controller->timerField);
+        return;
     }
 }
 
@@ -210,13 +211,15 @@ void accTimerISR(StepControl *_controller){
     
     uint32_t speed = 0;
 
-    if(Controller_isRunning(controller)){
-        speed = Accelerator_updateSpeed(accelerator, controller->leadMotor->current);
-        setStepFrequency(&controller->timerField, speed);
-    }
     if(controller->timerField.lastPulse){
         // timerEnd(&controller->timerField);
         accTimerStop(&controller->timerField);
+        return;
+    }
+
+    if(Controller_isRunning(controller)){
+        speed = Accelerator_updateSpeed(accelerator, controller->leadMotor->current);
+        setStepFrequency(&controller->timerField, speed);
     }
 }
 
