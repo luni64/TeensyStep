@@ -10,7 +10,7 @@
 // #include "../TF_Handler.h"
 #include "../../port/port.h"
 
-TIM_Unit get_timer(void);
+TIM_Unit TimerField_getTimer(void);
 
 
 // #endif

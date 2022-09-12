@@ -69,13 +69,13 @@ static void doMove(StepControl *_controller, int N, float speedOverride){
     //Serial.printf("\n%d\n",targetSpeed);
 
     // Start move--------------------------
-    timerBegin(&controller->timerField);
+    TimerField_begin(&controller->timerField);
     int32_t freq = Accelerator_prepareMovement(accelerator, controller->leadMotor->current, controller->leadMotor->target, targetSpeed, pullInSpeed, pullOutSpeed, acceleration);
 
-    setStepFrequency(&controller->timerField, freq);
+    TimerField_setStepFrequency(&controller->timerField, freq);
 
-    stepTimerStart(&controller->timerField);
-    accTimerStart(&controller->timerField);
+    TimerField_stepTimerStart(&controller->timerField);
+    TimerField_accTimerStart(&controller->timerField);
 }
 
 
@@ -112,7 +112,7 @@ void StepControl_stopAsync(StepControl *_controller){
         controller->leadMotor->target = controller->leadMotor->current + controller->leadMotor->dir * newTarget;
 
         if(controller->leadMotor->target == controller->leadMotor->current){
-            timerEnd(&controller->timerField);
+            TimerField_end(&controller->timerField);
         }
     }
     
@@ -124,7 +124,7 @@ void StepControl_move(StepControl *_controller, float speedOverride, uint8_t N, 
 
     StepControl_moveAsync(_controller, speedOverride, N, steppers);
 
-    while(stepTimerIsRunning(&controller->timerField)){
+    while(TimerField_stepTimerIsRunning(&controller->timerField)){
         delay(1);
     }
 }
@@ -142,7 +142,7 @@ void vStepControl_move(StepControl *_controller, float speedOverride, uint8_t N,
 
     StepControl_moveAsync(_controller, speedOverride, N, stepperArr);
 
-    while(stepTimerIsRunning(&controller->timerField)){
+    while(TimerField_stepTimerIsRunning(&controller->timerField)){
         delay(1);
     }
 }
@@ -162,30 +162,30 @@ void stepTimerISR(StepControl *_controller){
     
     MotorControlBase *controller = &_controller->controller;
 
-    doStep(controller->leadMotor);  /// leadMotor=MotorList[0]
+    Stepper_doStep(controller->leadMotor);  /// leadMotor=MotorList[0]
 
     Stepper* *slave = controller->motorList;
     
     // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
     while(*(++slave) != NULL){  // Skip MotorList[0]
         if((*slave)->B >= 0){
-            doStep(*slave);
+            Stepper_doStep(*slave);
             (*slave)->B -= controller->leadMotor->A;
         }
         (*slave)->B += (*slave)->A;
     }
 
-    triggerDelay(&controller->timerField);  // start delay line to dactivate all step pins
+    TimerField_triggerDelay(&controller->timerField);  // start delay line to dactivate all step pins
     
     // stop timer and call callback if we reached target
     if((controller->mode == target) && (controller->leadMotor->current == controller->leadMotor->target)){
-        stepTimerStop(&controller->timerField);
-        timerEndAfterPulse(&controller->timerField);
+        TimerField_stepTimerStop(&controller->timerField);
+        TimerField_timerEndAfterPulse(&controller->timerField);
         if(controller->reachedTargetCallback)
             controller->reachedTargetCallback((int32_t)controller->leadMotor->current);
     }
     // if(controller->timerField.lastPulse){
-    //     stepTimerStop(&controller->timerField);
+    //     TimerField_stepTimerStop(&controller->timerField);
     // }
 }
 
@@ -195,11 +195,11 @@ void pulseTimerISR(StepControl *_controller){
     Stepper* *motor = controller->motorList;
 
     while((*motor) != NULL){
-        clearStepPin((*motor++));
+        Stepper_clearStepPin((*motor++));
     }
     if(controller->timerField.lastPulse){
-        // timerEnd(&controller->timerField);
-        pulseTimerStop(&controller->timerField);
+        // TimerField_end(&controller->timerField);
+        TimerField_pulseTimerStop(&controller->timerField);
         return;
     }
 }
@@ -212,14 +212,14 @@ void accTimerISR(StepControl *_controller){
     uint32_t speed = 0;
 
     if(controller->timerField.lastPulse){
-        // timerEnd(&controller->timerField);
-        accTimerStop(&controller->timerField);
+        // TimerField_end(&controller->timerField);
+        TimerField_accTimerStop(&controller->timerField);
         return;
     }
 
     if(Controller_isRunning(controller)){
         speed = Accelerator_updateSpeed(accelerator, controller->leadMotor->current);
-        setStepFrequency(&controller->timerField, speed);
+        TimerField_setStepFrequency(&controller->timerField, speed);
     }
 }
 

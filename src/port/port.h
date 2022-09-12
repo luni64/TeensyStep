@@ -79,26 +79,26 @@ typedef struct {
     TIM_Unit pulseTimer;
 }TimerField_InitTypeDef;
 
-void timerInit(TimerField *_timerfield, const TimerField_InitTypeDef *config);
-bool timerBegin(TimerField* timerfield);
-void timerEnd(TimerField* timerfield);
+void TimerField_init(TimerField *_timerfield, const TimerField_InitTypeDef *config);
+bool TimerField_begin(TimerField* timerfield);
+void TimerField_end(TimerField* timerfield);
 
-void stepTimerStart(TimerField* timerfield);   /// 需要强制更新
-void stepTimerStop(TimerField* timerfield);
-bool stepTimerIsRunning(const TimerField* timerfield);
-bool stepTimerIsAllocated(TimerField* timerfield);
-int32_t getStepFrequency(const TimerField* timerfield);
-void setStepFrequency(TimerField* timerfield, uint32_t f);
+void TimerField_stepTimerStart(TimerField* timerfield);   /// 需要强制更新
+void TimerField_stepTimerStop(TimerField* timerfield);
+bool TimerField_stepTimerIsRunning(const TimerField* timerfield);
+bool TimerField_stepTimerIsAllocated(TimerField* timerfield);
+int32_t TimerField_getStepFrequency(const TimerField* timerfield);
+void TimerField_setStepFrequency(TimerField* timerfield, uint32_t f);
 
-void accTimerStart(TimerField* timerfield);
-void accTimerStop(TimerField* timerfield);
-void setAccUpdatePeriod(TimerField* timerfield, uint32_t period);
+void TimerField_accTimerStart(TimerField* timerfield);
+void TimerField_accTimerStop(TimerField* timerfield);
+void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t period);
 
-void setPulseWidth(TimerField* timerfield, uint32_t delay);
-void triggerDelay(TimerField* timerfield);
-void pulseTimerStop(TimerField* timerfield);
+void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay);
+void TimerField_triggerDelay(TimerField* timerfield);
+void TimerField_pulseTimerStop(TimerField* timerfield);
 
-void timerEndAfterPulse(TimerField *_timerfield);
+void TimerField_timerEndAfterPulse(TimerField *_timerfield);
 
 
 

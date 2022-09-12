@@ -5,8 +5,8 @@ static ErrFunc errFunc = NULL;
 
 MotorControlBase* Controller_init(MotorControlBase* controller, const MotorControlBase_Init_TypeDef *config){
 
-    setPulseWidth(&controller->timerField, config->pulseWidth);
-    setAccUpdatePeriod(&controller->timerField, config->accUpdatePeriod);
+    TimerField_setPulseWidth(&controller->timerField, config->pulseWidth);
+    TimerField_setAccUpdatePeriod(&controller->timerField, config->accUpdatePeriod);
     
     controller->reachedTargetCallback = config->reachedTargetCallback;
     controller->accUpdatePeriod = config->accUpdatePeriod;
@@ -17,7 +17,7 @@ MotorControlBase* Controller_init(MotorControlBase* controller, const MotorContr
 }
 
 int32_t Controller_getCurrentSpeed(MotorControlBase *controller){
-    return getStepFrequency(&controller->timerField);
+    return TimerField_getStepFrequency(&controller->timerField);
 }
 
 

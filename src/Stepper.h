@@ -42,43 +42,43 @@ typedef struct {
     gpio_pin_t dirPin;
 }Stepper_InitTypeDef;
 
-Stepper* stepperInit(Stepper *stepper, const Stepper_InitTypeDef *config);
+Stepper* Stepper_init(Stepper *stepper, const Stepper_InitTypeDef *config);
 
-Stepper* setMaxSpeed(Stepper* stepper, int32_t speed);                                  // steps/s
-Stepper* setPullInSpeed(Stepper* stepper, int32_t speed);                               // steps/s
-Stepper* setPullInOutSpeed(Stepper* stepper, int32_t pullInSpeed, int32_t pullOutSpeed); // steps/s
-Stepper* setAcceleration(Stepper* stepper, uint32_t _a);                                // steps/s^2
+Stepper* Stepper_setMaxSpeed(Stepper* stepper, int32_t speed);                                  // steps/s
+Stepper* Stepper_setPullInSpeed(Stepper* stepper, int32_t speed);                               // steps/s
+Stepper* Stepper_setPullInOutSpeed(Stepper* stepper, int32_t pullInSpeed, int32_t pullOutSpeed); // steps/s
+Stepper* Stepper_setAcceleration(Stepper* stepper, uint32_t _a);                                // steps/s^2
 
-Stepper* setStepPinPolarity(Stepper* stepper, int p);  // HIGH -> positive pulses, LOW -> negative pulses
-Stepper* setInverseRotation(Stepper* stepper, bool b); // Change polarity of the dir pulse
+Stepper* Stepper_setStepPinPolarity(Stepper* stepper, int p);  // HIGH -> positive pulses, LOW -> negative pulses
+Stepper* Stepper_setInverseRotation(Stepper* stepper, bool b); // Change polarity of the dir pulse
 
-void setTargetAbs(Stepper* stepper, int32_t pos);   // Set target position absolute
-void setTargetRel(Stepper* stepper, int32_t delta); // Set target position relative to current position
+void Stepper_setTargetAbs(Stepper* stepper, int32_t pos);   // Set target position absolute
+void Stepper_setTargetRel(Stepper* stepper, int32_t delta); // Set target position relative to current position
 
-static inline int32_t getPosition(Stepper* stepper) { return stepper->current; }
-static inline void setPosition(Stepper* stepper, int32_t pos) { stepper->current = pos; }
+static inline int32_t Stepper_getPosition(Stepper* stepper) { return stepper->current; }
+static inline void Stepper_setPosition(Stepper* stepper, int32_t pos) { stepper->current = pos; }
 
 /***************************  HardWare Pin  ****************************/
 
 
-static inline void doStep(Stepper* stepper){
+static inline void Stepper_doStep(Stepper* stepper){
 	
     digitalWritePin(stepper->stepPin, stepper->polarity);
     
     stepper->current += stepper->dir;
 }
 
-static inline void clearStepPin(Stepper* stepper){
+static inline void Stepper_clearStepPin(Stepper* stepper){
     digitalWritePin(stepper->stepPin, !stepper->polarity);
 }
 
-static inline void setDir(Stepper* stepper, int d){
+static inline void Stepper_setDir(Stepper* stepper, int d){
     stepper->dir = d;
     digitalWritePin(stepper->dirPin, (stepper->dir == 1) ? stepper->reverse : !stepper->reverse);
 }
 
-static inline void toggleDir(Stepper* stepper){
-    setDir(stepper, -1 * stepper->dir);
+static inline void Stepper_toggleDir(Stepper* stepper){
+    Stepper_setDir(stepper, -1 * stepper->dir);
 }
 
 
