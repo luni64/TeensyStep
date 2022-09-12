@@ -13,24 +13,28 @@
 #define min(a, b)       ((a) < (b) ? (a) : (b))
 #define max(a, b)       ((a) > (b) ? (a) : (b))
 
+typedef uint8_t StepperParamBase;
 
 typedef struct {
+    volatile bool dostep;
     volatile uint8_t polarity;
     volatile uint8_t reverse;
-
-    gpio_pin_t stepPin;
-    gpio_pin_t dirPin;
-
+    
     volatile int32_t current;
     volatile int32_t currentSpeed;
     volatile int32_t target;
-    
+    const int32_t targetPosLimit;
+    const int32_t targetNegLimit;
+
     int32_t dir;
 
     int32_t A, B; // Bresenham paramters
     int32_t vMax;
     int32_t vPullIn, vPullOut;
     uint32_t a;
+
+    gpio_pin_t stepPin;
+    gpio_pin_t dirPin;
 }Stepper;
 
 typedef struct {
@@ -64,12 +68,17 @@ static inline void Stepper_setPosition(Stepper* stepper, int32_t pos) { stepper-
 static inline void Stepper_doStep(Stepper* stepper){
 	
     digitalWritePin(stepper->stepPin, stepper->polarity);
-    
+    stepper->dostep = true;
     stepper->current += stepper->dir;
 }
 
 static inline void Stepper_clearStepPin(Stepper* stepper){
     digitalWritePin(stepper->stepPin, !stepper->polarity);
+    stepper->dostep = false;
+}
+
+static inline bool Stepper_isClearStepPin(Stepper *stepper){
+    return !stepper->dostep;
 }
 
 static inline void Stepper_setDir(Stepper* stepper, int d){

@@ -4,6 +4,7 @@
 #include <math.h>
 #include "Stepper.h"
 
+
 static int32_t vMaxMax = 300000;   // largest speed possible (steps/s)
 static uint32_t aMax = 500000;     // speed up to 500kHz within 1 s (steps/s^2)
 
