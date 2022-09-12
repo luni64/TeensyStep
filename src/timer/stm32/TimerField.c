@@ -70,6 +70,7 @@ void stepTimerStop(TimerField* timerfield){
 }
 bool stepTimerIsAllocated(TimerField* timerfield){
     // TODO
+    (void)timerfield;
     return true;
 }
 

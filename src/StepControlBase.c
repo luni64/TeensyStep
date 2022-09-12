@@ -208,7 +208,7 @@ void accTimerISR(StepControl *_controller){
     
     LinStepAccelerator *accelerator = &_controller->accelerator;
     
-    int32_t speed = 0;
+    uint32_t speed = 0;
 
     if(Controller_isRunning(controller)){
         speed = Accelerator_updateSpeed(accelerator, controller->leadMotor->current);
