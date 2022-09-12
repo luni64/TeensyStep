@@ -104,6 +104,8 @@ void TimerField_accTimerStart(TimerField* timerfield){
     // TODO
     TIM_ITConfig(htim[timerfield->accTimer], timerfield->accTimer, ENABLE);
     TIM_Cmd(htim[timerfield->accTimer], timerfield->accTimer, ENABLE);
+
+    timerfield->accTimerRunning = true;
 }
 
 void TimerField_accTimerStop(TimerField* timerfield){
@@ -111,6 +113,8 @@ void TimerField_accTimerStop(TimerField* timerfield){
     TIM_Cmd(htim[timerfield->accTimer], timerfield->accTimer, DISABLE);
     TIM_ITConfig(htim[timerfield->accTimer], timerfield->accTimer, DISABLE);
     if(TIM_GetITStatus(htim[timerfield->accTimer], timerfield->accTimer)) TIM_ClearITPendingBit(htim[timerfield->accTimer], timerfield->accTimer);
+    
+    timerfield->accTimerRunning = false;
 }
 
 void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t _period){  // us
@@ -126,6 +130,10 @@ void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t _period){  /
     TIM_SetPeriod(htim[timerfield->accTimer], timerfield->accTimer, period);
 }
 
+bool TimerField_accTimerIsRunning(const TimerField* timerfield){
+    return timerfield->accTimerRunning;
+}
+
 void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay){  // us
     // TODO
     uint32_t timer_clk = 0, period = 0;
@@ -139,11 +147,20 @@ void TimerField_triggerDelay(TimerField* timerfield){
     // TODO
     TIM_Cmd(htim[timerfield->pulseTimer], timerfield->pulseTimer, ENABLE);
     TIM_ITConfig(htim[timerfield->pulseTimer], timerfield->pulseTimer, ENABLE);
+
+    timerfield->pulseTimerRunning = true;
 }
 
 void TimerField_pulseTimerStop(TimerField* timerfield){
     TIM_Cmd(htim[timerfield->pulseTimer], timerfield->pulseTimer, DISABLE);
-    TIM_ITConfig(htim[timerfield->pulseTimer], timerfield->pulseTimer, DISABLE);   
+    TIM_ITConfig(htim[timerfield->pulseTimer], timerfield->pulseTimer, DISABLE);
+
+    timerfield->pulseTimerRunning = false; 
+}
+
+bool TimerField_pulseTimerIsRunning(const TimerField* timerfield)
+{
+    return timerfield->pulseTimerRunning;
 }
 
 void TimerField_timerEndAfterPulse(TimerField *_timerfield){

@@ -14,6 +14,16 @@
 #define MAXMOTORS         10
 #endif
 
+#ifndef ACCUPDATEPERIOD_DEFAULT
+#define ACCUPDATEPERIOD_DEFAULT               5
+#endif
+
+#ifndef PULSEWIDTH_DEFAULT
+#define PULSEWIDTH_DEFAULT                    5000
+#endif
+
+
+
 typedef enum {
     err_OK,
     err_movment_not_possible,
@@ -89,5 +99,12 @@ void Controller_attachStepper(MotorControlBase *controller, uint8_t N, Stepper* 
 void vController_attachStepper(MotorControlBase *controller, uint8_t N, ...);
 
 void vvController_attachStepper(MotorControlBase *controller, uint8_t N, __builtin_va_list va);
+
+
+
+void stepTimerISR(MotorControlBase *controller);
+
+void pulseTimerISR(MotorControlBase *controller);
+
 
 #endif

@@ -8,11 +8,6 @@
 
 #include "port/port.h"
 
-
-
-#define min(a, b)       ((a) < (b) ? (a) : (b))
-#define max(a, b)       ((a) > (b) ? (a) : (b))
-
 typedef uint8_t StepperParamBase;
 
 typedef struct {
@@ -103,5 +98,9 @@ static inline bool Stepper_cmpAcc(const Stepper* a, const Stepper* b) { return a
 static inline bool Stepper_cmpVmin(const Stepper* a, const Stepper* b) { return labs(a->vMax) < labs(b->vMax); }
 static inline bool Stepper_cmpVmax(const Stepper* a, const Stepper* b) { return labs(a->vMax) > labs(b->vMax); }
 
+
+Stepper** find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
+
+void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
 
 #endif

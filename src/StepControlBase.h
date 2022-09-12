@@ -12,11 +12,7 @@ typedef struct {
 }StepControl;
 
 
-static inline void StepControl_init(StepControl *controller, const StepControl_Init_TypeDef *config){
-    // TODO
-    Controller_init(&controller->controller, config);
-    controller->controller.mode = MOTOR_TARGET;
-}
+void StepControl_init(StepControl *controller, const StepControl_Init_TypeDef *config);
 
  // Non-blocking movements ------------------------------------------
 
@@ -55,11 +51,8 @@ static inline void StepControl_setReachedTargetCallback(StepControl *_controller
  * 
  * @param _controller 
  */
-void stepTimerISR(StepControl *_controller);
 
-void pulseTimerISR(StepControl *_controller);
-
-void accTimerISR(StepControl *_controller);
+void StepControl_accTimerISR(StepControl *_controller);
 
 
 #endif

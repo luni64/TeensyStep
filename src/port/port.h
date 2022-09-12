@@ -5,6 +5,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef min
+#define min(a, b)       ((a) < (b) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a, b)       ((a) > (b) ? (a) : (b))
+#endif
+
 #ifndef HIGH
 #define HIGH             1
 #endif
@@ -19,6 +26,14 @@
 
 #ifndef delay
 #define delay(ms)       Delay_ms(ms)
+#endif
+
+#ifndef noInterrupts
+#define noInterrupts()             {}
+#endif
+
+#ifndef interrupts
+#define interrupts()               {}
 #endif
 
 
@@ -64,8 +79,11 @@ typedef TIM_Module_TypeDef TIM_Module;  /// 定义定时器模块
 
 typedef struct {
     volatile bool stepTimerRunning;
+    volatile bool accTimerRunning;
+    volatile bool pulseTimerRunning;
+
     volatile bool lastPulse;
-    
+
     TIM_Unit stepTimer;
     TIM_Unit accTimer;
     TIM_Unit pulseTimer;
@@ -93,10 +111,12 @@ void TimerField_setStepFrequency(TimerField* timerfield, uint32_t f);
 void TimerField_accTimerStart(TimerField* timerfield);
 void TimerField_accTimerStop(TimerField* timerfield);
 void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t period);
+bool TimerField_accTimerIsRunning(const TimerField* timerfield);
 
 void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay);
 void TimerField_triggerDelay(TimerField* timerfield);
 void TimerField_pulseTimerStop(TimerField* timerfield);
+bool TimerField_pulseTimerIsRunning(const TimerField* timerfield);
 
 void TimerField_timerEndAfterPulse(TimerField *_timerfield);
 

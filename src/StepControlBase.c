@@ -1,33 +1,8 @@
 
+
 #include "StepControlBase.h"
 #include "TimerField.h"
 
-static Stepper** find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
-    Stepper* * next = start;
-    for(int i = 1; i < ((end - start)); i++){
-        if(cmp(start[i], *next)){
-            next = &start[i];
-        }
-    }
-    return next;
-}
-
-
-static void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
-    int l = end - start;
-    Stepper *swap = NULL;
-
-    // 冒泡排序
-    for(int i = 0; i < (l - 1); i++){
-        for(int j = 0; j < (l - i - 1); j++){
-            if(cmp(start[j + 1], start[j])){
-                swap = start[j + 1];
-                start[j + 1] = start[j];
-                start[j] = swap;
-            }
-        }
-    }
-}
 
 
 static void doMove(StepControl *_controller, int N, float speedOverride){
@@ -76,6 +51,13 @@ static void doMove(StepControl *_controller, int N, float speedOverride){
 
     TimerField_stepTimerStart(&controller->timerField);
     TimerField_accTimerStart(&controller->timerField);
+}
+
+
+void StepControl_init(StepControl *controller, const StepControl_Init_TypeDef *config){
+    // TODO
+    Controller_init(&controller->controller, config);
+    controller->controller.mode = MOTOR_TARGET;
 }
 
 
@@ -162,82 +144,7 @@ void StepControl_stop(StepControl *_controller){
 }
 
 
-void stepTimerISR(StepControl *_controller){
-    
-    MotorControlBase *controller = &_controller->controller;
-    if(Stepper_isClearStepPin(controller->leadMotor) == false) return;
-    Stepper_doStep(controller->leadMotor);  /// leadMotor=MotorList[0]
-
-    Stepper* *slave = controller->motorList;
-    
-    // move slave motors if required (https://en.wikipedia.org/wiki/Bresenham)
-    while(*(++slave) != NULL){  // Skip MotorList[0]
-        if((*slave)->B >= 0){
-            Stepper_doStep(*slave);
-            (*slave)->B -= controller->leadMotor->A;
-        }
-        (*slave)->B += (*slave)->A;
-    }
-
-    TimerField_triggerDelay(&controller->timerField);  // start delay line to dactivate all step pins
-    // 正向限位
-    if((controller->mode == MOTOR_TARGET) && 
-        controller->leadMotor->targetPosLimit &&
-        (controller->leadMotor->current == controller->leadMotor->targetPosLimit))
-    {
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // return;
-        goto limit_end_section;
-    }
-    // 反向限位
-    if((controller->mode == MOTOR_TARGET) && 
-        controller->leadMotor->targetNegLimit &&
-        (controller->leadMotor->current == controller->leadMotor->targetNegLimit))
-    {
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // return;
-        goto limit_end_section;
-    }
-    // stop timer and call callback if we reached MOTOR_TARGET
-    if((controller->mode == MOTOR_TARGET) && 
-       (controller->leadMotor->current == controller->leadMotor->target)){
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // if(controller->reachedTargetCallback)
-        //     controller->reachedTargetCallback((int32_t)controller->leadMotor->current);
-        goto reached_end_section;
-    }
-    return;
-    limit_end_section:
-        TimerField_stepTimerStop(&controller->timerField);
-        TimerField_timerEndAfterPulse(&controller->timerField);
-        return;
-    reached_end_section:
-        TimerField_stepTimerStop(&controller->timerField);
-        TimerField_timerEndAfterPulse(&controller->timerField);
-        if(controller->reachedTargetCallback)
-            controller->reachedTargetCallback((int32_t)controller->leadMotor->current);       
-        return;
-}
-
-
-void pulseTimerISR(StepControl *_controller){
-    MotorControlBase *controller = &_controller->controller;
-    Stepper* *motor = controller->motorList;
-
-    while((*motor) != NULL){
-        Stepper_clearStepPin((*motor++));
-    }
-    if(controller->timerField.lastPulse){
-        // TimerField_end(&controller->timerField);
-        TimerField_pulseTimerStop(&controller->timerField);
-        return;
-    }
-}
-
-void accTimerISR(StepControl *_controller){
+void StepControl_accTimerISR(StepControl *_controller){
     MotorControlBase *controller = &_controller->controller;
     
     LinStepAccelerator *accelerator = &_controller->accelerator;

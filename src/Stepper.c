@@ -77,3 +77,32 @@ void Stepper_setTargetRel(Stepper* stepper, int32_t delta){   // Set MOTOR_TARGE
 }
 
 
+Stepper** find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
+    Stepper* * next = start;
+    for(int i = 1; i < ((end - start)); i++){
+        if(cmp(start[i], *next)){
+            next = &start[i];
+        }
+    }
+    return next;
+}
+
+
+void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
+    int l = end - start;
+    Stepper *swap = NULL;
+
+    // 冒泡排序
+    for(int i = 0; i < (l - 1); i++){
+        for(int j = 0; j < (l - i - 1); j++){
+            if(cmp(start[j + 1], start[j])){
+                swap = start[j + 1];
+                start[j + 1] = start[j];
+                start[j] = swap;
+            }
+        }
+    }
+}
+
+
+
