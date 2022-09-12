@@ -89,15 +89,19 @@ void StepControl_moveAsync(StepControl *_controller, float speedOverride, uint8_
 void vStepControl_moveAsync(StepControl *_controller, float speedOverride, uint8_t N, ...){
     MotorControlBase *controller = &_controller->controller;
     va_list mlist;
-    Stepper* stepperArr[MAXMOTORS] = {NULL };
-
+#if(0)
+    Stepper* stepperArr[MAXMOTORS] = { NULL };
     va_start(mlist, N);
     for(int i = 0; i < N; i++){
         stepperArr[i] = va_arg(mlist, Stepper *);
     }
     va_end(mlist);
-
     Controller_attachStepper(controller, N, stepperArr);
+#else
+    va_start(mlist, N);
+    vvController_attachStepper(controller, N, mlist);
+    va_end(mlist);
+#endif
     doMove(_controller, N, speedOverride);
 }
 

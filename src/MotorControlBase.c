@@ -16,34 +16,43 @@ MotorControlBase* Controller_init(MotorControlBase* controller, const MotorContr
     return controller;
 }
 
-int32_t Controller_getCurrentSpeed(MotorControlBase *controller){
+int32_t Controller_getCurrentSpeed(const MotorControlBase *controller){
     return TimerField_getStepFrequency(&controller->timerField);
 }
 
 
-void Controller_attachStepper(MotorControlBase *controller, uint8_t numbers, Stepper* *steppers){
+void Controller_attachStepper(MotorControlBase *controller, uint8_t N, Stepper* *steppers){
 
-    ASSERT(numbers <= MAXMOTORS);
+    ASSERT(N <= MAXMOTORS);
 
-    for(size_t i = 0; i < numbers; i++){
+    for(size_t i = 0; i < N; i++){
         controller->motorList[i] = steppers[i];
     }
-    controller->motorList[numbers] = NULL;
+    controller->motorList[N] = NULL;
 }
 
-void vController_attachStepper(MotorControlBase *controller, uint8_t numbers, ...){
-    ASSERT(numbers <= MAXMOTORS);
+void vController_attachStepper(MotorControlBase *controller, uint8_t N, ...){
+    ASSERT(N <= MAXMOTORS);
 
     va_list mlist;
 
-    va_start(mlist, numbers);
+    va_start(mlist, N);
 
-    for(size_t i = 0; i < numbers; i++){
+    for(size_t i = 0; i < N; i++){
         controller->motorList[i] = (Stepper *)va_arg(mlist, Stepper*);
     }
     va_end(mlist);
 
-    controller->motorList[numbers] = NULL;
+    controller->motorList[N] = NULL;
+}
+
+void vvController_attachStepper(MotorControlBase *controller, uint8_t N, __builtin_va_list va){
+    ASSERT(N <= MAXMOTORS);
+
+    for(size_t i = 0; i < N; i++){
+        controller->motorList[i] = (Stepper *)va_arg(va, Stepper*);
+    }
+    controller->motorList[N] = NULL;
 }
 
 void attachErrorFunction(ErrFunc ef){

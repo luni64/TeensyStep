@@ -66,15 +66,15 @@ static inline bool Controller_isOK(const MotorControlBase * controller){
 
 MotorControlBase* Controller_init(MotorControlBase* controller, const MotorControlBase_Init_TypeDef *config);
 
-static inline bool Controller_isRunning(MotorControlBase *controller){
+static inline bool Controller_isRunning(const MotorControlBase *controller){
     return TimerField_stepTimerIsRunning(&controller->timerField);
 }
 
-static inline bool Controller_isAllocated(MotorControlBase *controller){
+static inline bool Controller_isAllocated(const MotorControlBase *controller){
     return TimerField_stepTimerIsAllocated(&controller->timerField);
 }
 
-int32_t Controller_getCurrentSpeed(MotorControlBase *controller);
+int32_t Controller_getCurrentSpeed(const MotorControlBase *controller);
 
 static inline void Controller_emergencyStop(MotorControlBase *controller){
     TimerField_end(&controller->timerField);
@@ -88,5 +88,6 @@ void Controller_attachStepper(MotorControlBase *controller, uint8_t N, Stepper* 
 
 void vController_attachStepper(MotorControlBase *controller, uint8_t N, ...);
 
+void vvController_attachStepper(MotorControlBase *controller, uint8_t N, __builtin_va_list va);
 
 #endif
