@@ -2,8 +2,24 @@
 
 #include "LinStepAccelerator.h"
 
+typedef struct {
+    int32_t s_0;
+    int32_t ds;
+    uint32_t vs;
+    uint32_t ve;
+    uint32_t vt;
+    int64_t vs_sqr;
+    int64_t ve_sqr;
+    int64_t vt_sqr;
+    uint32_t two_a;
+    int32_t accEnd;
+    int32_t decStart;
+}LinStepAcceleratorParam;
 
-int32_t Accelerator_prepareMovement(LinStepAccelerator *accelerator, int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a){
+
+int32_t Accelerator_prepareMovement(LinStepAccelerator *_accelerator, int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a){
+    
+    LinStepAcceleratorParam *accelerator = (LinStepAcceleratorParam*)_accelerator->param;
 
     accelerator->vt = targetSpeed;
     accelerator->vs = pullInSpeed;  // v_start
@@ -51,8 +67,9 @@ int32_t Accelerator_prepareMovement(LinStepAccelerator *accelerator, int32_t cur
     return accelerator->vs;
 }
 
-int32_t Accelerator_updateSpeed(LinStepAccelerator *accelerator, int32_t currentPosition){
+int32_t Accelerator_updateSpeed(LinStepAccelerator *_accelerator, int32_t currentPosition){
 
+    LinStepAcceleratorParam *accelerator = (LinStepAcceleratorParam*)_accelerator->param;
     int32_t s = labs(accelerator->s_0 - currentPosition);
 
     // acceleration phase -------------------------------------
@@ -79,8 +96,9 @@ int32_t Accelerator_updateSpeed(LinStepAccelerator *accelerator, int32_t current
 
 }
 
-uint32_t Accelerator_initiateStopping(LinStepAccelerator *accelerator, int32_t currentPosition){
+uint32_t Accelerator_initiateStopping(LinStepAccelerator *_accelerator, int32_t currentPosition){
 
+    LinStepAcceleratorParam *accelerator = (LinStepAcceleratorParam*)_accelerator->param;
    int32_t stepsDone = labs(accelerator->s_0 - currentPosition);
 
     if (stepsDone < accelerator->accEnd) // still accelerating
@@ -99,10 +117,11 @@ uint32_t Accelerator_initiateStopping(LinStepAccelerator *accelerator, int32_t c
     {
         return accelerator->ds - stepsDone; // return steps to go
     }
-
 }
 
-void Accelerator_overrideSpeed(LinStepAccelerator *accelerator, float fac, int32_t currentPosition){
-
+void Accelerator_overrideSpeed(LinStepAccelerator *_accelerator, float fac, int32_t currentPosition){
+    (void)_accelerator;
+    (void)fac;
+    (void)currentPosition;
 }
 
