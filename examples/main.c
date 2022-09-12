@@ -43,13 +43,13 @@ int main(void)
 
     uint32_t timer_clk = SYSCTRL->PCLK_1MS_VAL * 1000;
     TIM_Init(TIMM0, &(TIM_InitTypeDef){TIM_1, timer_clk / 100000});
-    NVIC_SetPriority(TIM0_1_IRQn, 4);
+    NVIC_SetPriority(TIM0_1_IRQn, 3);
     TIM_ITConfig(TIMM0, TIM_1, ENABLE);
     NVIC_EnableIRQ(TIM0_1_IRQn);
 	// TIM_Cmd(TIMM0, TIM_1, ENABLE);
     
     TIM_Init(TIMM0, &(TIM_InitTypeDef){TIM_2, timer_clk / 100000});
-    NVIC_SetPriority(TIM0_2_IRQn, 3);
+    NVIC_SetPriority(TIM0_2_IRQn, 4);
     TIM_ITConfig(TIMM0, TIM_2, ENABLE);
     NVIC_EnableIRQ(TIM0_2_IRQn);
     // TIM_Cmd(TIMM0, TIM_2, ENABLE);
@@ -76,7 +76,7 @@ int main(void)
     uint32_t sqr = 50000;
     Stepper_setMaxSpeed(&motor1, 100000);
 	Stepper_setAcceleration(&motor1, 200000);
-    Stepper_setPullInOutSpeed(&motor1, 20000, 20000);
+    Stepper_setPullInOutSpeed(&motor1, 10000, 10000);
 
     Stepper_setTargetRel(&motor1, sqr / 4);
 	Stepper_setStepPinPolarity(&motor1, HIGH);
