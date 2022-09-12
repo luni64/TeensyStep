@@ -68,7 +68,7 @@ void TimerField_stepTimerStop(TimerField* timerfield){
 
     timerfield->stepTimerRunning = false;
 }
-bool TimerField_stepTimerIsAllocated(TimerField* timerfield){
+bool TimerField_stepTimerIsAllocated(const TimerField* timerfield){
     // TODO
     (void)timerfield;
     return true;

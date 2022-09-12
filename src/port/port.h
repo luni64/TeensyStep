@@ -86,7 +86,7 @@ void TimerField_end(TimerField* timerfield);
 void TimerField_stepTimerStart(TimerField* timerfield);   /// 需要强制更新
 void TimerField_stepTimerStop(TimerField* timerfield);
 bool TimerField_stepTimerIsRunning(const TimerField* timerfield);
-bool TimerField_stepTimerIsAllocated(TimerField* timerfield);
+bool TimerField_stepTimerIsAllocated(const TimerField* timerfield);
 int32_t TimerField_getStepFrequency(const TimerField* timerfield);
 void TimerField_setStepFrequency(TimerField* timerfield, uint32_t f);
 
