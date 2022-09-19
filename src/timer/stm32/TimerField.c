@@ -120,7 +120,7 @@ void TimerField_accTimerStop(TimerField* timerfield){
 void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t _period){  // us
     // TODO
     uint32_t timer_clk = 0, period = 0;
-    if(period == 0){
+    if(_period == 0){
         TimerField_accTimerStop(timerfield);
         return;
     }
