@@ -24,7 +24,7 @@ typedef struct {
 
 int32_t SinRotAccelerator_prepareRotation(SinRotAccelerator *_accelerator, int32_t currentPosition, int32_t targetSpeed, uint32_t acceleration, float speedFactor = 1.0);
 
-int32_t SinRotAccelerator_updateSpeed(SinRotAccelerator *_accelerator, int32_t currentPosition);
+int32_t FUN_IN_RAM SinRotAccelerator_updateSpeed(SinRotAccelerator *_accelerator, int32_t currentPosition);
 
 int32_t SinRotAccelerator_initiateStopping(SinRotAccelerator *_accelerator, int32_t currentPosition);
 

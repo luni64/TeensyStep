@@ -4,6 +4,7 @@
 #include "ErrorHandler.h"
 #include "Stepper.h"
 #include "timer/TF_Handler.h"
+#include "port/port.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -102,9 +103,9 @@ void vvController_attachStepper(MotorControlBase *controller, uint8_t N, __built
 
 
 
-void stepTimerISR(MotorControlBase *controller);
+void FUN_IN_RAM stepTimerISR(MotorControlBase *controller);
 
-void pulseTimerISR(MotorControlBase *controller);
+void FUN_IN_RAM pulseTimerISR(MotorControlBase *controller);
 
 
 #endif

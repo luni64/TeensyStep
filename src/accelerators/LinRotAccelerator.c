@@ -50,7 +50,7 @@ void RotAccelerator_overrideAcceleration(LinRotAccelerator *_accelerator, float 
     }
 }
 
-int32_t RotAccelerator_updateSpeed(LinRotAccelerator *_accelerator, int32_t curPos)
+int32_t FUN_IN_RAM RotAccelerator_updateSpeed(LinRotAccelerator *_accelerator, int32_t curPos)
 {
     (void)curPos;
     LinRotAcceleratorParam *accelerator = (LinRotAcceleratorParam *)_accelerator->param;

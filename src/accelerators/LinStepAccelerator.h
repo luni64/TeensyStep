@@ -7,6 +7,7 @@
 // #include <algorithm>
 
 #include "../ErrorHandler.h"
+#include "../port/port.h"
 
 typedef uint8_t AcceleratorParamBase;
 
@@ -23,7 +24,7 @@ typedef struct {
 
 int32_t Accelerator_prepareMovement(LinStepAccelerator *_accelerator, int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a);
 
-int32_t Accelerator_updateSpeed(LinStepAccelerator *_accelerator, int32_t currentPosition);
+int32_t FUN_IN_RAM Accelerator_updateSpeed(LinStepAccelerator *_accelerator, int32_t currentPosition);
 
 uint32_t Accelerator_initiateStopping(LinStepAccelerator *_accelerator, int32_t currentPosition);
 

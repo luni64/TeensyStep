@@ -63,7 +63,7 @@ void Error(ErrCode e){
     if (errFunc != NULL) errFunc(e);
 }
 
-void stepTimerISR(MotorControlBase *controller){
+void FUN_IN_RAM stepTimerISR(MotorControlBase *controller){
     
     if(Stepper_isClearStepPin(controller->leadMotor) == false) return;
     Stepper_doStep(controller->leadMotor);  /// leadMotor=MotorList[0]
@@ -86,45 +86,45 @@ void stepTimerISR(MotorControlBase *controller){
         controller->leadMotor->targetPosLimit &&
         (controller->leadMotor->current == controller->leadMotor->targetPosLimit))
     {
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // return;
-        goto limit_end_section;
+        TimerField_stepTimerStop(&controller->timerField);
+        TimerField_timerEndAfterPulse(&controller->timerField);
+        return;
+        // goto limit_end_section;
     }
     // 反向限位
     if((controller->mode == MOTOR_TARGET) && 
         controller->leadMotor->targetNegLimit &&
         (controller->leadMotor->current == controller->leadMotor->targetNegLimit))
     {
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // return;
-        goto limit_end_section;
+        TimerField_stepTimerStop(&controller->timerField);
+        TimerField_timerEndAfterPulse(&controller->timerField);
+        return;
+        // goto limit_end_section;
     }
     // stop timer and call callback if we reached MOTOR_TARGET
     if((controller->mode == MOTOR_TARGET) && 
        (controller->leadMotor->current == controller->leadMotor->target)){
-        // TimerField_stepTimerStop(&controller->timerField);
-        // TimerField_timerEndAfterPulse(&controller->timerField);
-        // if(controller->reachedTargetCallback)
-        //     controller->reachedTargetCallback((int32_t)controller->leadMotor->current);
-        goto reached_end_section;
+        TimerField_stepTimerStop(&controller->timerField);
+        TimerField_timerEndAfterPulse(&controller->timerField);
+        if(!controller->reachedTargetCallback) return;
+        controller->reachedTargetCallback((int32_t)controller->leadMotor->current);
+        // goto reached_end_section;
     }
-    return;
-    limit_end_section:
-        TimerField_stepTimerStop(&controller->timerField);
-        TimerField_timerEndAfterPulse(&controller->timerField);
-        return;
-    reached_end_section:
-        TimerField_stepTimerStop(&controller->timerField);
-        TimerField_timerEndAfterPulse(&controller->timerField);
-        if(controller->reachedTargetCallback)
-            controller->reachedTargetCallback((int32_t)controller->leadMotor->current);       
-        return;
+    // return;
+    // limit_end_section:
+    //     TimerField_stepTimerStop(&controller->timerField);
+    //     TimerField_timerEndAfterPulse(&controller->timerField);
+    //     return;
+    // reached_end_section:
+    //     TimerField_stepTimerStop(&controller->timerField);
+    //     TimerField_timerEndAfterPulse(&controller->timerField);
+    //     if(controller->reachedTargetCallback)
+    //         controller->reachedTargetCallback((int32_t)controller->leadMotor->current);       
+    //     return;
 }
 
 
-void pulseTimerISR(MotorControlBase *controller){
+void FUN_IN_RAM pulseTimerISR(MotorControlBase *controller){
     Stepper* *motor = controller->motorList;
     
     // 在旋转模式并且StepTimer未启动时

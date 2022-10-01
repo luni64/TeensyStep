@@ -38,7 +38,7 @@ int32_t SinRotAccelerator_prepareRotation(SinRotAccelerator *_accelerator, int32
     return accelerator->v_min;
 }
 
-int32_t SinRotAccelerator_updateSpeed(SinRotAccelerator *_accelerator, int32_t curPos)
+int32_t FUN_IN_RAM SinRotAccelerator_updateSpeed(SinRotAccelerator *_accelerator, int32_t curPos)
 {
     if (accelerator->vstp == accelerator->vstp_tgt) // already at target, keep spinning with target frequency
     {

@@ -20,6 +20,9 @@
 #endif
 
 
+#define FUN_IN_RAM
+
+
 #include "air105_timer.h"
 #include "air105_gpio.h"
 #include "delay.h"
@@ -43,7 +46,7 @@ typedef struct {
 }gpio_pin_t;
 
 
-static inline void digitalPinOutputMode(gpio_pin_t pin){
+static inline void FUN_IN_RAM digitalPinOutputMode(gpio_pin_t pin){
     // TODO
     GPIO_InitTypeDef gpio = { 0 };
     
@@ -53,7 +56,7 @@ static inline void digitalPinOutputMode(gpio_pin_t pin){
     GPIO_Init((GPIO_TypeDef *)(pin.port), &gpio);
 }
 
-static inline void digitalWritePin(gpio_pin_t pin, uint8_t level){
+static inline void FUN_IN_RAM digitalWritePin(gpio_pin_t pin, uint8_t level){
     // TODO
     uint32_t _pin = pin.pin;
     ((GPIO_TypeDef*)pin.port)->BSRR = ((uint32_t)_pin) << ((!level) * 16);
@@ -106,19 +109,19 @@ void TimerField_stepTimerStop(TimerField* timerfield);
 bool TimerField_stepTimerIsRunning(const TimerField* timerfield);
 bool TimerField_stepTimerIsAllocated(const TimerField* timerfield);
 int32_t TimerField_getStepFrequency(const TimerField* timerfield);
-void TimerField_setStepFrequency(TimerField* timerfield, uint32_t f);
+void FUN_IN_RAM TimerField_setStepFrequency(TimerField* timerfield, uint32_t f);
 
 void TimerField_accTimerStart(TimerField* timerfield);
 void TimerField_accTimerStop(TimerField* timerfield);
-void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t period);
+void FUN_IN_RAM TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t period);
 bool TimerField_accTimerIsRunning(const TimerField* timerfield);
 
-void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay);
-void TimerField_triggerDelay(TimerField* timerfield);
+void FUN_IN_RAM TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay);
+void FUN_IN_RAM TimerField_triggerDelay(TimerField* timerfield);
 void TimerField_pulseTimerStop(TimerField* timerfield);
 bool TimerField_pulseTimerIsRunning(const TimerField* timerfield);
 
-void TimerField_timerEndAfterPulse(TimerField *_timerfield);
+void FUN_IN_RAM TimerField_timerEndAfterPulse(TimerField *_timerfield);
 
 
 

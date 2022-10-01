@@ -26,7 +26,7 @@ void RotAccelerator_overrideSpeed(LinRotAccelerator *_accelerator, float factor)
 
 void RotAccelerator_overrideAcceleration(LinRotAccelerator *_accelerator, float factor);
 
-int32_t RotAccelerator_updateSpeed(LinRotAccelerator *_accelerator, int32_t curPos);
+int32_t FUN_IN_RAM RotAccelerator_updateSpeed(LinRotAccelerator *_accelerator, int32_t curPos);
 
 int32_t RotAccelerator_initiateStopping(LinRotAccelerator *_accelerator, int32_t curPos);
 

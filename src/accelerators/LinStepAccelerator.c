@@ -67,7 +67,7 @@ int32_t Accelerator_prepareMovement(LinStepAccelerator *_accelerator, int32_t cu
     return accelerator->vs;
 }
 
-int32_t Accelerator_updateSpeed(LinStepAccelerator *_accelerator, int32_t currentPosition){
+int32_t FUN_IN_RAM Accelerator_updateSpeed(LinStepAccelerator *_accelerator, int32_t currentPosition){
 
     LinStepAcceleratorParam *accelerator = (LinStepAcceleratorParam*)_accelerator->param;
     int32_t s = labs(accelerator->s_0 - currentPosition);

@@ -52,7 +52,7 @@ static inline void StepControl_setReachedTargetCallback(StepControl *_controller
  * @param _controller 
  */
 
-void StepControl_accTimerISR(StepControl *_controller);
+void FUN_IN_RAM StepControl_accTimerISR(StepControl *_controller);
 
 
 #endif

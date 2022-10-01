@@ -45,7 +45,7 @@ bool TimerField_begin(TimerField* timerfield){
     return true;
 }
 
-void TimerField_end(TimerField* timerfield){
+void FUN_IN_RAM TimerField_end(TimerField* timerfield){
     // TODO
     TimerField_stepTimerStop(timerfield);
     TimerField_accTimerStop(timerfield);
@@ -60,7 +60,7 @@ void TimerField_stepTimerStart(TimerField* timerfield){
     timerfield->stepTimerRunning = true;
 }
 
-void TimerField_stepTimerStop(TimerField* timerfield){
+void FUN_IN_RAM TimerField_stepTimerStop(TimerField* timerfield){
     // TODO
     TIM_Cmd(htim[timerfield->stepTimer], timerfield->stepTimer, DISABLE);
     TIM_ITConfig(htim[timerfield->stepTimer], timerfield->stepTimer, DISABLE);
@@ -86,7 +86,7 @@ int32_t TimerField_getStepFrequency(const TimerField* timerfield){
     return timer_clk / htim[timerfield->stepTimer]->TIM[timerfield->stepTimer].LoadCount;
 }
 
-void TimerField_setStepFrequency(TimerField* timerfield, uint32_t f){   // Hz
+void FUN_IN_RAM TimerField_setStepFrequency(TimerField* timerfield, uint32_t f){   // Hz
     // TODO
     uint32_t timer_clk = 0, period = 0;
     if(f == 0){
@@ -108,7 +108,7 @@ void TimerField_accTimerStart(TimerField* timerfield){
     timerfield->accTimerRunning = true;
 }
 
-void TimerField_accTimerStop(TimerField* timerfield){
+void FUN_IN_RAM TimerField_accTimerStop(TimerField* timerfield){
     // TODO
     TIM_Cmd(htim[timerfield->accTimer], timerfield->accTimer, DISABLE);
     TIM_ITConfig(htim[timerfield->accTimer], timerfield->accTimer, DISABLE);
@@ -117,7 +117,7 @@ void TimerField_accTimerStop(TimerField* timerfield){
     timerfield->accTimerRunning = false;
 }
 
-void TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t _period){  // us
+void FUN_IN_RAM TimerField_setAccUpdatePeriod(TimerField* timerfield, uint32_t _period){  // us
     // TODO
     uint32_t timer_clk = 0, period = 0;
     if(period == 0){
@@ -134,7 +134,7 @@ bool TimerField_accTimerIsRunning(const TimerField* timerfield){
     return timerfield->accTimerRunning;
 }
 
-void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay){  // us
+void FUN_IN_RAM TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay){  // us
     // TODO
     uint32_t timer_clk = 0, period = 0;
     timer_clk = SYSCTRL->PCLK_1MS_VAL * 1000;   /// 获取定时器时钟频率
@@ -143,7 +143,7 @@ void TimerField_setPulseWidth(TimerField* timerfield, uint32_t delay){  // us
     TIM_SetPeriod(htim[timerfield->pulseTimer], timerfield->pulseTimer, period);
 }
 
-void TimerField_triggerDelay(TimerField* timerfield){
+void FUN_IN_RAM TimerField_triggerDelay(TimerField* timerfield){
     // TODO
     TIM_Cmd(htim[timerfield->pulseTimer], timerfield->pulseTimer, ENABLE);
     TIM_ITConfig(htim[timerfield->pulseTimer], timerfield->pulseTimer, ENABLE);
@@ -151,7 +151,7 @@ void TimerField_triggerDelay(TimerField* timerfield){
     timerfield->pulseTimerRunning = true;
 }
 
-void TimerField_pulseTimerStop(TimerField* timerfield){
+void FUN_IN_RAM TimerField_pulseTimerStop(TimerField* timerfield){
     TIM_Cmd(htim[timerfield->pulseTimer], timerfield->pulseTimer, DISABLE);
     TIM_ITConfig(htim[timerfield->pulseTimer], timerfield->pulseTimer, DISABLE);
 
@@ -163,7 +163,7 @@ bool TimerField_pulseTimerIsRunning(const TimerField* timerfield)
     return timerfield->pulseTimerRunning;
 }
 
-void TimerField_timerEndAfterPulse(TimerField *_timerfield){
+void FUN_IN_RAM TimerField_timerEndAfterPulse(TimerField *_timerfield){
     // TODO
     _timerfield->lastPulse = true;
 }

@@ -60,28 +60,28 @@ static inline void Stepper_setPosition(Stepper* stepper, int32_t pos) { stepper-
 /***************************  HardWare Pin  ****************************/
 
 
-static inline void Stepper_doStep(Stepper* stepper){
+static inline void FUN_IN_RAM Stepper_doStep(Stepper* stepper){
 	
     digitalWritePin(stepper->stepPin, stepper->polarity);
     stepper->dostep = true;
     stepper->current += stepper->dir;
 }
 
-static inline void Stepper_clearStepPin(Stepper* stepper){
+static inline void FUN_IN_RAM Stepper_clearStepPin(Stepper* stepper){
     digitalWritePin(stepper->stepPin, !stepper->polarity);
     stepper->dostep = false;
 }
 
-static inline bool Stepper_isClearStepPin(Stepper *stepper){
+static inline bool FUN_IN_RAM Stepper_isClearStepPin(Stepper *stepper){
     return !stepper->dostep;
 }
 
-static inline void Stepper_setDir(Stepper* stepper, int d){
+static inline void FUN_IN_RAM Stepper_setDir(Stepper* stepper, int d){
     stepper->dir = d;
     digitalWritePin(stepper->dirPin, (stepper->dir == 1) ? stepper->reverse : !stepper->reverse);
 }
 
-static inline void Stepper_toggleDir(Stepper* stepper){
+static inline void FUN_IN_RAM Stepper_toggleDir(Stepper* stepper){
     Stepper_setDir(stepper, -1 * stepper->dir);
 }
 
@@ -93,14 +93,14 @@ static inline void Stepper_toggleDir(Stepper* stepper){
 
 
 // compare functions
-static inline bool Stepper_cmpDelta(const Stepper* a, const Stepper* b) { return a->A > b->A; }
-static inline bool Stepper_cmpAcc(const Stepper* a, const Stepper* b) { return a->a < b->a; }
-static inline bool Stepper_cmpVmin(const Stepper* a, const Stepper* b) { return labs(a->vMax) < labs(b->vMax); }
-static inline bool Stepper_cmpVmax(const Stepper* a, const Stepper* b) { return labs(a->vMax) > labs(b->vMax); }
+static inline bool FUN_IN_RAM Stepper_cmpDelta(const Stepper* a, const Stepper* b) { return a->A > b->A; }
+static inline bool FUN_IN_RAM Stepper_cmpAcc(const Stepper* a, const Stepper* b) { return a->a < b->a; }
+static inline bool FUN_IN_RAM Stepper_cmpVmin(const Stepper* a, const Stepper* b) { return labs(a->vMax) < labs(b->vMax); }
+static inline bool FUN_IN_RAM Stepper_cmpVmax(const Stepper* a, const Stepper* b) { return labs(a->vMax) > labs(b->vMax); }
 
 
-Stepper** find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
+Stepper** FUN_IN_RAM find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
 
-void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
+void FUN_IN_RAM sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *));
 
 #endif
