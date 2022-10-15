@@ -77,21 +77,52 @@ void Stepper_setTargetRel(Stepper* stepper, int32_t delta){   // Set MOTOR_TARGE
 }
 
 
+
+static inline void swap(Stepper* *a, Stepper* *b){
+    Stepper* t = *a;
+    *a = *b;
+    *b = t;
+}
+
+static int partition(Stepper* *arr, int low, int high, bool (*cmp)(const Stepper *, const Stepper *)){
+    const Stepper* pivot = arr[high];
+    int i = (low - 1);
+    for(int j = low; j <= high - 1; j++){
+        if(cmp(&arr[j], &pivot)){
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[i + 1], &arr[high]);
+    return i + 1;
+}
+
+static void quick_sort(Stepper* *arr, int low, int high, bool (*cmp)(const Stepper *, const Stepper *)){
+    if(low < high){
+        int pi = partition(arr, low, high, cmp);
+        quick_sort(arr, low, pi - 1, cmp);
+        quick_sort(arr, pi + 1, high, cmp);
+    }
+}
+
 Stepper** find_min_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
+
     Stepper* * next = start;
     for(int i = 1; i < ((end - start)); i++){
         if(cmp(start[i], *next)){
             next = &start[i];
         }
     }
+
     return next;
 }
 
 
 void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, const Stepper *)){
+
+#if(0)
     int l = end - start;
     Stepper *swap = NULL;
-
     // 冒泡排序
     for(int i = 0; i < (l - 1); i++){
         for(int j = 0; j < (l - i - 1); j++){
@@ -102,6 +133,10 @@ void sort_element(Stepper* *start, Stepper* *end, bool (*cmp)(const Stepper *, c
             }
         }
     }
+#endif
+
+    int n = end - start;
+    quick_sort(start, 0, n - 1, cmp);
 }
 
 
