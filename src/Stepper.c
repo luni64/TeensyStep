@@ -88,7 +88,7 @@ static int partition(Stepper* *arr, int low, int high, bool (*cmp)(const Stepper
     const Stepper* pivot = arr[high];
     int i = (low - 1);
     for(int j = low; j <= high - 1; j++){
-        if(cmp(&arr[j], &pivot)){
+        if(cmp(arr[j], pivot)){
             i++;
             swap(&arr[i], &arr[j]);
         }
