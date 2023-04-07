@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include "Stepper.h"
 
+
+#pragma push_macro("abs")
+#undef abs
+
 namespace TeensyStep
 {
     constexpr int32_t Stepper::vMaxMax;
@@ -111,3 +115,5 @@ namespace TeensyStep
         A = std::abs(delta);
     }
 }
+
+#pragma pop_macro("abs")

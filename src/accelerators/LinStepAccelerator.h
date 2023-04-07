@@ -4,6 +4,9 @@
 #include <cmath>
 #include <cstdint>
 
+#pragma push_macro("abs")
+#undef abs
+
 class LinStepAccelerator
 {
  public:
@@ -127,3 +130,7 @@ uint32_t LinStepAccelerator::initiateStopping(int32_t curPos)
         return ds - stepsDone;             // return steps to go
     }
 }
+
+#pragma pop_macro("abs")
+
+
