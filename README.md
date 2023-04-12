@@ -1,4 +1,7 @@
-# TeensyStep V2.1 - Fast Stepper Library for PJRC Teensy boards
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luni64/library/TeensyStep.svg)](https://registry.platformio.org/libraries/luni64/TeensyStep)
+[![arduino-library-badge](https://www.ardu-badge.com/badge/TeensyStep.svg?)](https://www.ardu-badge.com/TeensyStep)
+
+# TeensyStep Fast Stepper Library for PJRC Teensy boards
 
 Please note: This is version 2 of the library. This version has a new user interface. The version 1 is still available in the branch [Version-1](https://github.com/luni64/TeensyStep/tree/Version-1).
 
