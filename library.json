@@ -14,7 +14,7 @@
     "maintainer": true
   },
   "homepage": "https://luni64.github.io/TeensyStep",
-  "version": "v2.3.3",
+  "version": "2.3.4",
   "frameworks": "arduino",
   "platforms": ["Teensy", "stm32"]
 }
