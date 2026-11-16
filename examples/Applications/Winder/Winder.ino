@@ -16,6 +16,7 @@ Encoder trimmer(5, 6);
 int oldTrimmerVal = 0;
 
 IntervalTimer printTimer;                                  // used to print out current speeds in the background
+void printCurrent();
 
 void setup()
 {

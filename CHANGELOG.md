@@ -7,6 +7,10 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 ## Unreleased
 
+**Fixed**
+
+- The Winder example also compiles outside the Arduino IDE (missing declaration of `printCurrent()`).
+
 ## v2.3.4 - 2023-04-13
 
 **Fixed**
