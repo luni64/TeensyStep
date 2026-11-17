@@ -7,9 +7,50 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 ## Unreleased
 
+The next major version: the library is rewritten. It is work in progress on the branch `develop`; the
+interface can still change. A migration guide follows before the release.
+
+**New**
+
+- Teensy 4.0, 4.1 and MicroMod are supported. Up to 16 motors or groups move independently at the same time.
+- The commands are member functions of the motor and of the group: `moveAbs`, `moveRel`, `rotateAsync`, `stop`,
+  `emergencyStop`, each move command in a blocking and a non-blocking (`Async`) form. Controller objects are
+  no longer needed.
+- The target, the maximum speed and the acceleration of a motor can be changed during a move. For a group,
+  the maximum speed and the acceleration can be changed.
+- A target can have a speed: the motor reaches the position exactly at that speed and runs on. A function
+  of the sketch can be called on arrival and can give the next command, which follows without a stop.
+- `StepperGroup` moves motors synchronized. The motors stay within half a step of the straight line between
+  start and target in every phase of the move, also when the group is stopped early.
+- Separate deceleration (`setDeceleration`), DIR setup time (`setDirSetupTime`), enable pin with on and off
+  delays (`setEnablePin`).
+- Step rates down to 0.001 steps/s.
+- Every command returns an `errorCode`. `attachErrFunc()` registers a function for warnings and errors;
+  `ErrorHandler` prints them and stops all motors at an error.
+- The library takes its hardware timers itself, at the start of a move, and gives them back at the end. It
+  does not take a timer that makes PWM or that another library uses, and reports if none is free.
+- The motion core has no hardware access and is tested on a PC (folder `test`).
+- New examples, `01_HelloStepper` to `15_Winder`.
+
+**Changed**
+
+- The classes are in the namespace `TeensyStep`. `Stepper`, `StepControl` and `RotateControl` are also
+  available without the namespace, so that sketches for version 2 compile unchanged; define
+  `TEENSYSTEP_NO_GLOBAL_NAMES` before the include to switch this off.
+- `StepControl` and `RotateControl` are deprecated wrappers on the new commands. The examples of version 2
+  are in `examples/version2`.
+- `setPullInOutSpeed()` is deprecated: use `setPullInSpeed()`.
+
+**Not yet in this version**
+
+- Teensy 3.x and LC: the library compiles, and every move command returns `noTimer`. Use version 2.3.4 on
+  these boards for now.
+- STM32 is not supported by the new version. Use version 2.3.x.
+
 **Fixed**
 
-- The Winder example also compiles outside the Arduino IDE (missing declaration of `printCurrent()`).
+- The Winder example of version 2 also compiles outside the Arduino IDE (missing declaration of
+  `printCurrent()`).
 
 ## v2.3.4 - 2023-04-13
 
