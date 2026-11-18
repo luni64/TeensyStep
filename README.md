@@ -1,3 +1,9 @@
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luni64/library/TeensyStep.svg)](https://registry.platformio.org/libraries/luni64/TeensyStep)
+[![arduino-library-badge](https://www.ardu-badge.com/badge/TeensyStep.svg?)](https://www.ardu-badge.com/TeensyStep)
+[![GitHub release](https://img.shields.io/github/v/release/luni64/TeensyStep)](https://github.com/luni64/TeensyStep/releases/latest)
+[![Documentation](https://github.com/luni64/TeensyStep/actions/workflows/docs.yml/badge.svg?branch=develop)](https://luni64.github.io/TeensyStep/)
+[![License: MIT](https://img.shields.io/github/license/luni64/TeensyStep)](LICENCE)
+
 # TeensyStep
 
 Stepper motor library for PJRC Teensy boards, for drivers with STEP and DIR inputs.
