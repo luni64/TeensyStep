@@ -71,28 +71,9 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 |---|---|
 | `src/api/` | The classes a sketch uses: `Stepper`, `StepperGroup`, `ErrorHandler`; `GroupPath.h`: the advanced functions; `Legacy.h`: the controllers of version 2 |
 | `src/core/` | Motion core: `Axis` (one motor), `Group` (motors moving synchronized), `errorCode`. No hardware access; it compiles on a PC and on the boards |
-| `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `teensy3/`: Teensy 3.5, 3.6. `host/`: simulated backend for the PC tests. `none/`: placeholder for boards without a backend |
+| `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `teensy3/`: Teensy 3.5, 3.6. `none/`: placeholder for boards without a backend |
 | `examples/` | Example sketches; `examples/advanced/`: the advanced functions; `examples/version2/`: unchanged examples of version 2 |
-| `test/` | Tests that run on a PC: the core directly, and the API on the simulated backend |
 | `docs/`, `mkdocs.yml` | The manual (draft), for MkDocs Material. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |
 
 The API is documented in the headers: `src/api/Stepper.h`, `src/api/StepperGroup.h` and
 `src/core/errorCode.h`.
-
-## PC tests
-
-```
-python test/run_tests.py                 # build what changed, run all tests
-python test/run_tests.py -tc="ramp*"     # run the test cases whose names match
-python test/run_tests.py --clean         # rebuild everything
-python test/mutate.py                    # check the tests: deliberate errors in the library, each must be noticed (25 min)
-python test/mutate.py group              # only the errors whose description contains this text
-```
-
-The tests need Python 3.11 or newer and g++ (on Windows: `winget install BrechtSanders.WinLibs.POSIX.UCRT`).
-They are compiled as C++17 with GNU extensions, like the Teensy builds; the core sources additionally
-without exceptions and RTTI. Warnings are errors.
-
-The tests are in `test/test_*.cpp`. `test/sim.h` runs a motor, records its steps and checks them against
-the limits. `test/doctest/doctest.h` is the test framework (doctest 2.4.12, MIT licence); `test/.build/` is
-the build output and is not tracked.
