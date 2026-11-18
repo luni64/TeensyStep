@@ -1,5 +1,5 @@
 /*==========================================================================
- * 12 MotorSettings: adapt the library to the motor and its driver
+ * 11 MotorSettings: adapt the library to the motor and its driver
  *
  * Besides maximum speed and acceleration, a motor has these settings:
  *

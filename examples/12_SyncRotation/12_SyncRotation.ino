@@ -1,5 +1,5 @@
 /*==========================================================================
- * 13 SyncRotation: rotate several motors with a fixed speed ratio
+ * 12 SyncRotation: rotate several motors with a fixed speed ratio
  *
  * rotateAsync() of a group runs its motors at the given speeds (steps/s,
  * the sign is the direction). The ratio of the speeds is kept exactly at
@@ -11,7 +11,7 @@
  * reverse all motors.
  *
  * The ratio itself cannot be changed while the group rotates. For an
- * adjustable ratio see example 15 (Winder).
+ * adjustable ratio see example 14 (Winder).
  *==========================================================================*/
 
 #include "TeensyStep.h"

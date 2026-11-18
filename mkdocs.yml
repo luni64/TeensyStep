@@ -28,6 +28,7 @@ nav:
       - Timers and interrupts: advanced/timers.md
       - Performance: advanced/performance.md
       - Limits: advanced/limits.md
+      - Paths of a group: advanced/group-paths.md
   - Reference:
       - reference/index.md
       - Stepper: reference/stepper.md

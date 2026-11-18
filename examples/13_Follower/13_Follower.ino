@@ -1,5 +1,5 @@
 /*==========================================================================
- * 14 Follower: a motor follows a calculated path
+ * 13 Follower: a motor follows a calculated path
  *
  * A spindle rotates at constant speed. A slide moves in and out depending
  * on the angle of the spindle:  r = amplitude * cos(k * angle).

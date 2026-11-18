@@ -45,15 +45,16 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
   without a stop.
 - **Groups:** `StepperGroup` moves motors synchronized. The motors stay within half a step of the straight
   line between start and target, also while accelerating, decelerating and when the group is stopped early.
-  A group can have a speed and an acceleration of its own, can pass its targets at a speed and go on to
-  the next ones without a stop, and can rotate with a fixed speed ratio.
+  A group can have a speed and an acceleration of its own, and it can rotate with a fixed speed ratio.
+- **For motion planners:** `TeensyStepAdvanced.h` adds moves of a group that follow each other without a
+  stop (`advanced::GroupPath`). It is kept apart from the standard interface, which stays small.
 - **Units:** speeds in steps/s, accelerations in steps/s². Speeds below 1 step/s are possible.
 - **Motor settings:** pull-in speed, separate deceleration, pulse width, step polarity, inverse rotation,
   DIR setup time, enable pin with on and off delays.
 - **Errors:** every command returns an `errorCode`. `attachErrFunc()` registers a function for warnings and
   errors; `ErrorHandler(Serial)` prints them.
 - **Sketches for version 2** compile unchanged: `StepControl` and `RotateControl` are kept as deprecated
-  wrappers (see [`examples/version2/`](examples/version2/) and `examples/11_LegacyV2`).
+  wrappers (see [`examples/version2/`](examples/version2/) and `examples/10_LegacyV2`).
 
 ## Boards
 
@@ -68,10 +69,10 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 
 | Folder | Content |
 |---|---|
-| `src/api/` | The classes a sketch uses: `Stepper`, `StepperGroup`, `ErrorHandler`; `Legacy.h`: the controllers of version 2 |
+| `src/api/` | The classes a sketch uses: `Stepper`, `StepperGroup`, `ErrorHandler`; `GroupPath.h`: the advanced functions; `Legacy.h`: the controllers of version 2 |
 | `src/core/` | Motion core: `Axis` (one motor), `Group` (motors moving synchronized), `errorCode`. No hardware access; it compiles on a PC and on the boards |
 | `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `host/`: simulated backend for the PC tests. `none/`: placeholder for boards without a backend |
-| `examples/` | Example sketches; `examples/version2/`: unchanged examples of version 2 |
+| `examples/` | Example sketches; `examples/advanced/`: the advanced functions; `examples/version2/`: unchanged examples of version 2 |
 | `test/` | Tests that run on a PC: the core directly, and the API on the simulated backend |
 | `docs/`, `mkdocs.yml` | The manual (draft), for MkDocs Material. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |
 

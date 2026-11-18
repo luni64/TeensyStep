@@ -90,6 +90,10 @@ namespace TeensyStep
             ///         short for the speed at the target
             errorCode moveAbs(const int32_t* targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
 
+            /// @brief Changes the speed at the targets of the move that is under way.
+            /// @return notSupported if the group is not on its way to targets; otherwise as moveAbs()
+            errorCode setSpeedAtTarget(float speedAtTarget);
+
             /// @brief Rotate the members at these speeds (one per member, sign: direction). The ratio of
             /// the speeds is kept exactly. While the group rotates, speeds with the same ratio change the
             /// speed of the group; another ratio returns notSupported. All speeds 0: stop.

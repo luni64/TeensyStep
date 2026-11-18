@@ -62,6 +62,8 @@ GROUP = [
     ("group segments: new targets refused behind the targets", "if (e.arrived) passed = true;", ""),
     ("group segments: speed at the targets ignored", "errorCode code = path.moveAbs((int32_t)longest, speedAtTarget);", "errorCode code = path.moveAbs((int32_t)longest, 0);"),
     ("group segments: change of the speed at the targets ignored", "errorCode code = path.moveAbs((int32_t)length, speedAtTarget);", "errorCode code = errorCode::OK;"),
+    ("group segments: speed at the targets changed behind the targets", "if (!path.isMoving() || kind != Kind::move || passed) return errorCode::notSupported;", "if (!path.isMoving() || kind != Kind::move) return errorCode::notSupported;"),
+    ("group segments: speed at the targets of a rotating group changed", "if (!path.isMoving() || kind != Kind::move || passed) return errorCode::notSupported;", "if (!path.isMoving() || passed) return errorCode::notSupported;"),
     ("group segments: given speed at the start ignored", "if (!keep) path.setSpeed(speedAtStart);", ""),
     ("group segments: negative speed accepted", "if (!(speedAtTarget >= 0) || !(keep || speedAtStart >= 0)) return errorCode::invalidArgument;", ""),
     ("group segments: rotating group takes a move", "if (kind != Kind::move) return errorCode::notSupported;\n                if (!passed)", "if (!passed)"),
@@ -116,18 +118,16 @@ CHANNELS = [
 GROUPAPI = [
     ("group api: busy member not noticed", "if (!Engine::channels[other].ending) return errorCode::motorBusy; // the member is moving on its own or in another group", ""),
     ("group api: targets not stored on the members", "for (unsigned i = 0; i < count; i++) motors[i]->setTargetAbs(targets[i]);", ""),
-    ("group api: wrong number of targets accepted", "errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)\n    {\n        if (n != count || count == 0)", "errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)\n    {\n        if (n < count || count == 0)"),
+    ("group api: wrong number of targets accepted", "errorCode StepperGroup::start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)\n    {\n        if (n != count || count == 0)", "errorCode StepperGroup::start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)\n    {\n        if (n < count || count == 0)"),
     ("group speed api: settings of the group not given to the move", "applySettings(c, Setting::none); // a restriction by the members is reported by the move", ""),
     ("group speed api: speed not applied during a move", "if (ch >= 0) applySettings(Engine::channels[ch], Setting::speed);", "if (ch >= 0 && false) applySettings(Engine::channels[ch], Setting::speed);"),
     ("group speed api: acceleration not applied during a move", "if (ch >= 0) applySettings(Engine::channels[ch], Setting::acceleration);", "if (ch >= 0 && false) applySettings(Engine::channels[ch], Setting::acceleration);"),
     ("group speed api: restriction of a setter not reported", "if (changed == Setting::acceleration) Engine::report(acc != errorCode::OK || separateDeceleration ? acc : dec);", "if (changed == Setting::acceleration && false) Engine::report(acc != errorCode::OK || separateDeceleration ? acc : dec);"),
     ("group speed api: separate deceleration not used", "errorCode dec   = c.group.setDeceleration(separateDeceleration ? ownDec : ownAcc);", "errorCode dec   = c.group.setDeceleration(ownAcc);"),
     ("group speed api: speed of a group that stands still", "if (ch < 0 || Engine::channels[ch].ending) return 0.0f;\n        float v = Engine::channels[ch].group.lead().speed();", "if (ch < 0) return 0.0f;\n        float v = 1.0f + Engine::channels[ch].group.lead().speed();"),
-    ("group segments api: speed at the targets not passed on", "return moveAbsAsync(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);", "return moveAbsAsync(targets.begin(), (unsigned)targets.size(), speedAtTarget * 0, speedAtStart);"),
+    ("group api: a move of the group itself passes its targets at a speed", "return start(targets, n, 0, core::Group::keepSpeed);", "return start(targets, n, 100, core::Group::keepSpeed);"),
+    ("group segments api: change of the speed at the targets does nothing", "code = Engine::channels[ch].group.setSpeedAtTarget(speedAtTarget);", "code = speedAtTarget >= 0 ? errorCode::OK : errorCode::invalidArgument;"),
     ("group segments api: speed at the start not passed on", "code = c.group.moveAbs(targets, speedAtTarget, speedAtStart);", "code = c.group.moveAbs(targets, speedAtTarget, speedAtStart * 0 + core::Group::keepSpeed);"),
-    ("group segments api: blocking move with a speed waits for a standstill", "while (isMoving() && arrivals() == arrivalsBefore) backend::idle();", "while (isMoving() && (arrivals() == arrivalsBefore || true)) backend::idle();"),
-    ("group segments api: blocking move with a speed returns at once", "while (isMoving() && arrivals() == arrivalsBefore) backend::idle();", "(void)arrivalsBefore;"),
-    ("group segments api: move() ignores the speed", "return moveAbsAsync(targets, count, speedAtTarget);", "return moveAbsAsync(targets, count, speedAtTarget * 0);"),
     ("group api: speeds for the speed factor not remembered", "hasBaseSpeed = !allZero;", "hasBaseSpeed = false;"),
     ("group api: a member twice in a group", "if (known || count >= maxMembers)", "if (count >= maxMembers)"),
     ("group api: group counts as moving when a member moves alone", "if (!c.isGroup || c.count != count) return -1;", "if (c.count != count) return -1;"),
@@ -135,9 +135,18 @@ GROUPAPI = [
     ("group api: member without a target moves to position 0", "targets[i] = motors[i]->hasTarget ? motors[i]->target : motors[i]->getPosition();", "targets[i] = motors[i]->target;"),
 ]
 
+GROUPPATH = [
+    ("group path: speed at the targets not passed on (list)", "return g.start(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);", "return g.start(targets.begin(), (unsigned)targets.size(), speedAtTarget * 0, speedAtStart);"),
+    ("group path: speed at the targets not passed on (array)", "return g.start(targets, n, speedAtTarget, speedAtStart);", "return g.start(targets, n, speedAtTarget * 0, speedAtStart);"),
+    ("group path: speed at the start not passed on", "return g.start(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);", "return g.start(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart * 0 + keepSpeed);"),
+    ("group path: relative move taken as absolute (array)", "return g.startRel(distances, n, speedAtTarget, speedAtStart);", "return g.start(distances, n, speedAtTarget, speedAtStart);"),
+    ("group path: relative move taken as absolute (list)", "return g.startRel(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);", "return g.start(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);"),
+    ("group path: change of the speed at the targets not passed on", "return g.changeSpeedAtTarget(speedAtTarget);", "return g.changeSpeedAtTarget(speedAtTarget * 0);"),
+]
+
 SRC = CORE.parent
 FILES = [(CORE / "Axis.cpp", AXIS), (CORE / "Group.cpp", GROUP), (SRC / "api" / "Stepper.cpp", STEPPER),
-         (SRC / "api" / "Channels.cpp", CHANNELS), (SRC / "api" / "StepperGroup.cpp", GROUPAPI)]
+         (SRC / "api" / "Channels.cpp", CHANNELS), (SRC / "api" / "StepperGroup.cpp", GROUPAPI), (SRC / "api" / "GroupPath.cpp", GROUPPATH)]
 
 
 def kill_tests():

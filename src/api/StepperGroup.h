@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../backend/Backend.h"
-#include "../core/Group.h"
 #include "../core/errorCode.h"
 #include "Stepper.h"
 #include <cstdint>
@@ -13,6 +12,10 @@ namespace TeensyStep
     namespace detail
     {
         struct Channel;
+    }
+    namespace advanced
+    {
+        class GroupPath;
     }
 
     /// @brief Motors that move synchronized.
@@ -28,8 +31,10 @@ namespace TeensyStep
     /// time: a command for a group with a busy member returns motorBusy.
     ///
     /// While a group moves, the maximum speed and the acceleration of its members and of the group can be
-    /// changed. New targets are accepted when the group stands still, and when it has passed targets with a
-    /// speed and runs on; within a move only the speed at the target can change.
+    /// changed. New targets are accepted when the group stands still.
+    ///
+    /// A group always stops at its targets. Moves that follow each other without a stop (a path through
+    /// several points) are made with advanced::GroupPath, see TeensyStepAdvanced.h.
     class StepperGroup
     {
      public:
@@ -53,9 +58,6 @@ namespace TeensyStep
         StepperGroup& setDeceleration(float stepsPerSec2);
         float getSpeed() const; ///< current speed of the group: that of its fastest member, steps/s; 0 at standstill
 
-        /// for speedAtStart: the group keeps the speed it has
-        static constexpr float keepSpeed = core::Group::keepSpeed;
-
         // Moves on a straight line. The targets are given in the order of the members: as positions
         // (moveAbs) or as distances from where the members stand (moveRel). Or they are taken from the
         // members (move; Stepper::setTargetAbs / setTargetRel; a member without a target stays where it is).
@@ -63,33 +65,16 @@ namespace TeensyStep
         // The members remember their targets, and the last one given wins: moveAbs and moveRel replace
         // targets set on the members before, and a target set on a member afterwards replaces the one of
         // the group for the next move(). A command that is refused changes no target.
-        //
-        // speedAtTarget (steps/s of the member with the longest way; 0: stop at the targets): the group
-        // passes its targets at this speed and runs on along the line until the next command. The next
-        // move can be given at once, also from the arrival function; it starts where the members are,
-        // without a stop. The speeds of the single members jump at such a point: keep the speed there low
-        // enough for the motors. A group never reverses to take a run-up: if the way is too short for the
-        // speed, it arrives as close to it as it can (warning targetSpeedNotReached).
-        //
-        // speedAtStart: the speed of the group at the start of the move, for a move that follows another
-        // one. Default: the speed the group has. A motion planner sets it, because the member with the
-        // longest way changes from move to move.
-        //
-        // While a group is on its way, the same targets with another speedAtTarget are accepted; other
-        // targets return notSupported.
-        errorCode moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveAsync(float speedAtTarget = 0);
-
-        // The blocking forms return when the group stands still at its targets or, with a speed at the
-        // target, when it passes them.
-        errorCode moveAbs(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveAbs(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveRel(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode moveRel(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-        errorCode move(float speedAtTarget = 0);
+        errorCode moveAbsAsync(std::initializer_list<int32_t> targets);
+        errorCode moveAbsAsync(const int32_t* targets, unsigned n);
+        errorCode moveRelAsync(std::initializer_list<int32_t> distances);
+        errorCode moveRelAsync(const int32_t* distances, unsigned n);
+        errorCode moveAsync();
+        errorCode moveAbs(std::initializer_list<int32_t> targets); ///< returns when the group has arrived
+        errorCode moveAbs(const int32_t* targets, unsigned n);
+        errorCode moveRel(std::initializer_list<int32_t> distances);
+        errorCode moveRel(const int32_t* distances, unsigned n);
+        errorCode move();
 
         /// @brief Rotate the members at these speeds (steps/s, sign: direction), in the order of the
         /// members. The ratio of the speeds is kept exactly. While the group rotates, speeds with the same
@@ -108,7 +93,7 @@ namespace TeensyStep
         bool isMoving() const; ///< the members are moving as this group
 
         /// @brief Sets a function that is called when the group has reached its targets. It is called from
-        /// an interrupt: keep it short. It may give the next move of the group. nullptr removes it.
+        /// an interrupt: keep it short. nullptr removes it.
         void onArrival(void (*callback)()) { arrival = callback; }
 
      private:
@@ -117,8 +102,11 @@ namespace TeensyStep
         errorCode rotate(const float* speeds, unsigned n, bool remember);
         enum class Setting { none, speed, acceleration, deceleration };
         void applySettings(detail::Channel& c, Setting changed);
-        void waitForArrival(uint32_t arrivalsBefore, float speedAtTarget);
-        uint32_t arrivals() const;
+
+        // for advanced::GroupPath: moves with a speed at the targets and at the start
+        errorCode start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart);
+        errorCode startRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart);
+        errorCode changeSpeedAtTarget(float speedAtTarget);
 
         Stepper* motors[maxMembers] = {};
         unsigned count              = 0;
@@ -132,6 +120,7 @@ namespace TeensyStep
         float speedFactor   = 1;     // maximum speeds of the members are scaled by this factor
         bool unlimitedSpeed = false; // the maximum speeds of the members are no limit
 
+        friend class advanced::GroupPath;
         friend class StepControl;
         friend class RotateControl;
     };

@@ -12,14 +12,22 @@ for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do n
 | `05_ChangeTarget` | New target and new maximum speed during a move |
 | `06_TargetWithSpeed` | Target with a speed at the target; chaining moves from the arrival callback |
 | `07_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; speed of a group |
-| `08_GroupWaypoints` | A group passes waypoints without stopping: speed at the targets, next move from the arrival function |
-| `09_Homing` | Emergency stop from a switch interrupt, setting the position |
-| `10_Errors` | Returned `errorCode`, error function, built-in handler (pattern of TeensyTimerTool) |
-| `11_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
-| `12_MotorSettings` | Pull-in speed, pulse width, step polarity, inverse rotation, DIR setup time, enable pin, separate deceleration |
-| `13_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
-| `14_Follower` | A motor follows a calculated path, commanded from a timer interrupt (v2: RoseFunctionFollower) |
-| `15_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
+| `08_Homing` | Emergency stop from a switch interrupt, setting the position |
+| `09_Errors` | Returned `errorCode`, error function, built-in handler (pattern of TeensyTimerTool) |
+| `10_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
+| `11_MotorSettings` | Pull-in speed, pulse width, step polarity, inverse rotation, DIR setup time, enable pin, separate deceleration |
+| `12_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
+| `13_Follower` | A motor follows a calculated path, commanded from a timer interrupt (v2: RoseFunctionFollower) |
+| `14_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
+
+## Advanced
+
+`advanced/` holds sketches for the functions of `TeensyStepAdvanced.h`, which are meant for programs that
+calculate the motion themselves:
+
+| Sketch | Concept |
+|---|---|
+| `GroupWaypoints` | A group passes waypoints without stopping (`advanced::GroupPath`): speed at the targets, next move from the arrival function |
 
 ## Sketches of version 2
 
@@ -31,4 +39,4 @@ controllers.
 ## The classes
 
 The API is documented in the headers: `src/api/Stepper.h`, `src/api/StepperGroup.h`, `src/core/errorCode.h`,
-and `src/api/Legacy.h` for the version 2 controllers.
+`src/api/GroupPath.h` for the advanced functions, and `src/api/Legacy.h` for the version 2 controllers.

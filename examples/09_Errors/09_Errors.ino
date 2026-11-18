@@ -1,5 +1,5 @@
 /*==========================================================================
- * 10 Errors: find out when something does not work
+ * 09 Errors: find out when something does not work
  *
  * No command fails silently. Every command returns an errorCode:
  *   errorCode::OK   success

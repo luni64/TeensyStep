@@ -127,8 +127,7 @@ namespace TeensyStep
                 {
                     for (unsigned i = 0; i < count; i++)
                         if (targets[i] != m[i].target) return errorCode::notSupported;
-                    errorCode code = path.moveAbs((int32_t)length, speedAtTarget);
-                    return code != errorCode::OK ? code : limitWarning();
+                    return setSpeedAtTarget(speedAtTarget);
                 }
             }
 
@@ -156,6 +155,14 @@ namespace TeensyStep
             startPath(longest);
             if (!keep) path.setSpeed(speedAtStart);
             errorCode code = path.moveAbs((int32_t)longest, speedAtTarget);
+            return code != errorCode::OK ? code : limitWarning();
+        }
+
+        errorCode Group::setSpeedAtTarget(float speedAtTarget)
+        {
+            if (!(speedAtTarget >= 0)) return errorCode::invalidArgument;
+            if (!path.isMoving() || kind != Kind::move || passed) return errorCode::notSupported;
+            errorCode code = path.moveAbs((int32_t)length, speedAtTarget);
             return code != errorCode::OK ? code : limitWarning();
         }
 

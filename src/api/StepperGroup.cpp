@@ -122,7 +122,9 @@ namespace TeensyStep
     //--------------------------------------------------------------------------------------------------------
     // moves
 
-    errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)
+    /// A move to targets. The moves of the group stop at the targets (speedAtTarget 0) and start at the
+    /// speed the group has; advanced::GroupPath gives both speeds.
+    errorCode StepperGroup::start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)
     {
         if (n != count || count == 0) return Engine::report(errorCode::invalidArgument);
         errorCode code    = errorCode::OK;
@@ -155,78 +157,83 @@ namespace TeensyStep
         return Engine::report(code);
     }
 
-    errorCode StepperGroup::moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget, float speedAtStart)
-    {
-        return moveAbsAsync(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);
-    }
-
-    errorCode StepperGroup::moveAsync(float speedAtTarget)
-    {
-        int32_t targets[maxMembers];
-        for (unsigned i = 0; i < count; i++) targets[i] = motors[i]->hasTarget ? motors[i]->target : motors[i]->getPosition();
-        return moveAbsAsync(targets, count, speedAtTarget);
-    }
-
-    errorCode StepperGroup::moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart)
+    errorCode StepperGroup::startRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart)
     {
         if (n != count || count == 0) return Engine::report(errorCode::invalidArgument);
         int32_t targets[maxMembers];
         for (unsigned i = 0; i < count; i++) targets[i] = (int32_t)((uint32_t)motors[i]->getPosition() + (uint32_t)distances[i]);
-        return moveAbsAsync(targets, count, speedAtTarget, speedAtStart);
+        return start(targets, count, speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget, float speedAtStart)
+    errorCode StepperGroup::changeSpeedAtTarget(float speedAtTarget)
     {
-        return moveRelAsync(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);
+        errorCode code = errorCode::notSupported; // if the group is not moving
+        {
+            Lock lock;
+            int ch = runningChannel();
+            if (ch >= 0 && !Engine::channels[ch].ending) code = Engine::channels[ch].group.setSpeedAtTarget(speedAtTarget);
+        }
+        return Engine::report(code);
     }
 
-    /// The reached targets of the group so far; they are counted on its first member.
-    uint32_t StepperGroup::arrivals() const
+    errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n)
     {
-        return count > 0 ? motors[0]->arrivals : 0;
+        return start(targets, n, 0, core::Group::keepSpeed);
     }
 
-    /// Waits for the end of a blocking move: until the group stands still or, with a speed at the target,
-    /// until the targets are reported as reached.
-    void StepperGroup::waitForArrival(uint32_t arrivalsBefore, float speedAtTarget)
+    errorCode StepperGroup::moveAbsAsync(std::initializer_list<int32_t> targets)
     {
-        if (speedAtTarget == 0.0f)
+        return moveAbsAsync(targets.begin(), (unsigned)targets.size());
+    }
+
+    errorCode StepperGroup::moveAsync()
+    {
+        int32_t targets[maxMembers];
+        for (unsigned i = 0; i < count; i++) targets[i] = motors[i]->hasTarget ? motors[i]->target : motors[i]->getPosition();
+        return moveAbsAsync(targets, count);
+    }
+
+    errorCode StepperGroup::moveRelAsync(const int32_t* distances, unsigned n)
+    {
+        return startRel(distances, n, 0, core::Group::keepSpeed);
+    }
+
+    errorCode StepperGroup::moveRelAsync(std::initializer_list<int32_t> distances)
+    {
+        return moveRelAsync(distances.begin(), (unsigned)distances.size());
+    }
+
+    errorCode StepperGroup::moveRel(const int32_t* distances, unsigned n)
+    {
+        errorCode code = moveRelAsync(distances, n);
+        if (!isError(code))
             while (isMoving()) backend::idle();
-        else
-            while (isMoving() && arrivals() == arrivalsBefore) backend::idle();
-    }
-
-    errorCode StepperGroup::moveRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart)
-    {
-        uint32_t before = arrivals();
-        errorCode code  = moveRelAsync(distances, n, speedAtTarget, speedAtStart);
-        if (!isError(code)) waitForArrival(before, speedAtTarget);
         return code;
     }
 
-    errorCode StepperGroup::moveRel(std::initializer_list<int32_t> distances, float speedAtTarget, float speedAtStart)
+    errorCode StepperGroup::moveRel(std::initializer_list<int32_t> distances)
     {
-        return moveRel(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);
+        return moveRel(distances.begin(), (unsigned)distances.size());
     }
 
-    errorCode StepperGroup::moveAbs(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)
+    errorCode StepperGroup::moveAbs(const int32_t* targets, unsigned n)
     {
-        uint32_t before = arrivals();
-        errorCode code  = moveAbsAsync(targets, n, speedAtTarget, speedAtStart);
-        if (!isError(code)) waitForArrival(before, speedAtTarget);
+        errorCode code = moveAbsAsync(targets, n);
+        if (!isError(code))
+            while (isMoving()) backend::idle();
         return code;
     }
 
-    errorCode StepperGroup::moveAbs(std::initializer_list<int32_t> targets, float speedAtTarget, float speedAtStart)
+    errorCode StepperGroup::moveAbs(std::initializer_list<int32_t> targets)
     {
-        return moveAbs(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);
+        return moveAbs(targets.begin(), (unsigned)targets.size());
     }
 
-    errorCode StepperGroup::move(float speedAtTarget)
+    errorCode StepperGroup::move()
     {
-        uint32_t before = arrivals();
-        errorCode code  = moveAsync(speedAtTarget);
-        if (!isError(code)) waitForArrival(before, speedAtTarget);
+        errorCode code = moveAsync();
+        if (!isError(code))
+            while (isMoving()) backend::idle();
         return code;
     }
 

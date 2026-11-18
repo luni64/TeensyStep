@@ -1,5 +1,5 @@
 /*==========================================================================
- * 09 Homing: find a reference switch and define the position there
+ * 08 Homing: find a reference switch and define the position there
  *
  * The motor runs slowly towards the reference switch on pin 8. The switch
  * triggers an interrupt that stops the motor at once (emergencyStop() does

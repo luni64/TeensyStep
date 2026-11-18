@@ -410,6 +410,32 @@ TEST_CASE("group segments: the speed at the target of the running segment can be
         CHECK(speedAtArrival(r) == approx(8'000).epsilon(0.0001));
         checkOnLine(r);
     }
+    SUBCASE("with the function for it, which is refused when the group is not on its way")
+    {
+        Group g = makeGroup({{0, fast}, {0, fast}});
+        CHECK(g.setSpeedAtTarget(1'000) == errorCode::notSupported); // standing
+        g.moveAbs(b.data());
+        runMove(g, a, b, lim, 25'000);
+        CHECK(g.setSpeedAtTarget(-1) == errorCode::invalidArgument);
+        CHECK(g.setSpeedAtTarget(8'000) == errorCode::OK);
+        GroupRun r = runMove(g, a, b, lim, 20'000'000, -1, true);
+        CHECK(positions(g) == b);
+        CHECK(speedAtArrival(r) == approx(8'000).epsilon(0.0001));
+        CHECK(g.setSpeedAtTarget(1'000) == errorCode::notSupported); // the targets are passed
+        runMove(g, a, b, lim, 2'000);
+        CHECK(g.lead().speed() == approx(8'000).epsilon(0.0001));
+        float speeds[] = {100, 100};
+        g.emergencyStop();
+        g.rotate(speeds); // a group that has passed targets before, and now rotates
+        CHECK(g.setSpeedAtTarget(1'000) == errorCode::notSupported);
+        CHECK(g.moveAbs(a.data()) == errorCode::notSupported);
+        CHECK(g.moveAbs(b.data(), 500) == errorCode::notSupported);
+
+        Group fresh = makeGroup({{0, fast}, {0, fast}});
+        fresh.rotate(speeds);
+        CHECK(fresh.setSpeedAtTarget(1'000) == errorCode::notSupported);
+        CHECK(fresh.moveAbs(a.data()) == errorCode::notSupported);
+    }
     SUBCASE("too late to reach it: reported")
     {
         Group g = makeGroup({{0, fast}, {0, fast}});

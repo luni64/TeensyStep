@@ -82,61 +82,53 @@ errors:
 
 | Code | |
 |---|---|
-| `invalidArgument` | the number of targets is not the number of members, the group is empty, or a speed is negative |
+| `invalidArgument` | the number of targets is not the number of members, or the group is empty |
 | `motorBusy` | a member is moving on its own or in another group |
-| `notSupported` | the group is on its way to other targets, or it rotates |
+| `notSupported` | the group is moving: new targets are accepted when it stands still |
 | `noTimer` | no hardware timer is free |
 
-Possible warnings: `speedLimited`, `accelerationLimited` (the members allow less than the group asks
-for) and `targetSpeedNotReached` (the way is too short for the speed at the targets).
+Possible warnings: `speedLimited` and `accelerationLimited`, if the members allow less than the group
+asks for.
+
+A group always stops at its targets. For moves that follow each other without a stop see
+[Paths of a group](../advanced/group-paths.md).
 
 ### moveAbsAsync(), moveAbs()
 
 ```cpp
-errorCode moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveAbs(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveAbs(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
+errorCode moveAbsAsync(std::initializer_list<int32_t> targets);
+errorCode moveAbsAsync(const int32_t* targets, unsigned n);
+errorCode moveAbs(std::initializer_list<int32_t> targets);
+errorCode moveAbs(const int32_t* targets, unsigned n);
 ```
 
-Moves the members on a straight line to the positions `targets`. `moveAbsAsync()` returns at once;
-`moveAbs()` returns when the group stands still at its targets or, with a speed at the targets, when it
-passes them.
-
-| Parameter | |
-|---|---|
-| `targets` | the positions, in the order of the members, as a list or as an array with its length `n` |
-| `speedAtTarget` | 0 (default): stop at the targets. Otherwise: pass the targets at this speed (steps/s of the member with the longest way) and run on along the line. See [Passing targets without a stop](../groups.md#passing-targets-without-a-stop) |
-| `speedAtStart` | the speed of the group at the start of the move, for a move that follows another one. Default: the speed the group has |
+Moves the members on a straight line to the positions `targets`, given in the order of the members as a
+list or as an array with its length. `moveAbsAsync()` returns at once; `moveAbs()` returns when the group
+has arrived.
 
 ```cpp
 xyz.moveAbs({4000, 1000, -500});
 
 int32_t targets[] = {4000, 1000, -500};
 xyz.moveAbsAsync(targets, 3);
-
-xyz.moveAbsAsync({4000, 1000, -500}, 800); // pass the targets at 800 steps/s
 ```
-
-The command is accepted when the group stands still, and when it has passed targets with a speed and
-runs on. While the group is on its way, the same targets with another `speedAtTarget` are accepted.
 
 ### moveRelAsync(), moveRel()
 
 ```cpp
-errorCode moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveRel(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveRel(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
+errorCode moveRelAsync(std::initializer_list<int32_t> distances);
+errorCode moveRelAsync(const int32_t* distances, unsigned n);
+errorCode moveRel(std::initializer_list<int32_t> distances);
+errorCode moveRel(const int32_t* distances, unsigned n);
 ```
 
-Like `moveAbs`, with the targets given as distances from the positions at which the members are.
+Like `moveAbs`, with the targets given as distances from the positions at which the members stand.
 
 ### moveAsync(), move()
 
 ```cpp
-errorCode moveAsync(float speedAtTarget = 0);
-errorCode move(float speedAtTarget = 0);
+errorCode moveAsync();
+errorCode move();
 ```
 
 Moves the members to the targets they remember: those set with `Stepper::setTargetAbs()` or
@@ -213,5 +205,5 @@ The current speed of the group in steps/s: that of its fastest member. 0 when th
 void onArrival(void (*callback)());
 ```
 
-Sets a function that is called when the group has reached its targets. It is called from an interrupt
-and may give the next move of the group. `nullptr` removes it.
+Sets a function that is called when the group has reached its targets. It is called from an interrupt.
+`nullptr` removes it.

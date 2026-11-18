@@ -53,13 +53,13 @@ motor.moveAbs(50'000);        // goes on from there and stops at 50000
 
 ## Groups
 
-A group can pass its targets at a speed as well and go on to the next targets without a stop, see
-[Passing targets without a stop](groups.md#passing-targets-without-a-stop). Unlike a single motor, a group
-takes no run-up.
+The move commands of a group have no speed at the targets: a group always stops there. Moves of a group
+that follow each other without a stop are part of the advanced functions, see
+[Paths of a group](advanced/group-paths.md).
 
 ## Following a calculated path
 
 A target with a speed is also the way to let a motor follow a path that is calculated while it moves:
 a timer calculates at short intervals where the motor has to be next and how fast it moves there. Because
 the motor arrives at each point with the right speed, it runs through the points smoothly. The example
-`14_Follower` draws a rose curve this way.
+`13_Follower` draws a rose curve this way.

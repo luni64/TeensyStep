@@ -25,10 +25,10 @@ interface can still change. A migration guide follows before the release.
 - A group can have a maximum speed and an acceleration of its own (`setMaxSpeed`, `setAcceleration`,
   `setDeceleration`), given for the motor with the longest way. The settings of the motors stay the upper
   limits.
-- A group can pass its targets at a speed and go on to the next targets without a stop: the group moves
-  have an optional speed at the targets, and the next move can be given from the arrival function
-  (example `08_GroupWaypoints`). The warning `targetSpeedNotReached` reports a way that is too short for
-  the speed.
+- For motion planners and other programs that calculate a path: `TeensyStepAdvanced.h` with
+  `advanced::GroupPath`. Its moves have a speed at the targets, so that a group passes them and goes on
+  to the next targets without a stop (example `advanced/GroupWaypoints`). These functions are kept apart
+  from the standard interface.
 - Separate deceleration (`setDeceleration`), DIR setup time (`setDirSetupTime`), enable pin with on and off
   delays (`setEnablePin`).
 - Step rates down to 0.001 steps/s.
@@ -37,7 +37,7 @@ interface can still change. A migration guide follows before the release.
 - The library takes its hardware timers itself, at the start of a move, and gives them back at the end. It
   does not take a timer that makes PWM or that another library uses, and reports if none is free.
 - The motion core has no hardware access and is tested on a PC (folder `test`).
-- New examples, `01_HelloStepper` to `15_Winder`.
+- New examples, `01_HelloStepper` to `14_Winder`.
 
 **Changed**
 

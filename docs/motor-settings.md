@@ -4,7 +4,7 @@ Besides the maximum speed and the acceleration, a motor has settings that adapt 
 and its driver. All setters return the motor, so they can be chained:
 
 ```cpp
---8<-- "12_MotorSettings/12_MotorSettings.ino"
+--8<-- "11_MotorSettings/11_MotorSettings.ino"
 ```
 
 ## Motion settings

@@ -30,7 +30,7 @@ for a code.
 |---|---|---|
 | `speedLimited` | −1000 | a speed is outside the supported range, a speed at the target is above the maximum speed, or the speed of a group is above what its members allow. The limit is used |
 | `accelerationLimited` | −1001 | an acceleration is outside the supported range, or the acceleration of a group is above what its members allow. The limit is used |
-| `targetSpeedNotReached` | −1002 | the way of a group is too short for the speed at its targets. The group arrives as close to the speed as it can |
+| `targetSpeedNotReached` | −1002 | a move of a [`GroupPath`](advanced/group-paths.md) is too short for the speed at its targets. The group arrives as close to the speed as it can |
 
 ### Errors
 
@@ -39,7 +39,7 @@ for a code.
 | `invalidArgument` | 1000 | an argument is invalid, for example a group move with the wrong number of targets |
 | `motorBusy` | 1001 | the motor is moving in another group, or on its own while a group with it is started |
 | `noTimer` | 1002 | no hardware timer is free for this move, see [Timers and interrupts](advanced/timers.md) |
-| `notSupported` | 1003 | the command is not possible in this state, for example other targets for a group that is on its way, or a hardware setting during a move |
+| `notSupported` | 1003 | the command is not possible in this state, for example new targets for a moving group, or a hardware setting during a move |
 | `internal` | 1999 | inconsistent state inside the library; please report it |
 
 The values are in a range of their own, so that a printed code identifies the library.
@@ -50,7 +50,7 @@ Checking every return value is tedious, and the setters return the motor and not
 registers a function of the sketch that is called for every warning and every error:
 
 ```cpp
---8<-- "10_Errors/10_Errors.ino"
+--8<-- "09_Errors/09_Errors.ino"
 ```
 
 The error function can be called from an interrupt, when the command that caused it was given from one.

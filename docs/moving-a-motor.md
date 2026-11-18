@@ -73,7 +73,7 @@ the motor changes to the new target or speed without stopping first:
 ```
 
 The commands and getters can also be called from interrupts, for example from a timer that calculates new
-targets (example `14_Follower`).
+targets (example `13_Follower`).
 
 ## Stopping
 
@@ -97,7 +97,7 @@ position with a switch. The following sketch runs the motor slowly towards a swi
 an interrupt, which stops the motor at once; that position is then defined as 0:
 
 ```cpp
---8<-- "09_Homing/09_Homing.ino"
+--8<-- "08_Homing/08_Homing.ino"
 ```
 
 `emergencyStop()` is used here because it acts immediately and can be called from an interrupt. At the low
