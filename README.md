@@ -3,7 +3,7 @@
 Stepper motor library for PJRC Teensy boards, for drivers with STEP and DIR inputs.
 
 **This branch (`develop`) holds the next major version of TeensyStep. It is work in progress:** the
-interface can still change, and it runs on Teensy 4.x only so far. The released version is 2.3.4 on the
+interface can still change. It runs on Teensy 4.x and on Teensy 3.5 and 3.6. The released version is 2.3.4 on the
 branch [`master`](https://github.com/luni64/TeensyStep/tree/master); its documentation is at
 [luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/).
 
@@ -61,7 +61,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 | Board | State |
 |---|---|
 | Teensy 4.0, 4.1, MicroMod | Works. Up to 16 motors or groups move independently at the same time, each on one channel of the QuadTimers (TMR1 to TMR4). A timer that makes PWM or that another library uses is not taken. |
-| Teensy 3.5, 3.6 | Not yet. The library compiles, and every move command returns `noTimer`. Use version 2.3.4 on these boards for now. |
+| Teensy 3.5, 3.6 | Works (first version; tested on a Teensy 3.6, built for the 3.5). Up to 16 motors or groups at the same time, each on one channel of the FlexTimers (FTM0 to FTM3). PWM on the other pins keeps working, and the interval timers stay free for the sketch. |
 | Teensy 3.0, 3.1, 3.2, LC | Not supported by the new version: the library calculates in floating point, and these boards have no floating point unit. The library compiles, and every move command returns `noTimer`. Use version 2.3.4. |
 | STM32 | Not supported by the new version. Use version 2.3.x. |
 
@@ -71,7 +71,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 |---|---|
 | `src/api/` | The classes a sketch uses: `Stepper`, `StepperGroup`, `ErrorHandler`; `GroupPath.h`: the advanced functions; `Legacy.h`: the controllers of version 2 |
 | `src/core/` | Motion core: `Axis` (one motor), `Group` (motors moving synchronized), `errorCode`. No hardware access; it compiles on a PC and on the boards |
-| `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `host/`: simulated backend for the PC tests. `none/`: placeholder for boards without a backend |
+| `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `teensy3/`: Teensy 3.5, 3.6. `host/`: simulated backend for the PC tests. `none/`: placeholder for boards without a backend |
 | `examples/` | Example sketches; `examples/advanced/`: the advanced functions; `examples/version2/`: unchanged examples of version 2 |
 | `test/` | Tests that run on a PC: the core directly, and the API on the simulated backend |
 | `docs/`, `mkdocs.yml` | The manual (draft), for MkDocs Material. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |

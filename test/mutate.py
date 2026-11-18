@@ -46,6 +46,12 @@ AXIS = [
     ("passed part of the period not counted", "pendDone = p.dir == dirBefore ? doneBefore : 0.0f;", "pendDone = p.dir == dirBefore ? 0.0f * doneBefore : 0.0f;"),
     ("passed part counted after a reversal", "pendDone = p.dir == dirBefore ? doneBefore : 0.0f;", "pendDone = p.dir == dirBefore ? doneBefore : doneBefore;"),
     ("maximum delay not applied", "if (rest <= maxDelay)", "if (rest <= maxDelay || true)"),
+    ("coast: one step too far into the deceleration", "int64_t first   = braking + 1 > 2 ? braking + 1 : 2;", "int64_t first   = braking > 2 ? braking : 2;"),
+    ("coast: the arriving step handed out without a decision", "int64_t first   = braking + 1 > 2 ? braking + 1 : 2;", "int64_t first   = braking + 1;"),
+    ("coast: goes on after a command", "if (coastLeft > 0 && coastVersion == version) // the same step as the one before", "if (coastLeft > 0) // the same step as the one before"),
+    ("coast: periods in pieces handed out whole", "coastLeft    = constant && coastEnabled && pendPieces == 1 && pendDone == 0.0f", "coastLeft    = constant && coastEnabled && pendDone == 0.0f"),
+    ("coast: never used", "coastLeft    = constant && coastEnabled && pendPieces == 1", "coastLeft    = constant && false && pendPieces == 1"),
+    ("coast: a new maximum delay not noticed", "maxDelay = seconds >= 0.00001f ? seconds : 0.00001f;\n            version++;", "maxDelay = seconds >= 0.00001f ? seconds : 0.00001f;"),
     ("given speeds not kept exactly", "if (wNew == wMax) return vMax;", ""),
 ]
 

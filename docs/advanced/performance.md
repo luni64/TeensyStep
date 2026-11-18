@@ -54,3 +54,27 @@ steps for every four of the lead motor therefore makes its steps after one, one 
 lead motor: its speed is right on average, but its steps are not evenly spaced. The position of the
 follower is never more than half a step off the line. The effect is the same as in version 2 and in
 other libraries that distribute the steps with Bresenham's line algorithm.
+
+## Teensy 3.6
+
+Measured in the same way on a Teensy 3.6 at 180 MHz (first version of its backend):
+
+| | Step pulse 1.5 µs | Step pulse 5 µs (default) |
+|---|---|---|
+| One motor, 50,000 steps/s | 11 % | 14 % |
+| One motor, 100,000 steps/s | 23 % | 28 % |
+| Three motors as a group, 100,000 steps/s | 30 % | not measured |
+| Four motors as a group, 75,000 steps/s | 25 % | not measured |
+| Four independent motors, 40,000 steps/s each | 36 % | not measured |
+
+A step pulse of up to 2 µs is ended in the interrupt that started it. A longer pulse needs a second
+interrupt for its end, which costs about 0.6 µs per step: if the driver allows it, a shorter pulse
+(`setPulseWidth()`) lowers the load. Version 2.3.4 needs 21 % for one motor at 100,000 steps/s on this
+board.
+
+The step signal of one motor at 100,000 steps/s has a period of 10.000 µs (9.87 to 10.12 µs), measured
+with a logic analyzer.
+
+On this board a sketch must not ask for more steps per second than the processor can make (in total about
+300,000 with short pulses): the interrupts then take all processor time, and the board no longer answers
+on USB until it is reset.

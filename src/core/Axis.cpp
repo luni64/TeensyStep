@@ -1,4 +1,5 @@
 #include "Axis.h"
+#include "Hot.h"
 #include <cmath>
 
 namespace TeensyStep
@@ -103,6 +104,7 @@ namespace TeensyStep
         void Axis::setMaxDelay(float seconds)
         {
             maxDelay = seconds >= 0.00001f ? seconds : 0.00001f;
+            version++;
         }
 
         //------------------------------------------------------------------------------------------------
@@ -188,7 +190,7 @@ namespace TeensyStep
             version++;
         }
 
-        void Axis::standStill()
+        TEENSYSTEP_HOT void Axis::standStill()
         {
             w     = 0;
             sigma = 0;
@@ -198,8 +200,18 @@ namespace TeensyStep
         //------------------------------------------------------------------------------------------------
         // the next event
 
-        bool Axis::next(StepEvent& event)
+        TEENSYSTEP_HOT bool Axis::next(StepEvent& event)
         {
+            if (coastLeft > 0 && coastVersion == version) // the same step as the one before
+            {
+                coastLeft--;
+                x             = (int32_t)((uint32_t)x + (uint32_t)(int32_t)sigma);
+                event.delay   = delay;
+                event.dir     = sigma;
+                event.arrived = false;
+                return true;
+            }
+
             if (pending && pendVersion != version)
             {
                 // A command or a limit changed while the step was waiting: decide again. The part of the
@@ -251,7 +263,7 @@ namespace TeensyStep
 
         /// The speed for a squared speed. The speeds given by the sketch are returned as given, not as the
         /// root of their rounded square, so that they are kept exactly also at very low speeds.
-        float Axis::speedOf(int64_t wNew) const
+        TEENSYSTEP_HOT float Axis::speedOf(int64_t wNew) const
         {
             if (wNew == 0) return 0.0f;
             if (wNew == wMax) return vMax;
@@ -263,11 +275,12 @@ namespace TeensyStep
         /// Decides the next step and plans the events of its period. doneBefore is the part of a period that
         /// has already passed for a step in direction dirBefore (0: none).
         /// @return false if there is no step to make; the axis then stands still and is idle
-        bool Axis::decide(float doneBefore, int8_t dirBefore)
+        TEENSYSTEP_HOT bool Axis::decide(float doneBefore, int8_t dirBefore)
         {
             for (int i = 0; i < 4; i++) // a halt is followed by a new decision; never more than two in a row
             {
-                Plan p = mode == Mode::position ? planPosition()
+                headingRho = -1;
+                Plan p     = mode == Mode::position ? planPosition()
                          : mode == Mode::velocity ? planVelocity()
                                                   : Plan{Plan::idle, 0, 0, false, false};
                 if (p.kind == Plan::idle)
@@ -283,7 +296,8 @@ namespace TeensyStep
                 }
 
                 float vNew, period;
-                if (p.w == w && p.dir == sigma) // constant speed: same period as for the last step
+                bool constant = p.w == w && p.dir == sigma;
+                if (constant) // constant speed: same period as for the last step
                 {
                     vNew = vCur;
                     if (wDelay != w)
@@ -354,14 +368,32 @@ namespace TeensyStep
                 pendLeft    = pendPieces;
                 pendVersion = version;
                 pending     = true;
+
+                coastLeft    = constant && coastEnabled && pendPieces == 1 && pendDone == 0.0f && !p.arrived && !p.thenStop ? constantSteps() : 0;
+                coastVersion = version;
                 return true;
             }
             emergencyStop(); // not reachable
             return false;
         }
 
+        /// The number of steps after the step decided last, which keeps the speed, that will be decided like it.
+        TEENSYSTEP_HOT int32_t Axis::constantSteps() const
+        {
+            constexpr int32_t forever = 0x40000000;
+            if (mode == Mode::velocity) return forever; // the speed is reached: nothing changes any more
+            if (mode != Mode::position || headingRho < 0) return 0;
+
+            // Towards a point: the speed is kept as long as the steps that are left after a step suffice to
+            // get down to `floor`. The step that reaches the point is always decided.
+            int64_t braking = w > headingFloor ? (w - headingFloor + twoD - 1) / twoD : 0; // steps needed for that
+            int64_t first   = braking + 1 > 2 ? braking + 1 : 2;                 // smallest rho of a step like p
+            int64_t n       = headingRho - first;
+            return n <= 0 ? 0 : n < forever ? (int32_t)n : forever;
+        }
+
         /// The squared speed after one more step when the axis goes as fast as it may, up to `limit`.
-        int64_t Axis::faster(int64_t limit) const
+        TEENSYSTEP_HOT int64_t Axis::faster(int64_t limit) const
         {
             if (w > limit) // too fast (the limit was lowered): slow down
             {
@@ -376,7 +408,7 @@ namespace TeensyStep
         //------------------------------------------------------------------------------------------------
         // velocity mode: reach the speed sG * sqrt(wG) and keep it
 
-        Axis::Plan Axis::planVelocity()
+        TEENSYSTEP_HOT Axis::Plan Axis::planVelocity()
         {
             int64_t limit = wG < wMax ? wG : wMax;
             if (sigma == 0)
@@ -392,7 +424,7 @@ namespace TeensyStep
         //------------------------------------------------------------------------------------------------
         // position mode
 
-        Axis::Plan Axis::planPosition()
+        TEENSYSTEP_HOT Axis::Plan Axis::planPosition()
         {
             if (sT == 0) return approachStop(xT, true);
 
@@ -412,7 +444,7 @@ namespace TeensyStep
         }
 
         /// Can the axis, moving towards a target in rho steps, have the squared speed wTe there?
-        bool Axis::feasible(int64_t w0, int64_t rho, int64_t wTe) const
+        TEENSYSTEP_HOT bool Axis::feasible(int64_t w0, int64_t rho, int64_t wTe) const
         {
             int64_t arrive = wTe > wPull - twoD ? wTe : wPull - twoD; // see stepToMovingTarget
             bool slowEnough = w0 <= wPull || w0 - timesTwoD(rho) <= arrive;
@@ -431,7 +463,7 @@ namespace TeensyStep
         }
 
         /// One step towards a target that is passed with the squared speed wTe; rho steps are left.
-        Axis::Plan Axis::stepToMovingTarget(int64_t rho, int64_t wTe)
+        TEENSYSTEP_HOT Axis::Plan Axis::stepToMovingTarget(int64_t rho, int64_t wTe)
         {
             // After this step, rho - 1 steps remain, each of which can take 2d off the squared speed. The
             // last one may also drop from the pull-in speed to any lower speed.
@@ -440,12 +472,14 @@ namespace TeensyStep
             int64_t wNew   = faster(wMax);
             if (wNew > cap) wNew = cap;
             if (rho == 1) wNew = wTe;
+            headingRho   = rho;
+            headingFloor = arrive;
             return {Plan::step, sT, wNew, rho == 1, false};
         }
 
         /// One step towards a target whose speed cannot be reached on the way that is left, for an axis
         /// without a run-up: it gets as close to the speed as its limits allow.
-        Axis::Plan Axis::stepWithoutRunUp(int64_t rho, int64_t wTe)
+        TEENSYSTEP_HOT Axis::Plan Axis::stepWithoutRunUp(int64_t rho, int64_t wTe)
         {
             int64_t wNew;
             if (w > wTe) // too fast: decelerate all the way
@@ -462,14 +496,14 @@ namespace TeensyStep
         }
 
         /// Can the axis, moving towards a point in rho steps, stand still there?
-        bool Axis::canStopIn(int64_t rho) const
+        TEENSYSTEP_HOT bool Axis::canStopIn(int64_t rho) const
         {
             return w <= wPull || w - timesTwoD(rho) <= wPull;
         }
 
         /// One step towards the point p, where the axis shall stand still: the commanded target (isMain) or
         /// the start of a run-up. If the axis moves away from p or is too fast to stop there, it brakes first.
-        Axis::Plan Axis::approachStop(int32_t p, bool isMain)
+        TEENSYSTEP_HOT Axis::Plan Axis::approachStop(int32_t p, bool isMain)
         {
             int64_t q  = diff(p, x);
             int8_t dir = sigma;
@@ -486,6 +520,8 @@ namespace TeensyStep
                 int64_t cap  = wPull + timesTwoD(rho - 1);
                 int64_t wNew = faster(wMax);
                 if (wNew > cap) wNew = cap;
+                headingRho   = rho;
+                headingFloor = wPull;
                 return {Plan::step, dir, wNew, isMain && rho == 1, rho == 1};
             }
 
@@ -501,7 +537,7 @@ namespace TeensyStep
         }
 
         /// Decelerates: one step slower, or standstill once the axis is slow enough.
-        Axis::Plan Axis::brake()
+        TEENSYSTEP_HOT Axis::Plan Axis::brake()
         {
             // Standstill from the pull-in speed, or when the braking distance is below half a step.
             if (w <= wPull || 2 * w <= twoD) return {Plan::halt, 0, 0, false, false};

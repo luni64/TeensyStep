@@ -60,6 +60,5 @@ Up to the pull-in speed a motor starts, stops and reverses without a ramp.
 - Groups cannot pass a target at a speed; a group stops at its targets.
 - The targets of a group cannot be changed while it moves.
 - The timers the library may use cannot be selected by the sketch yet.
-- Teensy 3.5 and 3.6: no motor moves yet. Use version 2.3.4.
 - Teensy 3.0 to 3.2 and LC: not supported, because these boards have no floating point unit. Use
   version 2.3.4.

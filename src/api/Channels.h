@@ -30,6 +30,7 @@ namespace TeensyStep
 
             // enable signals of the drivers
             float startDelay = 0; // seconds still to wait before the first step, while the drivers switch on
+            bool starting    = false; // startDelay > 0 (kept apart, so that the interrupt needs no floating point to see it)
             float offDelay   = 0; // seconds the drivers stay on after the move
             float offLeft    = 0; // remaining seconds of that time
 

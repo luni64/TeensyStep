@@ -172,6 +172,16 @@ namespace TeensyStep
             int64_t timesTwoD(int64_t n) const { return n > maxStepsD ? ((int64_t)1 << 61) : n * twoD; }
             bool separateDeceleration = false;
             bool runUp                = true;
+
+            // Steps at constant speed. When a step is decided that does not change the speed, the number of
+            // steps after it that would be decided in exactly the same way is known. next() hands them out
+            // without deciding them, as long as no command and no limit changes (`version`).
+            int32_t constantSteps() const;
+            int64_t headingRho   = -1; // of the step decided last: steps to the point the axis is heading for, this one included; -1: not known
+            int64_t headingFloor = 0;  // squared speed from which the axis may get to that point without a further ramp
+            int32_t coastLeft     = 0;    // steps that can still be handed out this way
+            uint32_t coastVersion = 0;    // valid for this version
+            bool coastEnabled     = true; // false: every step is decided (for the tests)
         };
     }
 }

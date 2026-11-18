@@ -1,4 +1,5 @@
 #include "Channels.h"
+#include "../core/Hot.h"
 #include "Stepper.h"
 
 namespace TeensyStep
@@ -100,6 +101,7 @@ namespace TeensyStep
                 c.startDelay = largest(c.startDelay, s->onDelay); // also if another motor has just switched the shared signal on
                 if (enableUse[s->enablePin]++ == 0) backend::setPin(s->enablePin, s->enableActiveHigh);
             }
+            c.starting = c.startDelay > 0;
 
             if (isGroup)
             {
@@ -174,6 +176,7 @@ namespace TeensyStep
             c.ending     = true;
             c.offLeft    = c.offDelay;
             c.startDelay = 0;
+            c.starting   = false;
 
             backend::ChannelSetup setup;
             setup.motors     = c.pins;
@@ -189,21 +192,22 @@ namespace TeensyStep
         //----------------------------------------------------------------------------------------------------
         // called by the backend
 
-        bool Engine::fetch(unsigned ch, backend::Event& event)
+        TEENSYSTEP_HOT bool Engine::fetch(unsigned ch, backend::Event& event)
         {
             Channel& c = channels[ch];
             if (!c.used) return false;
-            float maxDelay = backend::maxDelay();
-            event.stepMask = 0;
-            event.dirMask  = 0;
-            event.arrived  = false;
 
             if (!c.ending)
             {
-                if (c.startDelay > 0) // the drivers are switching on
+                if (c.starting) // the drivers are switching on
                 {
-                    event.delay = c.startDelay < maxDelay ? c.startDelay : maxDelay;
+                    float maxDelay = backend::maxDelay();
+                    event.stepMask = 0;
+                    event.dirMask  = 0;
+                    event.arrived  = false;
+                    event.delay    = c.startDelay < maxDelay ? c.startDelay : maxDelay;
                     c.startDelay -= event.delay;
+                    c.starting = c.startDelay > 0;
                     return true;
                 }
                 bool more;
@@ -236,8 +240,12 @@ namespace TeensyStep
                 c.offLeft = c.offDelay;
             }
 
+            event.stepMask = 0;
+            event.dirMask  = 0;
+            event.arrived  = false;
             if (c.offLeft > 0) // the drivers stay on for a while
             {
+                float maxDelay = backend::maxDelay();
                 event.delay = c.offLeft < maxDelay ? c.offLeft : maxDelay;
                 c.offLeft -= event.delay;
                 if (c.offLeft < 1e-7f) c.offLeft = 0;
@@ -266,7 +274,7 @@ namespace TeensyStep
         }
     }
 
-    bool backend::fetch(unsigned channel, Event& event) { return detail::Engine::fetch(channel, event); }
+    TEENSYSTEP_HOT bool backend::fetch(unsigned channel, Event& event) { return detail::Engine::fetch(channel, event); }
     void backend::arrived(unsigned channel) { detail::Engine::arrived(channel); }
     void backend::finished(unsigned channel) { detail::Engine::finished(channel); }
 }

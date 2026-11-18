@@ -16,6 +16,9 @@ longest way. A group of 16 motors therefore needs as little as a single motor.
 
 ## Which timers
 
+This and the following sections describe Teensy 4.x; for Teensy 3.5 and 3.6 see
+[the last section](#teensy-35-and-36).
+
 The library uses the channels of the four QuadTimers (1) of the processor, TMR1 to TMR4, with four
 channels each: 16 timers. It does not use the interval timers (PIT, the timers behind `IntervalTimer`),
 the GPT timers or the FlexPWM timers; they stay available to the sketch.
@@ -88,3 +91,38 @@ The library disables the interrupts for a few microseconds while a command chang
 
 When a move ends, the library puts all registers of the timer channel back to the values it found, so
 that the channel can make PWM again afterwards.
+
+## Teensy 3.5 and 3.6
+
+On these boards the library uses the channels of the four FlexTimers (1), FTM0 to FTM3: 20 channels, of
+which up to 16 can be in use at the same time. The interval timers (PIT, the timers behind
+`IntervalTimer`) are not used and stay available to the sketch.
+{ .annotate }
+
+1.  **FlexTimer**
+
+    A timer of the Kinetis processors with one 16-bit counter and several channels. The Teensy core uses
+    the FlexTimers for PWM (`analogWrite()`): every PWM pin belongs to one channel.
+
+All channels of a FlexTimer share one counter, and the core sets this counter up for PWM when the board
+starts. The library does not change the counter. It switches a channel that is not needed for PWM to a
+compare function without a pin and uses the interrupt of that channel. Therefore:
+
+- **PWM keeps working** on the other pins of the same timer, with unchanged frequency and duty cycle.
+- A channel is not taken while its pin makes PWM. A channel that belongs to a pin of the motor itself is
+  taken first, since nothing else can need it.
+- A timer whose PWM frequency was raised with `analogWriteFrequency()` so far that its counter runs around
+  in less than 1.2 ms (above about 830 Hz) is not used for motors. With the default frequency of 488 Hz
+  all four timers can be used. Do not change the PWM frequency of a timer while motors use it.
+- A timer that counts an encoder (quadrature mode), and a timer whose interrupt another library uses, is
+  left alone. So is a channel that another library has set to a mode of its own.
+- When a move ends, the channel is set back to what it was.
+
+If no channel is free, the move command returns `noTimer`.
+
+| Timer | Channels | PWM pins |
+|---|---|---|
+| FTM0 | 8 | 22, 23, 9, 10, 6, 20, 21, 5 |
+| FTM1 | 2 | 3, 4 |
+| FTM2 | 2 | 29, 30 |
+| FTM3 | 8 | 2, 14, 7, 8, 35, 36, 37, 38 |

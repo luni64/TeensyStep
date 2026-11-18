@@ -22,9 +22,9 @@ The library offers
 
 !!! warning "Draft for a development version"
     This manual describes the next major version of TeensyStep, which is under development on the branch
-    `develop`. Functions can still change. It runs on **Teensy 4.0, 4.1 and MicroMod**. Teensy 3.5
-    and 3.6 are planned; Teensy 3.0 to 3.2 and LC will not be supported. On all of these the library
-    compiles, but no motor moves: use version 2.3.4 there. Sketches written for version 2
+    `develop`. Functions can still change. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
+    **Teensy 3.5 and 3.6**. Teensy 3.0 to 3.2 and LC are not supported: the library compiles there, but
+    no motor moves; use version 2.3.4 on these boards. Sketches written for version 2
     still compile, see [Upgrading from version 2](upgrading.md).
 
 ## Installation

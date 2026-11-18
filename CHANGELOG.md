@@ -13,6 +13,9 @@ interface can still change. A migration guide follows before the release.
 **New**
 
 - Teensy 4.0, 4.1 and MicroMod are supported. Up to 16 motors or groups move independently at the same time.
+- Teensy 3.5 and 3.6: up to 16 motors or groups move independently at the same time (version 2: four
+  controllers). The library no longer takes the interval timers, and PWM on the pins of the timers it uses
+  keeps working.
 - The commands are member functions of the motor and of the group: `moveAbs`, `moveRel`, `rotateAsync`, `stop`,
   `emergencyStop`, each move command in a blocking and a non-blocking (`Async`) form. Controller objects are
   no longer needed.
@@ -47,11 +50,6 @@ interface can still change. A migration guide follows before the release.
 - `StepControl` and `RotateControl` are deprecated wrappers on the new commands. The examples of version 2
   are in `examples/version2`.
 - `setPullInOutSpeed()` is deprecated: use `setPullInSpeed()`.
-
-**Not yet in this version**
-
-- Teensy 3.5 and 3.6: the library compiles, and every move command returns `noTimer`. Use version 2.3.4 on
-  these boards for now.
 
 **Removed**
 

@@ -1,4 +1,5 @@
 #include "Group.h"
+#include "Hot.h"
 #include <cmath>
 
 namespace TeensyStep
@@ -228,7 +229,7 @@ namespace TeensyStep
         //------------------------------------------------------------------------------------------------
         // events
 
-        bool Group::next(GroupEvent& event)
+        TEENSYSTEP_HOT bool Group::next(GroupEvent& event)
         {
             StepEvent e;
             if (!path.next(e)) return false;
@@ -246,32 +247,35 @@ namespace TeensyStep
             // Each member keeps `err` = share * path position + length / 2, modulo length. Whenever it passes
             // a multiple of length, the member has moved one more step along the line; it then steps. Going
             // backwards undoes exactly what going forwards did, so the members retrace the same positions.
-            uint16_t mask = 0;
+            uint32_t mask      = 0;
+            const uint32_t len = length;
+            const unsigned n   = count;
             if (e.dir > 0)
             {
-                for (unsigned i = 0; i < count; i++)
+                for (unsigned i = 0; i < n; i++)
                 {
-                    Member& mem = m[i];
-                    mem.err += mem.share;
-                    if (mem.err >= length)
+                    Member& mem  = m[i];
+                    uint32_t err = mem.err + mem.share;
+                    if (err >= len)
                     {
-                        mem.err -= length;
+                        err -= len;
                         mem.pos = (int32_t)((uint32_t)mem.pos + (uint32_t)(int32_t)mem.dir);
-                        mask |= (uint16_t)(1u << i);
+                        mask |= 1u << i;
                     }
+                    mem.err = err;
                 }
                 event.dirMask = forward;
             }
             else
             {
-                for (unsigned i = 0; i < count; i++)
+                for (unsigned i = 0; i < n; i++)
                 {
                     Member& mem = m[i];
                     if (mem.err < mem.share)
                     {
-                        mem.err += length - mem.share;
+                        mem.err += len - mem.share;
                         mem.pos = (int32_t)((uint32_t)mem.pos - (uint32_t)(int32_t)mem.dir);
-                        mask |= (uint16_t)(1u << i);
+                        mask |= 1u << i;
                     }
                     else
                     {
@@ -280,7 +284,7 @@ namespace TeensyStep
                 }
                 event.dirMask = (uint16_t)(~forward & all);
             }
-            event.stepMask = mask;
+            event.stepMask = (uint16_t)mask;
             lastDirs       = event.dirMask;
             return true;
         }

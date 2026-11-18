@@ -5,9 +5,8 @@ and groups, and the controller objects of version 2 are no longer needed. Existi
 keep working, because the controllers are still there as thin wrappers on the new commands.
 
 !!! warning "Boards"
-    The new version runs on Teensy 4.0, 4.1 and MicroMod only so far. Teensy 3.5 and 3.6 are planned:
-    stay with version 2.3.4 for now. Teensy 3.0 to 3.2, LC and STM32 are not supported by the new
-    version (1); version 2.3.4 remains available for them.
+    The new version runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Teensy 3.0 to 3.2,
+    LC and STM32 are not supported by the new version (1); version 2.3.4 remains available for them.
     { .annotate }
 
     1.  **Why not**
