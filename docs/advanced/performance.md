@@ -11,16 +11,30 @@ load is the share of loop iterations that is lost.
 
 | Step rate | One motor | Group of three motors |
 |---:|:---:|:---:|
-| 10,000 steps/s | 4 % | 4 % |
-| 50,000 steps/s | 9 % | 11 % |
-| 100,000 steps/s | 16 % | 18 % |
-| 200,000 steps/s | 29 % | 34 % |
-| 300,000 steps/s | 43 % | 50 % |
+| 10,000 steps/s | below 1 % | below 1 % |
+| 50,000 steps/s | 3 % | 4 % |
+| 100,000 steps/s | 8 % | 11 % |
+| 200,000 steps/s | 19 % | 24 % |
+| 300,000 steps/s | 31 % | 37 % |
 
 In the group, the first motor runs at the stated rate, the second at half and the third at a third of it.
+The values hold for motors at constant speed with a step pulse of 1.5 µs; while a motor accelerates or
+decelerates, a step costs about 0.5 µs more.
 
-The load rises in proportion to the step rate: a step costs about 1.5 µs of processor time. The followers
-of a group add little, because they are stepped in the interrupt of the lead motor.
+The load rises in proportion to the step rate: a step costs about 1 µs of processor time. The followers
+of a group add little, because they are stepped in the interrupt of the lead motor. Four motors that run
+independently at 75,000 steps/s each load the processor by 39 %.
+
+!!! warning "Step rates that are too high stop the sketch"
+    The step pulses are made in interrupts, which come before everything else the sketch does. If the
+    motors together ask for more steps per second than the processor can make, the interrupts take all
+    processor time: `loop()` no longer runs, and the board no longer answers on USB until it is reset
+    with its button. The library does not prevent this.
+
+    How many steps per second are possible depends on the board, on the number of motors that move at
+    the same time, on the width of the step pulse, and on the time the sketch itself spends in
+    interrupts. As a guide, keep the load of the motors, as given in the tables of this chapter, below about 50 %, and try
+    high step rates first with a sketch that does nothing else.
 
 16 motors that run independently at 10,000 to 17,500 steps/s each, 220,000 steps/s in total, load the
 processor by about 31 %.
@@ -75,6 +89,5 @@ board.
 The step signal of one motor at 100,000 steps/s has a period of 10.000 µs (9.87 to 10.12 µs), measured
 with a logic analyzer.
 
-On this board a sketch must not ask for more steps per second than the processor can make (in total about
-300,000 with short pulses): the interrupts then take all processor time, and the board no longer answers
-on USB until it is reset.
+The warning above applies to this board in particular: four independent motors at 75,000 steps/s each,
+300,000 steps/s in total, are more than it can do, and a sketch that asks for them stops.

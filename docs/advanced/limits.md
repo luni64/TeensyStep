@@ -16,6 +16,17 @@ library was tested up to 300,000 steps/s, where the step pulses of one motor tak
 time ([Performance](performance.md)). The step pulse limits the rate as well: the pulse and a pause of
 0.8 µs have to fit into the step period.
 
+!!! warning "Step rates that are too high stop the sketch"
+    The step pulses are made in interrupts, which come before everything else the sketch does. If the
+    motors together ask for more steps per second than the processor can make, the interrupts take all
+    processor time: `loop()` no longer runs, and the board no longer answers on USB until it is reset
+    with its button. The library does not prevent this.
+
+    How many steps per second are possible depends on the board, on the number of motors that move at
+    the same time, on the width of the step pulse, and on the time the sketch itself spends in
+    interrupts. As a guide, keep the load of the motors (see [Performance](performance.md)) below about 50 %, and try
+    high step rates first with a sketch that does nothing else.
+
 At low speeds the step periods are as exact as at high ones. A motor at 0.001 steps/s makes one step
 every 1000 s.
 
