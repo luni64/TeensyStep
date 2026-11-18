@@ -22,7 +22,7 @@ groups of motors that move synchronized (2).
 The library offers
 
 - commands on the motor itself: `motor.moveAbs(1000)`, `motor.rotateAsync(500)`, `motor.stop()`,
-- changing speed or acceleration at any time, also while the motor moves, is possible now,
+- giving a new target and changing speed or acceleration is possible at any time, also while the motor moves,
 - groups of motors that move synchronized: the speeds of the motors keep a fixed ratio at all times,
   also while they accelerate and decelerate. Two motors that drive an x/y transport, for example, move
   their load on a straight line,
