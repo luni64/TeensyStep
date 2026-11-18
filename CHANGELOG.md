@@ -12,9 +12,6 @@ can still change in details until version 3.0.0.** The manual is in the folder `
 "Upgrading from version 2" is the migration guide. Version 3 runs on Teensy 4.0, 4.1, MicroMod, 3.5 and
 3.6. Teensy 3.0 to 3.2, LC and STM32 are not supported; version 2.3.4 remains available for these boards.
 
-Known limit of the beta: `setDirSetupTime()` has no effect; the DIR signal changes at the end of the step
-pulse before the first step in the new direction.
-
 **New**
 
 - Teensy 4.0, 4.1 and MicroMod are supported. Up to 16 motors or groups move independently at the same time.
@@ -66,6 +63,34 @@ pulse before the first step in the new direction.
 
 - The Winder example of version 2 also compiles outside the Arduino IDE (missing declaration of
   `printCurrent()`).
+
+**Known issues**
+
+- `setDirSetupTime()` has no effect. The DIR signal changes at the end of the step pulse before the first
+  step in the new direction, so the time between the change and that step is the step period minus the
+  pulse width. This is long at a reversal of a single motor, but can be short where a group passes a
+  waypoint at speed (`advanced::GroupPath`).
+- A sketch that asks for more steps per second than the board can make leaves no processor time for
+  anything else, including USB. The board then has to be reset with its button. The manual lists the step
+  rates the boards reach (Advanced, Performance).
+- Motors that move independently delay each other's steps slightly when their steps are due at the same
+  moment: about 1 µs with three motors at 50,000 steps/s, about 6 µs with 16 motors. The delay does not
+  add up, and a single motor or a single group is not affected.
+- The Teensy 3.5 is built but not tested on a board; the Teensy 3.6 is.
+
+**Planned changes until version 3.0.0**
+
+These points are under discussion. They can change the interface in details.
+
+- Groups: the way the speed and the acceleration of a group are given (`StepperGroup::setMaxSpeed()`,
+  `setAcceleration()`, `setDeceleration()`) may be simplified.
+- `setPosition()` may get the new name `setCounter()`; the old name would remain as deprecated.
+- `onArrival()` may accept functions with captured values (lambdas), so that one function can serve
+  several motors. Plain functions keep working.
+- `advanced::GroupPath` may be replaced by an interface made for motion planners.
+- `setDirSetupTime()` gets its function.
+- A protection against step rates that overload the board.
+- The numbers of the examples may change.
 
 ## v2.3.4 - 2023-04-13
 
