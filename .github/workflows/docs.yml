@@ -1,0 +1,48 @@
+# Builds the documentation (docs/ via MkDocs Material, see mkdocs.yml) and deploys it to
+# GitHub Pages at https://luni64.github.io/TeensyStep/.
+# Needs Settings -> Pages -> Source: "GitHub Actions" (once).
+
+name: Deploy documentation to GitHub Pages
+
+on:
+  push:
+    branches: [develop]   # version 3 is developed here; change to master at the release
+    paths:
+      - "docs/**"
+      - "examples/**"   # code of the examples is included in the pages
+      - mkdocs.yml
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install mkdocs-material
+      - run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

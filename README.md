@@ -3,10 +3,10 @@
 Stepper motor library for PJRC Teensy boards, for drivers with STEP and DIR inputs.
 
 **Version 3 is a beta (3.0.0-beta.1): the interface can still change in details until version 3.0.0.** It
-is a rewrite and runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Its manual is in the folder
-[`docs/`](docs/index.md). The last release of version 2 is 2.3.4 on the branch
-[`master`](https://github.com/luni64/TeensyStep/tree/master); its documentation is at
-[luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/).
+is a rewrite and runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Its manual is at
+[luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/). The last release of version 2 is 2.3.4
+on the branch [`master`](https://github.com/luni64/TeensyStep/tree/master); the sources of its web site are
+in the branch [`gh-pages`](https://github.com/luni64/TeensyStep/tree/gh-pages).
 
 ## A first sketch
 
@@ -74,7 +74,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 | `src/core/` | Motion core: `Axis` (one motor), `Group` (motors moving synchronized), `errorCode`. No hardware access; it compiles on a PC and on the boards |
 | `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `teensy3/`: Teensy 3.5, 3.6. `none/`: placeholder for boards without a backend |
 | `examples/` | Example sketches; `examples/advanced/`: the advanced functions; `examples/version2/`: unchanged examples of version 2 |
-| `docs/`, `mkdocs.yml` | The manual, for MkDocs Material. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |
+| `docs/`, `mkdocs.yml` | The sources of the manual, for MkDocs Material; a push to `develop` deploys it. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |
 
 The API is documented in the headers: `src/api/Stepper.h`, `src/api/StepperGroup.h` and
 `src/core/errorCode.h`.

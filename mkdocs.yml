@@ -1,9 +1,11 @@
-# MkDocs configuration for the TeensyStep manual. Sources in docs/.
+# MkDocs configuration for the TeensyStep manual (https://luni64.github.io/TeensyStep/).
+# Sources in docs/, built and deployed by .github/workflows/docs.yml.
 # Local preview: pip install mkdocs-material, then "python -m mkdocs serve" in this folder.
 # Check: "python -m mkdocs build --strict".
 
 site_name: TeensyStep
 site_description: Stepper motor library for the PJRC Teensy boards
+site_url: https://luni64.github.io/TeensyStep/
 repo_url: https://github.com/luni64/TeensyStep
 repo_name: luni64/TeensyStep
 
