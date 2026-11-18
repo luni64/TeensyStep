@@ -5,7 +5,7 @@ All notable changes to TeensyStep are documented in this file. The format follow
 [GitHub releases](https://github.com/luni64/TeensyStep/releases). The documentation is at
 [luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/).
 
-## Unreleased
+## v3.0.0-beta.1 - 2026-11-18
 
 Version 3.0.0-beta.1, the first beta of the next major version: the library is rewritten. **The interface
 can still change in details until version 3.0.0.** The manual at
