@@ -1,23 +1,10 @@
 /*==========================================================================
  * 06 TargetWithSpeed: pass a position at a given speed, and chain moves
  *
- * moveAbsAsync(p, v) has an optional second parameter: the speed the motor
- * shall have when it reaches p.
- *   moveAbsAsync(p)       stop at p               (same as v = 0)
- *   moveAbsAsync(p, v)    pass p at v steps/s and keep running at v
- *
- * The motor always reaches p exactly at speed v. If p is too close for
- * that, it takes a run-up (it may reverse first).
- *
- * onArrival() registers a function that is called when the target is
- * reached. It can give the next command, which then follows without a
- * stop. Here the motor runs a speed profile along a track:
+ * The motor runs a speed profile along a track:
  *
  *   position      0 ... 10000 ... 40000 ... 50000
  *   speed         0     2000      12000     0
- *
- * NOTE: the function is called from an interrupt. Keep it short and do not
- * use Serial or delay() in it.
  *==========================================================================*/
 
 #include "TeensyStep.h"
@@ -40,7 +27,7 @@ const unsigned nrOfWaypoints = sizeof(track) / sizeof(track[0]);
 
 volatile unsigned next = 0;
 
-void nextWaypoint() // called at every arrival
+void nextWaypoint() // called at every arrival, from an interrupt: keep it short
 {
     if (next < nrOfWaypoints)
     {

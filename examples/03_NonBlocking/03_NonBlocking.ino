@@ -1,13 +1,7 @@
 /*==========================================================================
  * 03 NonBlocking: start a move and do other things while it runs
  *
- * Every command exists in two forms:
- *   moveAbs(), moveRel(), stop()                 return when the motor has stopped
- *   moveAbsAsync(), moveRelAsync(), stopAsync()  return immediately
- *
- * Here two motors move independently of each other (not synchronized;
- * for synchronized moves see example 07), while loop() blinks the LED
- * and prints the status.
+ * Two independent motors; loop() blinks the LED and prints their state.
  *==========================================================================*/
 
 #include "TeensyStep.h"
@@ -18,7 +12,6 @@ Stepper m2(4, 5);
 
 void setup()
 {
-    Serial.begin(115200);
     pinMode(LED_BUILTIN, OUTPUT);
 
     m1.setMaxSpeed(10'000).setAcceleration(20'000);

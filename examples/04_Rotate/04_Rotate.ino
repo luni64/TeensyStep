@@ -1,13 +1,8 @@
 /*==========================================================================
  * 04 Rotate: run at a speed and change the speed while running
  *
- * rotateAsync(v) runs the motor at v steps/s until told otherwise.
- * The sign of v is the direction. Calling it again changes the speed:
- * the motor accelerates or decelerates to the new value, and reverses
- * through a standstill if the sign changes.
- *
  * A potentiometer on A0 sets the speed between -10000 and +10000 steps/s.
- * A button on pin 6 stops the motor.
+ * A button on pin 6 (to GND) stops the motor.
  *==========================================================================*/
 
 #include "TeensyStep.h"

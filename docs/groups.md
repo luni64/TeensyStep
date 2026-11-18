@@ -1,8 +1,9 @@
 # Groups
 
-A `StepperGroup` moves several motors synchronized: they start together, arrive together and stay on a
-straight line between start and target. This chapter first compares the three ways to move more than one
-motor and then describes the commands of a group.
+A `StepperGroup` moves several motors synchronized: they start together, arrive together, and their speeds
+keep a fixed ratio during the whole move. Motors that drive an x/y transport, for example, move their
+load on a straight line. This chapter first compares the three ways to move more than one motor and then
+describes how a group is defined and moved.
 
 ## Three ways to move several motors
 
@@ -50,13 +51,31 @@ Every single motor and every group that moves needs one hardware timer while it 
 motors or groups can move independently at the same time, see
 [Timers and interrupts](advanced/timers.md).
 
+## Defining a group
+
+A group is defined from the motors that belong to it, listed in braces:
+
+```cpp
+Stepper x(2, 3);
+Stepper y(4, 5);
+Stepper z(6, 7);
+
+StepperGroup xy{x, y};
+StepperGroup xyz{x, y, z};
+```
+
+The order of the motors in the braces is the order in which the group takes their targets. A group can
+have up to 16 motors. It is only a list: the motors keep their own settings and can still be moved on
+their own, and a motor can belong to several groups, see
+[Groups are light objects](#groups-are-light-objects).
+
 ## Moving a group
 
 ```cpp
 --8<-- "07_Groups/07_Groups.ino"
 ```
 
-A group is created from the motors that belong to it. The targets can be given in two ways:
+The targets can be given in two ways:
 
 - **In one call**, in the order of the motors in the group: as positions with `moveAbs({...})` or as
   distances from where the motors stand with `moveRel({...})`.
@@ -70,11 +89,15 @@ one from the group for the next `move()`. Since the targets are positions, a sec
 As for a single motor, each command exists in a blocking form (`moveAbs`, `moveRel`, `move`, `stop`) and
 a non-blocking form (`moveAbsAsync`, `moveRelAsync`, `moveAsync`, `stopAsync`).
 
-### On the line at all times
+### Synchronized at all times
 
-The members of a group deviate from the straight line between start and target by at most half a step.
-This holds in every phase of the move: while accelerating, at constant speed, while decelerating, and when
-the group is stopped early with `stop()`. After a stop, the members stand on the line.
+The members keep the ratio of their ways in every phase of the move: while accelerating, at constant
+speed, while decelerating, and when the group is stopped early with `stop()`. No member is ever more than
+half a step away from where this ratio puts it.
+
+For the x/y transport of the [pictures above](#synchronized) this means that the load deviates from the
+straight line between start and target by at most half a step, and that it stands on the line after an
+early stop.
 
 ### Speed and acceleration of a group
 
@@ -87,7 +110,8 @@ proportion.
 
     The member with the most steps to make is the *lead motor* of the move. The other members step
     together with it, each at its share of the lead motor's steps. A member with a short way therefore
-    steps less often, but always at the same moment as the lead motor.
+    steps less often, but always at the same moment as the lead motor. This is
+    [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm).
 
 A group can be given a maximum speed and an acceleration of its own:
 
@@ -118,7 +142,7 @@ A group is only a list of motors. It can be defined once, like the motors, or cr
 StepperGroup{y, z}.moveAbs({0, 0});
 ```
 
-A move that was started goes on when the group object no longer exists.
+A move that was started goes on even when the group object no longer exists.
 
 A motor can be a member of several groups, and it can still be moved on its own. But it can only do one
 thing at a time: while it moves in a group, commands for another group with this motor and move commands
@@ -137,7 +161,7 @@ group shall pass without stopping, use the advanced class `GroupPath`, see
 
 ## Rotating a group
 
-`rotateAsync()` runs the members at the given speeds. The ratio of the speeds is kept exactly at all
+`rotateAsync()` runs the group members at the given speeds. The ratio of the speeds is kept exactly at all
 times, also while the motors accelerate, decelerate or reverse:
 
 ```cpp

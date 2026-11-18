@@ -17,8 +17,10 @@ for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do n
 | `10_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
 | `11_MotorSettings` | Pull-in speed, pulse width, step polarity, inverse rotation, DIR setup time, enable pin, separate deceleration |
 | `12_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
-| `13_Follower` | A motor follows a calculated path, commanded from a timer interrupt (v2: RoseFunctionFollower) |
+| `13_Follower` | A motor follows a calculated path (a pendulum), commanded from a timer interrupt |
 | `14_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
+| `15_RoseFunction` | A slide follows the angle of a spindle and draws a rose curve (v2: RoseFunctionFollower) |
+| `16_HomingPrecise` | A more precise reference: slowly out of the switch, position set where it opens |
 
 ## Advanced
 

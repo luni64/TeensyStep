@@ -40,7 +40,7 @@ interface can still change. A migration guide follows before the release.
 - The library takes its hardware timers itself, at the start of a move, and gives them back at the end. It
   does not take a timer that makes PWM or that another library uses, and reports if none is free.
 - The motion core has no hardware access and is tested on a PC (folder `test`).
-- New examples, `01_HelloStepper` to `14_Winder`.
+- New examples, `01_HelloStepper` to `16_HomingPrecise`.
 
 **Changed**
 

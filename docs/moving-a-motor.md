@@ -29,6 +29,25 @@ prints their state:
 --8<-- "03_NonBlocking/03_NonBlocking.ino"
 ```
 
+The serial monitor shows a line every 100 ms. Motor `m1` accelerates for half a second and then runs at
+its maximum speed, `m2` has the shorter way and arrives first; when both stand still, they are sent back:
+
+```
+m1: pos    110  speed   2100   m2: pos    -35  speed   -600
+m1: pos    420  speed   4100   m2: pos   -120  speed  -1100
+m1: pos    930  speed   6100   m2: pos   -255  speed  -1600
+m1: pos   1640  speed   8100   m2: pos   -440  speed  -2100
+m1: pos   2550  speed  10000   m2: pos   -675  speed  -2600
+m1: pos   3550  speed  10000   m2: pos   -959  speed  -3000
+...
+m1: pos  29550  speed  10000   m2: pos  -7995  speed   -245
+m1: pos  30550  speed  10000   m2: pos  -8000  speed      0
+...
+m1: pos  49910  speed   1900   m2: pos  -8000  speed      0
+m1: pos  50000  speed      0   m2: pos  -8000  speed      0
+m1: pos  49890  speed  -2100   m2: pos  -7965  speed    600
+```
+
 ## The state of a motor
 
 | Function | Returns |
@@ -37,10 +56,13 @@ prints their state:
 | `getSpeed()` | the current speed in steps/s; negative while the position counts down, 0 when the motor stands still |
 | `isMoving()` | `true` while the motor moves |
 
-The getters can be called at any time and as often as needed, also from interrupts.
+The getters can be called at any time, also from interrupts. Do not call them in a tight loop without
+need, however: every call takes processor time and holds back the step interrupt for a moment. Read the
+values as often as the sketch uses them, as the sketch above does every 100 ms.
 
-`setPosition(pos)` sets the position counter without moving the motor, for example after
-[homing](#homing).
+`setPosition(pos)` sets the position counter: it gives the place where the motor stands now the number
+`pos`, for example 0 after [homing](#homing). The motor does not move. It is not a target: the commands
+that send the motor to a position are `moveAbs()` and, in a group, `setTargetAbs()`.
 
 ## Running at a speed
 
@@ -73,7 +95,7 @@ the motor changes to the new target or speed without stopping first:
 ```
 
 The commands and getters can also be called from interrupts, for example from a timer that calculates new
-targets (example `13_Follower`).
+targets (example `13_Follower`), or from the encoder of a jog wheel that the motor follows.
 
 ## Stopping
 
@@ -102,3 +124,14 @@ an interrupt, which stops the motor at once; that position is then defined as 0:
 
 `emergencyStop()` is used here because it acts immediately and can be called from an interrupt. At the low
 homing speed the motor stops without losing steps.
+
+A reference found in this way depends on the speed and on how the switch is hit. Where the reference has
+to be precise, the following procedure has proven itself:
+
+1. Run towards the switch and decelerate normally when it is reached. A switch that the mechanics can
+   move through, such as a light barrier, is better than one they run into.
+2. Run slowly out of the switch again, always in the same direction and at the same speed.
+3. Take the place where the switch opens as the reference: its interrupt sets the position counter while
+   the motor runs.
+
+The example `16_HomingPrecise` does this.

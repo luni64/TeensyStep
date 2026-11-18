@@ -12,7 +12,9 @@ The motor reaches the position exactly at that speed and then keeps it, like aft
 the next command. The sign of the speed is the direction in which the position is passed.
 
 If the target is too close to reach the speed, or lies behind the motor, the motor takes a run-up: it
-first moves away from the target, reverses, and then passes the target at the required speed.
+first moves away from the target, reverses, and then passes the target at the required speed. This can
+happen when a target is given or changed while the motor runs, and when a motor that stands still is
+given a target that is too close for the speed. A target far enough ahead needs no run-up.
 
 ## The arrival function
 
@@ -51,15 +53,25 @@ motor.moveAbs(10'000, 2'000); // returns when the motor passes 10000
 motor.moveAbs(50'000);        // goes on from there and stops at 50000
 ```
 
-## Groups
-
-The move commands of a group have no speed at the targets: a group always stops there. Moves of a group
-that follow each other without a stop are part of the advanced functions, see
-[Paths of a group](advanced/group-paths.md).
-
 ## Following a calculated path
 
 A target with a speed is also the way to let a motor follow a path that is calculated while it moves:
 a timer calculates at short intervals where the motor has to be next and how fast it moves there. Because
-the motor arrives at each point with the right speed, it runs through the points smoothly. The example
-`13_Follower` draws a rose curve this way.
+the motor arrives at each point with the right speed, it runs through the points smoothly. In the
+following sketch a motor swings back and forth like a pendulum:
+
+```cpp
+--8<-- "13_Follower/13_Follower.ino"
+```
+
+The timer runs every 10 ms and gives the motor the position and the speed of the curve for the time of
+its next call. The sketch first moves the motor to the start of the curve, where the speed is 0, so that
+the motor does not have to catch up with a curve that is already moving.
+
+The motor reaches every point at the right speed, but the library does not control when it gets there:
+it is on its way with the acceleration it is allowed. Set the acceleration of the motor well above what
+the curve needs (here about 50,000 steps/s²); the motor then stays close to the curve, in this sketch
+within about 70 of the 5000 steps.
+
+The example `15_RoseFunction` uses the same method for a slide that follows the angle of a rotating
+spindle and draws a rose curve.

@@ -512,3 +512,48 @@ TEST_CASE("every code has a text")
     }
     CHECK(std::string(describe(static_cast<errorCode>(77))) == "Unknown code");
 }
+
+// The pattern of example 13_Follower: a timer gives, every 10 ms, the position and the speed of a cosine for the
+// time of its next call.
+TEST_CASE("stepper: a motor commanded every 10 ms with position and speed follows a cosine")
+{
+    Board board;
+    Stepper motor(2, 3);
+    motor.setMaxSpeed(20'000).setAcceleration(100'000);
+    motor.setPosition(5'000); // the motor stands where the cosine starts
+
+    const double dt = 0.01, amplitude = 5'000, omega = 2 * 3.14159265358979 * 0.5;
+    double worst = 0;
+    for (int i = 1; i <= 600; i++) // 6 s: three periods
+    {
+        double t = i * dt; // time of the next call
+        motor.moveAbsAsync((int32_t)std::lround(amplitude * std::cos(omega * t)), (float)(-amplitude * omega * std::sin(omega * t)));
+        host::run(dt);
+        worst = std::max(worst, std::fabs(motor.getPosition() - amplitude * std::cos(omega * t)));
+    }
+    INFO("largest distance from the cosine at the moments of the calculation: " << worst << " steps");
+    // The motor reaches each point at the right speed, but not at the right time: it is on its way with the
+    // acceleration it is allowed and then runs on at the speed of the point. 2 % of the amplitude.
+    CHECK(worst <= 100);
+    for (errorCode code : reported) CHECK(code == errorCode::speedLimited); // a speed below 0.001 steps/s at a turning point
+    motor.emergencyStop();
+}
+
+// The pattern of example 16_HomingPrecise: the interrupt of the switch sets the counter while the motor runs.
+TEST_CASE("stepper: setPosition while the motor rotates sets the counter, and the motor runs on")
+{
+    Board board;
+    Stepper motor(2, 3);
+    motor.rotateAsync(200);
+    host::run(1.0);
+    size_t before = host::pulses(pins23).count;
+    motor.setPosition(0);
+    host::run(1.0);
+    size_t made = host::pulses(pins23).count - before;
+    CHECK(made == approx(200).epsilon(0.02));
+    CHECK(motor.getPosition() == (int32_t)made);
+    CHECK(motor.getSpeed() == approx(200).epsilon(0.01));
+    motor.stop();
+    CHECK(motor.moveAbs(100) == errorCode::OK); // positions count from where the counter was set
+    CHECK(host::pulses(pins23).net == (long)before + 100);
+}

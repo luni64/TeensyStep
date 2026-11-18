@@ -1,20 +1,5 @@
 /*==========================================================================
  * 07 Groups: move several motors synchronized
- *
- * The motors of a StepperGroup start together, arrive together and stay on
- * a straight line between start and target at all times (also while
- * accelerating and when the group is stopped early). The group runs as
- * fast as possible without any motor exceeding its own maximum speed or
- * acceleration, or at the speed and acceleration given for the group.
- *
- * There are two ways to give the targets:
- *   a) all in one call, in the order of the motors in the group: as
- *      positions (moveAbs) or as distances from where the motors stand (moveRel)
- *   b) on each motor with setTargetAbs() / setTargetRel(), then move the group
- *
- * Groups are light objects. They can be defined once or created where they
- * are needed, and a motor can be a member of several groups (but only one
- * of them can move at a time).
  *==========================================================================*/
 
 #include "TeensyStep.h"
@@ -34,7 +19,7 @@ void setup()
     z.setMaxSpeed(5'000).setAcceleration(10'000);
 
     // a) targets in one call
-    xy.moveAbs({4'000, 1'000}); // x -> 4000, y -> 1000, on a straight line
+    xy.moveAbs({4'000, 1'000}); // x -> 4000, y -> 1000, synchronized
     xy.moveRel({-1'000, 500});  // x 1000 steps back, y 500 on: x -> 3000, y -> 1500
 
     // b) targets on the motors
@@ -52,7 +37,7 @@ void setup()
     xy.moveAbs({4'000, 1'000}); // x runs at 2000 steps/s, y at 500
     xy.setMaxSpeed(0);          // 0: no speed of the group, as fast as the motors allow
 
-    // non-blocking, with an early stop: the motors decelerate together and stay on the line
+    // non-blocking, with an early stop: the motors decelerate together and stay synchronized
     xyz.moveAbsAsync({100'000, 50'000, 10'000});
     delay(1000);
     xyz.stop();

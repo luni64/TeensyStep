@@ -1,13 +1,7 @@
 /*==========================================================================
  * 08 Homing: find a reference switch and define the position there
  *
- * The motor runs slowly towards the reference switch on pin 8. The switch
- * triggers an interrupt that stops the motor at once (emergencyStop() does
- * not decelerate; it may be called from an interrupt). The position of the
- * switch is then defined as 0.
- *
- * emergencyStop() may lose steps at high speed because the motor cannot
- * stop instantly. For homing, approach the switch slowly.
+ * Reference switch on pin 8, LOW when it is reached.
  *==========================================================================*/
 
 #include "TeensyStep.h"

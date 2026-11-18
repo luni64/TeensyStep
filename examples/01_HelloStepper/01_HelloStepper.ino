@@ -1,14 +1,7 @@
 /*==========================================================================
  * 01 HelloStepper: the smallest possible sketch
  *
- * STEP pulses on pin 2, DIR signal on pin 3 (any pins work).
- *
- * The motor moves 1000 steps forward, waits, and moves back, forever.
- * The commands are given directly to the motor; no controller object is needed.
- *
- * Default parameters (slow, but they work with any normal stepper):
- *   max speed:      800 steps/s
- *   acceleration:  2500 steps/s^2
+ * STEP on pin 2, DIR on pin 3 (any pins work).
  *==========================================================================*/
 
 #include "TeensyStep.h"
@@ -22,9 +15,9 @@ void setup()
 
 void loop()
 {
-    motor.moveRel(1000); // move 1000 steps from the current position; returns when the motor has stopped
+    motor.moveRel(1000); // 1000 steps forward
     delay(500);
 
-    motor.moveRel(-1000);
+    motor.moveRel(-1000); // and back
     delay(500);
 }
