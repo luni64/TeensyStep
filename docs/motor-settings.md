@@ -39,7 +39,7 @@ move they are refused, and the error `notSupported` is reported to the
 | `setPulseWidth(us)` | 5 µs | width of the step pulse in microseconds; see the data sheet of the driver |
 | `setStepPinPolarity(level)` | `HIGH` | `HIGH`: the step pulse is a positive pulse; `LOW`: a negative pulse |
 | `setInverseRotation(inverse)` | `false` | `true` swaps the direction of the motor |
-| `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse (not yet used on Teensy 4.x, see [Limits](advanced/limits.md#timing-of-the-signals)) |
+| `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse (no effect in this version, see [Limits](advanced/limits.md#timing-of-the-signals)) |
 | `setEnablePin(pin, ...)` | none | the enable input of the driver, see below |
 
 The step pulse also limits the step rate: the pulse and a short pause after it have to fit into the step

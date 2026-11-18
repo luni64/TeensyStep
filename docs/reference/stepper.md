@@ -102,7 +102,7 @@ Stepper& setInverseRotation(bool inverse);
 Stepper& setDirSetupTime(float microseconds);
 ```
 
-Time between a change of DIR and the next step pulse. Default 5 µs. Not yet used on Teensy 4.x, see
+Time between a change of DIR and the next step pulse. Default 5 µs. No effect in this version, see
 [Limits](../advanced/limits.md#timing-of-the-signals).
 
 ### setEnablePin()

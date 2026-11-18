@@ -30,37 +30,34 @@ The library offers
 - up to 16 motors or groups that move independently at the same time. A group counts as one, however
   many motors it has (up to 16).
 
-!!! warning "Draft for a development version"
-    This manual describes the next major version of TeensyStep, which is under development on the branch
-    `develop`. Functions can still change. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
+!!! warning "Beta version"
+    This manual describes version 3 of TeensyStep, which is a beta (3.0.0-beta.1). **The interface can
+    still change in details until version 3.0.0**; the changelog lists every change. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
     **Teensy 3.5 and 3.6**. Teensy 3.0 to 3.2 and LC are not supported: the library compiles there, but
     no motor moves; use version 2.3.4 on these boards. Sketches written for version 2
     still compile, see [Upgrading from version 2](upgrading.md).
 
 ## Installation
 
-The development version is not in the library managers. Install it from GitHub:
-
 === "Arduino IDE"
 
-    Download the branch `develop` as
-    [zip file](https://github.com/luni64/TeensyStep/archive/refs/heads/develop.zip) and install it with
-    *Sketch → Include Library → Add .ZIP Library…*. Remove an installed TeensyStep 2 first.
+    Open the Library Manager (*Tools → Manage Libraries…*), search for TeensyStep and install version
+    3.0.0-beta.1 or later. To go back to version 2, select 2.3.4 in the same place.
 
 === "PlatformIO"
 
-    Add the branch to `platformio.ini`:
+    Add the version to `platformio.ini`:
 
     ```ini
-    lib_deps = https://github.com/luni64/TeensyStep#develop
+    lib_deps = https://github.com/luni64/TeensyStep#v3.0.0-beta.1
     ```
 
 === "git"
 
-    Clone the repository into the libraries folder of the sketchbook and check out `develop`:
+    Clone the repository into the libraries folder of the sketchbook and check out the version:
 
     ```
-    git clone -b develop https://github.com/luni64/TeensyStep
+    git clone -b v3.0.0-beta.1 https://github.com/luni64/TeensyStep
     ```
 
 ## Connecting a motor

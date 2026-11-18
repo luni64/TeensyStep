@@ -1,6 +1,6 @@
 # MkDocs configuration for the TeensyStep manual. Sources in docs/.
 # Local preview: pip install mkdocs-material, then "python -m mkdocs serve" in this folder.
-# Check: "python -m mkdocs build --strict". The manual is a draft and is not deployed anywhere yet.
+# Check: "python -m mkdocs build --strict".
 
 site_name: TeensyStep
 site_description: Stepper motor library for the PJRC Teensy boards

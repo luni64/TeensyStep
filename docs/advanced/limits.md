@@ -54,10 +54,10 @@ rotates for longer and needs the position can set it back with `setPosition()` f
 | Width of the step pulse | 0.8 to 200 µs | 5 µs |
 | Time between a change of DIR and the next step | see below | 5 µs |
 
-On Teensy 4.x the DIR signal of a motor changes at the end of the step pulse before the first step in the
+The DIR signal of a motor changes at the end of the step pulse before the first step in the
 new direction. The time to that step is the step period minus the pulse width; at a reversal the motor
 runs at its pull-in speed, so this time is long (10 ms at 100 steps/s). The value of `setDirSetupTime()`
-is not yet used by the Teensy 4 backend.
+has no effect in this version.
 
 ## Ramps
 

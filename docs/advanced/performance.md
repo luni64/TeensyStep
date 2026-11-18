@@ -71,15 +71,15 @@ other libraries that distribute the steps with Bresenham's line algorithm.
 
 ## Teensy 3.6
 
-Measured in the same way on a Teensy 3.6 at 180 MHz (first version of its backend):
+Measured in the same way on a Teensy 3.6 at 180 MHz:
 
 | | Step pulse 1.5 µs | Step pulse 5 µs (default) |
 |---|---|---|
 | One motor, 50,000 steps/s | 11 % | 14 % |
 | One motor, 100,000 steps/s | 23 % | 28 % |
-| Three motors as a group, 100,000 steps/s | 30 % | not measured |
-| Four motors as a group, 75,000 steps/s | 25 % | not measured |
-| Four independent motors, 40,000 steps/s each | 36 % | not measured |
+| Three motors as a group, 100,000 steps/s | 30 % | – |
+| Four motors as a group, 75,000 steps/s | 25 % | – |
+| Four independent motors, 40,000 steps/s each | 36 % | – |
 
 A step pulse of up to 2 µs is ended in the interrupt that started it. A longer pulse needs a second
 interrupt for its end, which costs about 0.6 µs per step: if the driver allows it, a shorter pulse

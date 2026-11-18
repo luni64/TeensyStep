@@ -7,8 +7,13 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 ## Unreleased
 
-The next major version: the library is rewritten. It is work in progress on the branch `develop`; the
-interface can still change. A migration guide follows before the release.
+Version 3.0.0-beta.1, the first beta of the next major version: the library is rewritten. **The interface
+can still change in details until version 3.0.0.** The manual is in the folder `docs/`; its chapter
+"Upgrading from version 2" is the migration guide. Version 3 runs on Teensy 4.0, 4.1, MicroMod, 3.5 and
+3.6. Teensy 3.0 to 3.2, LC and STM32 are not supported; version 2.3.4 remains available for these boards.
+
+Known limit of the beta: `setDirSetupTime()` has no effect; the DIR signal changes at the end of the step
+pulse before the first step in the new direction.
 
 **New**
 
