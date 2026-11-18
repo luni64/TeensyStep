@@ -56,3 +56,6 @@ Temporary Items
 
 .pio
 .vscode
+
+# build output of the manual (python -m mkdocs build)
+/site/
