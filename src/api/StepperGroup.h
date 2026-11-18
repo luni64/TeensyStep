@@ -35,13 +35,22 @@ namespace TeensyStep
         void clear();
         unsigned size() const { return count; }
 
-        // Moves on a straight line. The targets are given in the order of the members, or taken from the
-        // members (Stepper::setTargetAbs / setTargetRel; a member without a target stays where it is).
+        // Moves on a straight line. The targets are given in the order of the members: as positions
+        // (moveAbs) or as distances from where the members stand (moveRel). Or they are taken from the
+        // members (move; Stepper::setTargetAbs / setTargetRel; a member without a target stays where it is).
+        //
+        // The members remember their targets, and the last one given wins: moveAbs and moveRel replace
+        // targets set on the members before, and a target set on a member afterwards replaces the one of
+        // the group for the next move(). A command that is refused changes no target.
         errorCode moveAbsAsync(std::initializer_list<int32_t> targets);
         errorCode moveAbsAsync(const int32_t* targets, unsigned n);
+        errorCode moveRelAsync(std::initializer_list<int32_t> distances);
+        errorCode moveRelAsync(const int32_t* distances, unsigned n);
         errorCode moveAsync();
         errorCode moveAbs(std::initializer_list<int32_t> targets); ///< returns when the group has arrived
         errorCode moveAbs(const int32_t* targets, unsigned n);
+        errorCode moveRel(std::initializer_list<int32_t> distances);
+        errorCode moveRel(const int32_t* distances, unsigned n);
         errorCode move();
 
         /// @brief Rotate the members at these speeds (steps/s, sign: direction), in the order of the

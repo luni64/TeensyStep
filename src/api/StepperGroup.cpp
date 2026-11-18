@@ -77,8 +77,6 @@ namespace TeensyStep
         bool alreadyThere = false;
         {
             Lock lock;
-            for (unsigned i = 0; i < count; i++) motors[i]->setTargetAbs(targets[i]);
-
             alreadyThere = true;
             for (unsigned i = 0; i < count; i++) alreadyThere = alreadyThere && motors[i]->channel < 0 && motors[i]->pos == targets[i];
             if (!alreadyThere)
@@ -97,6 +95,8 @@ namespace TeensyStep
                     }
                 }
             }
+            if (!isError(code)) // the members remember the targets; a refused command changes nothing
+                for (unsigned i = 0; i < count; i++) motors[i]->setTargetAbs(targets[i]);
         }
         if (alreadyThere && arrival) arrival();
         return Engine::report(code);
@@ -112,6 +112,32 @@ namespace TeensyStep
         int32_t targets[maxMembers];
         for (unsigned i = 0; i < count; i++) targets[i] = motors[i]->hasTarget ? motors[i]->target : motors[i]->getPosition();
         return moveAbsAsync(targets, count);
+    }
+
+    errorCode StepperGroup::moveRelAsync(const int32_t* distances, unsigned n)
+    {
+        if (n != count || count == 0) return Engine::report(errorCode::invalidArgument);
+        int32_t targets[maxMembers];
+        for (unsigned i = 0; i < count; i++) targets[i] = (int32_t)((uint32_t)motors[i]->getPosition() + (uint32_t)distances[i]);
+        return moveAbsAsync(targets, count);
+    }
+
+    errorCode StepperGroup::moveRelAsync(std::initializer_list<int32_t> distances)
+    {
+        return moveRelAsync(distances.begin(), (unsigned)distances.size());
+    }
+
+    errorCode StepperGroup::moveRel(const int32_t* distances, unsigned n)
+    {
+        errorCode code = moveRelAsync(distances, n);
+        if (!isError(code))
+            while (isMoving()) backend::idle();
+        return code;
+    }
+
+    errorCode StepperGroup::moveRel(std::initializer_list<int32_t> distances)
+    {
+        return moveRel(distances.begin(), (unsigned)distances.size());
     }
 
     errorCode StepperGroup::moveAbs(const int32_t* targets, unsigned n)

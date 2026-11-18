@@ -8,7 +8,8 @@
  * acceleration.
  *
  * There are two ways to give the targets:
- *   a) all in one call, in the order of the motors in the group
+ *   a) all in one call, in the order of the motors in the group: as
+ *      positions (moveAbs) or as distances from where the motors stand (moveRel)
  *   b) on each motor with setTargetAbs() / setTargetRel(), then move the group
  *
  * Groups are light objects. They can be defined once or created where they
@@ -34,6 +35,7 @@ void setup()
 
     // a) targets in one call
     xy.moveAbs({4'000, 1'000}); // x -> 4000, y -> 1000, on a straight line
+    xy.moveRel({-1'000, 500});  // x 1000 steps back, y 500 on: x -> 3000, y -> 1500
 
     // b) targets on the motors
     x.setTargetAbs(0);

@@ -128,6 +128,80 @@ TEST_CASE("group: targets from the members, groups created on the fly, a tempora
     CHECK(z.getPosition() == 40);
 }
 
+TEST_CASE("group: relative moves")
+{
+    Board board;
+    Stepper x(2, 3), y(4, 5), z(6, 7);
+    StepperGroup xyz{x, y, z};
+    x.setPosition(1'000);
+    y.setPosition(-200);
+
+    CHECK(xyz.moveRel({400, -100, 0}) == errorCode::OK); // blocking; distances from where the members stand
+    CHECK_FALSE(xyz.isMoving());
+    CHECK(x.getPosition() == 1'400);
+    CHECK(y.getPosition() == -300);
+    CHECK(z.getPosition() == 0);
+    host::Pulses px = host::pulses(pinsX), py = host::pulses(pinsY);
+    CHECK(px.net == 400);
+    CHECK(py.net == -100);
+    CHECK(host::pulses(pinsZ).count == 0);
+    CHECK(worstOffLine(px, py, 0.25) <= 0.5 + 1e-9);
+
+    CHECK(xyz.moveRel({400, -100, 0}) == errorCode::OK); // the same command again moves again
+    CHECK(x.getPosition() == 1'800);
+    CHECK(y.getPosition() == -400);
+
+    CHECK(xyz.moveRelAsync({-800, 200, 50}) == errorCode::OK); // non-blocking
+    CHECK(xyz.isMoving());
+    CHECK(host::runUntilIdle());
+    CHECK(x.getPosition() == 1'000);
+    CHECK(y.getPosition() == -200);
+    CHECK(z.getPosition() == 50);
+
+    const int32_t d[] = {10, 20, 30}; // distances from an array
+    CHECK(xyz.moveRel(d, 3) == errorCode::OK);
+    CHECK(z.getPosition() == 80);
+
+    xyz.move(); // a relative move sets the targets of the members, like an absolute one: nothing left to do
+    CHECK(x.getPosition() == 1'010);
+
+    CHECK(xyz.moveRel({1, 2}) == errorCode::invalidArgument); // wrong number of distances
+    CHECK(x.getPosition() == 1'010);
+    CHECK(reported == std::vector<errorCode>{errorCode::invalidArgument});
+}
+
+TEST_CASE("group: the last target wins; a refused command changes no target")
+{
+    Board board;
+    Stepper x(2, 3), y(4, 5);
+    for (Stepper* m : {&x, &y}) m->setMaxSpeed(10'000).setAcceleration(20'000);
+    StepperGroup xy{x, y};
+
+    x.setTargetAbs(700); // targets on the members ...
+    y.setTargetAbs(900);
+    xy.moveAbs({100, 200}); // ... are replaced by the targets given to the group
+    CHECK(x.getPosition() == 100);
+    CHECK(y.getPosition() == 200);
+    xy.move(); // the targets of the members are now those of the group: nothing to do
+    CHECK(x.getPosition() == 100);
+
+    x.setTargetAbs(700); // and the other way round: a target set afterwards replaces the one of the group
+    xy.move();
+    CHECK(x.getPosition() == 700);
+    CHECK(y.getPosition() == 200);
+
+    x.setTargetAbs(300); // a command that is refused leaves the targets as they were
+    y.moveAbsAsync(50'000);
+    host::run(0.5);
+    CHECK(xy.moveAbsAsync({1, 2}) == errorCode::motorBusy);
+    CHECK(xy.moveRelAsync({1, 2}) == errorCode::motorBusy);
+    CHECK(xy.moveAbsAsync({1}) == errorCode::invalidArgument);
+    y.stop();
+    y.setTargetAbs(y.getPosition());
+    xy.move();
+    CHECK(x.getPosition() == 300);
+}
+
 TEST_CASE("group: a member that never got a target stays where it is")
 {
     Board board;
