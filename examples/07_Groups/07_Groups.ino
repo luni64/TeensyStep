@@ -5,7 +5,7 @@
  * a straight line between start and target at all times (also while
  * accelerating and when the group is stopped early). The group runs as
  * fast as possible without any motor exceeding its own maximum speed or
- * acceleration.
+ * acceleration, or at the speed and acceleration given for the group.
  *
  * There are two ways to give the targets:
  *   a) all in one call, in the order of the motors in the group: as
@@ -45,6 +45,12 @@ void setup()
 
     // a group created on the fly
     StepperGroup{y, z}.moveAbs({0, 0});
+
+    // speed and acceleration of a group: those of the motor with the longest way in the move.
+    // The settings of the motors stay the upper limits.
+    xy.setMaxSpeed(2'000).setAcceleration(10'000);
+    xy.moveAbs({4'000, 1'000}); // x runs at 2000 steps/s, y at 500
+    xy.setMaxSpeed(0);          // 0: no speed of the group, as fast as the motors allow
 
     // non-blocking, with an early stop: the motors decelerate together and stay on the line
     xyz.moveAbsAsync({100'000, 50'000, 10'000});

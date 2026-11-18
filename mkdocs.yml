@@ -1,0 +1,86 @@
+# MkDocs configuration for the TeensyStep manual. Sources in docs/.
+# Local preview: pip install mkdocs-material, then "python -m mkdocs serve" in this folder.
+# Check: "python -m mkdocs build --strict". The manual is a draft and is not deployed anywhere yet.
+
+site_name: TeensyStep
+site_description: Stepper motor library for the PJRC Teensy boards
+repo_url: https://github.com/luni64/TeensyStep
+repo_name: luni64/TeensyStep
+
+docs_dir: docs
+
+# broken links and anchors fail the --strict build
+validation:
+  links:
+    anchors: warn
+
+nav:
+  - Getting started: index.md
+  - Moving a motor: moving-a-motor.md
+  - Targets with a speed: targets-with-speed.md
+  - Groups: groups.md
+  - Motor settings: motor-settings.md
+  - Error handling: error-handling.md
+  - Motors and drivers: motors-and-drivers.md
+  - Examples: examples/index.md
+  - Advanced:
+      - advanced/index.md
+      - Timers and interrupts: advanced/timers.md
+      - Performance: advanced/performance.md
+      - Limits: advanced/limits.md
+  - Reference:
+      - reference/index.md
+      - Stepper: reference/stepper.md
+      - StepperGroup: reference/stepper-group.md
+      - Errors and other functions: reference/errors.md
+  - Upgrading from version 2: upgrading.md
+
+theme:
+  name: material
+  features:
+    - navigation.top
+    - navigation.sections
+    - navigation.indexes
+    - search.suggest
+    - toc.follow
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      toggle:
+        icon: material/brightness-7
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      toggle:
+        icon: material/brightness-4
+        name: Light mode
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/extra.css   # question-mark icon of the annotations that explain terms
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html   # needed by the annotations ("(1)" markers with { .annotate }) that explain terms
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  # Code of the examples is included from the library's examples folder, e.g.
+  #   --8<-- "01_HelloStepper/01_HelloStepper.ino"
+  # so the manual always shows the real, compiled example code.
+  - pymdownx.snippets:
+      base_path: [examples]
+      check_paths: true

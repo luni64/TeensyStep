@@ -45,7 +45,8 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
   without a stop.
 - **Groups:** `StepperGroup` moves motors synchronized. The motors stay within half a step of the straight
   line between start and target, also while accelerating, decelerating and when the group is stopped early.
-  A group can also rotate with a fixed speed ratio.
+  A group can have a speed and an acceleration of its own, can pass its targets at a speed and go on to
+  the next ones without a stop, and can rotate with a fixed speed ratio.
 - **Units:** speeds in steps/s, accelerations in steps/s². Speeds below 1 step/s are possible.
 - **Motor settings:** pull-in speed, separate deceleration, pulse width, step polarity, inverse rotation,
   DIR setup time, enable pin with on and off delays.
@@ -59,7 +60,8 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 | Board | State |
 |---|---|
 | Teensy 4.0, 4.1, MicroMod | Works. Up to 16 motors or groups move independently at the same time, each on one channel of the QuadTimers (TMR1 to TMR4). A timer that makes PWM or that another library uses is not taken. |
-| Teensy 3.x, LC | Not yet. The library compiles, and every move command returns `noTimer`. Use version 2.3.4 on these boards. |
+| Teensy 3.5, 3.6 | Not yet. The library compiles, and every move command returns `noTimer`. Use version 2.3.4 on these boards for now. |
+| Teensy 3.0, 3.1, 3.2, LC | Not supported by the new version: the library calculates in floating point, and these boards have no floating point unit. The library compiles, and every move command returns `noTimer`. Use version 2.3.4. |
 | STM32 | Not supported by the new version. Use version 2.3.x. |
 
 ## Layout
@@ -71,6 +73,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 | `src/backend/` | `Backend.h`: the interface to the hardware. `teensy4/`: Teensy 4.0, 4.1, MicroMod. `host/`: simulated backend for the PC tests. `none/`: placeholder for boards without a backend |
 | `examples/` | Example sketches; `examples/version2/`: unchanged examples of version 2 |
 | `test/` | Tests that run on a PC: the core directly, and the API on the simulated backend |
+| `docs/`, `mkdocs.yml` | The manual (draft), for MkDocs Material. Preview: `python -m mkdocs serve` in this folder; check: `python -m mkdocs build --strict` |
 
 The API is documented in the headers: `src/api/Stepper.h`, `src/api/StepperGroup.h` and
 `src/core/errorCode.h`.

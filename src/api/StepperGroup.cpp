@@ -68,9 +68,61 @@ namespace TeensyStep
     }
 
     //--------------------------------------------------------------------------------------------------------
+    // speed and acceleration of the group
+
+    /// Gives the values of this group object to the ramp of a channel, and reports a restriction of the
+    /// value that was changed. To be called with the lock held.
+    void StepperGroup::applySettings(Channel& c, Setting changed)
+    {
+        errorCode speed = c.group.setMaxSpeed(ownSpeed);
+        errorCode acc   = c.group.setAcceleration(ownAcc);
+        errorCode dec   = c.group.setDeceleration(separateDeceleration ? ownDec : ownAcc);
+        if (changed == Setting::speed) Engine::report(speed);
+        if (changed == Setting::acceleration) Engine::report(acc != errorCode::OK || separateDeceleration ? acc : dec);
+        if (changed == Setting::deceleration) Engine::report(dec);
+    }
+
+    StepperGroup& StepperGroup::setMaxSpeed(float stepsPerSec)
+    {
+        Lock lock;
+        ownSpeed = stepsPerSec > 0 ? stepsPerSec : 0;
+        int ch   = runningChannel();
+        if (ch >= 0) applySettings(Engine::channels[ch], Setting::speed);
+        return *this;
+    }
+
+    StepperGroup& StepperGroup::setAcceleration(float stepsPerSec2)
+    {
+        Lock lock;
+        ownAcc = stepsPerSec2 > 0 ? stepsPerSec2 : 0;
+        int ch = runningChannel();
+        if (ch >= 0) applySettings(Engine::channels[ch], Setting::acceleration);
+        return *this;
+    }
+
+    StepperGroup& StepperGroup::setDeceleration(float stepsPerSec2)
+    {
+        Lock lock;
+        ownDec               = stepsPerSec2 > 0 ? stepsPerSec2 : 0;
+        separateDeceleration = true;
+        int ch               = runningChannel();
+        if (ch >= 0) applySettings(Engine::channels[ch], Setting::deceleration);
+        return *this;
+    }
+
+    float StepperGroup::getSpeed() const
+    {
+        Lock lock;
+        int ch = runningChannel();
+        if (ch < 0 || Engine::channels[ch].ending) return 0.0f;
+        float v = Engine::channels[ch].group.lead().speed();
+        return v < 0 ? -v : v;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
     // moves
 
-    errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n)
+    errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)
     {
         if (n != count || count == 0) return Engine::report(errorCode::invalidArgument);
         errorCode code    = errorCode::OK;
@@ -86,7 +138,8 @@ namespace TeensyStep
                 if (code == errorCode::OK)
                 {
                     Channel& c = Engine::channels[ch];
-                    code       = c.group.moveAbs(targets); // notSupported while the group is moving
+                    applySettings(c, Setting::none); // a restriction by the members is reported by the move
+                    code = c.group.moveAbs(targets, speedAtTarget, speedAtStart); // notSupported for other targets while the group is on its way
                     if (!isError(code))
                     {
                         c.ending  = false;
@@ -102,62 +155,78 @@ namespace TeensyStep
         return Engine::report(code);
     }
 
-    errorCode StepperGroup::moveAbsAsync(std::initializer_list<int32_t> targets)
+    errorCode StepperGroup::moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget, float speedAtStart)
     {
-        return moveAbsAsync(targets.begin(), (unsigned)targets.size());
+        return moveAbsAsync(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::moveAsync()
+    errorCode StepperGroup::moveAsync(float speedAtTarget)
     {
         int32_t targets[maxMembers];
         for (unsigned i = 0; i < count; i++) targets[i] = motors[i]->hasTarget ? motors[i]->target : motors[i]->getPosition();
-        return moveAbsAsync(targets, count);
+        return moveAbsAsync(targets, count, speedAtTarget);
     }
 
-    errorCode StepperGroup::moveRelAsync(const int32_t* distances, unsigned n)
+    errorCode StepperGroup::moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart)
     {
         if (n != count || count == 0) return Engine::report(errorCode::invalidArgument);
         int32_t targets[maxMembers];
         for (unsigned i = 0; i < count; i++) targets[i] = (int32_t)((uint32_t)motors[i]->getPosition() + (uint32_t)distances[i]);
-        return moveAbsAsync(targets, count);
+        return moveAbsAsync(targets, count, speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::moveRelAsync(std::initializer_list<int32_t> distances)
+    errorCode StepperGroup::moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget, float speedAtStart)
     {
-        return moveRelAsync(distances.begin(), (unsigned)distances.size());
+        return moveRelAsync(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::moveRel(const int32_t* distances, unsigned n)
+    /// The reached targets of the group so far; they are counted on its first member.
+    uint32_t StepperGroup::arrivals() const
     {
-        errorCode code = moveRelAsync(distances, n);
-        if (!isError(code))
+        return count > 0 ? motors[0]->arrivals : 0;
+    }
+
+    /// Waits for the end of a blocking move: until the group stands still or, with a speed at the target,
+    /// until the targets are reported as reached.
+    void StepperGroup::waitForArrival(uint32_t arrivalsBefore, float speedAtTarget)
+    {
+        if (speedAtTarget == 0.0f)
             while (isMoving()) backend::idle();
+        else
+            while (isMoving() && arrivals() == arrivalsBefore) backend::idle();
+    }
+
+    errorCode StepperGroup::moveRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart)
+    {
+        uint32_t before = arrivals();
+        errorCode code  = moveRelAsync(distances, n, speedAtTarget, speedAtStart);
+        if (!isError(code)) waitForArrival(before, speedAtTarget);
         return code;
     }
 
-    errorCode StepperGroup::moveRel(std::initializer_list<int32_t> distances)
+    errorCode StepperGroup::moveRel(std::initializer_list<int32_t> distances, float speedAtTarget, float speedAtStart)
     {
-        return moveRel(distances.begin(), (unsigned)distances.size());
+        return moveRel(distances.begin(), (unsigned)distances.size(), speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::moveAbs(const int32_t* targets, unsigned n)
+    errorCode StepperGroup::moveAbs(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart)
     {
-        errorCode code = moveAbsAsync(targets, n);
-        if (!isError(code))
-            while (isMoving()) backend::idle();
+        uint32_t before = arrivals();
+        errorCode code  = moveAbsAsync(targets, n, speedAtTarget, speedAtStart);
+        if (!isError(code)) waitForArrival(before, speedAtTarget);
         return code;
     }
 
-    errorCode StepperGroup::moveAbs(std::initializer_list<int32_t> targets)
+    errorCode StepperGroup::moveAbs(std::initializer_list<int32_t> targets, float speedAtTarget, float speedAtStart)
     {
-        return moveAbs(targets.begin(), (unsigned)targets.size());
+        return moveAbs(targets.begin(), (unsigned)targets.size(), speedAtTarget, speedAtStart);
     }
 
-    errorCode StepperGroup::move()
+    errorCode StepperGroup::move(float speedAtTarget)
     {
-        errorCode code = moveAsync();
-        if (!isError(code))
-            while (isMoving()) backend::idle();
+        uint32_t before = arrivals();
+        errorCode code  = moveAsync(speedAtTarget);
+        if (!isError(code)) waitForArrival(before, speedAtTarget);
         return code;
     }
 

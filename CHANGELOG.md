@@ -22,6 +22,13 @@ interface can still change. A migration guide follows before the release.
   of the sketch can be called on arrival and can give the next command, which follows without a stop.
 - `StepperGroup` moves motors synchronized. The motors stay within half a step of the straight line between
   start and target in every phase of the move, also when the group is stopped early.
+- A group can have a maximum speed and an acceleration of its own (`setMaxSpeed`, `setAcceleration`,
+  `setDeceleration`), given for the motor with the longest way. The settings of the motors stay the upper
+  limits.
+- A group can pass its targets at a speed and go on to the next targets without a stop: the group moves
+  have an optional speed at the targets, and the next move can be given from the arrival function
+  (example `08_GroupWaypoints`). The warning `targetSpeedNotReached` reports a way that is too short for
+  the speed.
 - Separate deceleration (`setDeceleration`), DIR setup time (`setDirSetupTime`), enable pin with on and off
   delays (`setEnablePin`).
 - Step rates down to 0.001 steps/s.
@@ -43,8 +50,13 @@ interface can still change. A migration guide follows before the release.
 
 **Not yet in this version**
 
-- Teensy 3.x and LC: the library compiles, and every move command returns `noTimer`. Use version 2.3.4 on
+- Teensy 3.5 and 3.6: the library compiles, and every move command returns `noTimer`. Use version 2.3.4 on
   these boards for now.
+
+**Removed**
+
+- Teensy 3.0, 3.1, 3.2 and LC are not supported by the new version: it calculates in floating point, and
+  these boards have no floating point unit. Version 2.3.4 remains available for them.
 - STM32 is not supported by the new version. Use version 2.3.x.
 
 **Fixed**

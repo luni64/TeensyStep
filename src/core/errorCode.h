@@ -12,6 +12,7 @@ namespace TeensyStep
         // Warnings (negative): the command was executed with a restriction
         speedLimited        = -1000, ///< warning: speed outside the supported range, the limit is used
         accelerationLimited = -1001, ///< warning: acceleration outside the supported range, the limit is used
+        targetSpeedNotReached = -1002, ///< warning: the way is too short for the speed at the target; a group arrives as close to it as possible
 
         // Errors (positive): the command was not executed
         invalidArgument = 1000, ///< error: invalid argument, e.g. a group move with the wrong number of targets
@@ -36,6 +37,7 @@ namespace TeensyStep
             case errorCode::OK: return "OK";
             case errorCode::speedLimited: return "Speed outside the supported range or above the maximum speed. The limit is used";
             case errorCode::accelerationLimited: return "Acceleration outside the supported range. The limit is used";
+            case errorCode::targetSpeedNotReached: return "The way is too short for the speed at the target";
             case errorCode::invalidArgument: return "Invalid argument, e.g. wrong number of targets for a group";
             case errorCode::motorBusy: return "The motor is moving in another group";
             case errorCode::noTimer: return "No free hardware timer for this move";

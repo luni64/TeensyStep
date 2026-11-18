@@ -326,3 +326,27 @@ TEST_CASE("setPosition: during a move the target stays where it is")
     CHECK(a.position() == 10'000);
     CHECK(r.steps() == 10'000);
 }
+
+TEST_CASE("a target that the axis reaches while braking, and at which it can then stand still, is an arrival")
+{
+    // The axis is a little too fast to stop at a target one step ahead by the normal approach, but after one
+    // step of braking it is slow enough to stand still, exactly at the target.
+    for (float v : {320.0f, 350.0f, 380.0f})
+    {
+        CAPTURE(v);
+        Axis a;
+        a.setMaxSpeed(20'000);
+        a.setAcceleration(50'000);
+        a.setPullInSpeed(0);
+        a.rotate(v);
+        run(a, 20'000'000, Until::speed, -1, false, v);
+        int32_t target = a.position() + 1;
+        a.moveAbs(target);
+        Run r = run(a);
+        CHECK(r.finished);
+        CHECK(a.position() == target);
+        CHECK(r.reversals() == 0);
+        REQUIRE(r.steps() == 1);
+        CHECK(r.s.back().arrived);
+    }
+}

@@ -57,6 +57,17 @@ namespace TeensyStep
             /// @brief Longest delay of one event, in seconds. Default 0.001, lowest value 0.00001.
             void setMaxDelay(float seconds);
 
+            /// @brief Switches the run-up off (default: on). Without it the axis never reverses to reach a
+            /// target at its speed: if the way is too short, it arrives slower (too short to accelerate) or
+            /// faster (too short to decelerate) and then goes on to the speed. moveAbs() returns the warning
+            /// targetSpeedNotReached in that case, also for a target at which the axis cannot stop in time.
+            /// Used for the path of a group, which must not leave its line.
+            void setRunUp(bool on) { runUp = on; }
+
+            /// @brief Sets the current speed (sign: direction), without a ramp. For a caller that changes
+            /// what a step of this axis is: the path of a group at the start of a new segment.
+            void setSpeed(float stepsPerSec);
+
             // Commands. Allowed at any time; a new command replaces the current one.
 
             /// @brief Move to `pos` and have the speed `speedAtTarget` there. The sign of the speed is the
@@ -110,6 +121,8 @@ namespace TeensyStep
             Plan planVelocity();
             Plan approachStop(int32_t p, bool isMain);
             Plan stepToMovingTarget(int64_t rho, int64_t wTe);
+            Plan stepWithoutRunUp(int64_t rho, int64_t wTe);
+            bool canStopIn(int64_t rho) const;
             Plan brake();
             bool feasible(int64_t w0, int64_t rho, int64_t wTe) const;
             int64_t runUpSteps(int64_t wTe) const;
@@ -158,6 +171,7 @@ namespace TeensyStep
             int64_t timesTwoA(int64_t n) const { return n > maxStepsA ? ((int64_t)1 << 61) : n * twoA; }
             int64_t timesTwoD(int64_t n) const { return n > maxStepsD ? ((int64_t)1 << 61) : n * twoD; }
             bool separateDeceleration = false;
+            bool runUp                = true;
         };
     }
 }

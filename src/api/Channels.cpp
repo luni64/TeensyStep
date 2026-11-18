@@ -252,6 +252,7 @@ namespace TeensyStep
             if (!c.used) return;
             if (c.isGroup)
             {
+                c.motors[0]->arrivals = c.motors[0]->arrivals + 1; // for the blocking moves of the group
                 if (c.arrival) c.arrival();
                 return;
             }

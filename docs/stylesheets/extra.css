@@ -1,0 +1,16 @@
+/* Explanations of terms are written as Material annotations, shown as a popup on click:
+
+     ... from the timer pool (1).
+     { .annotate }
+
+     1.  **Timer pool**
+
+         The library keeps a list of ...
+
+   Question-mark icon instead of Material's "+", not rotated when open. */
+:root {
+  --md-annotation-icon: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.07 11.25l-.9.92C13.45 12.89 13 13.5 13 15h-2v-.5c0-1.11.45-2.11 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41a2 2 0 0 0-2-2 2 2 0 0 0-2 2H8a4 4 0 0 1 4-4 4 4 0 0 1 4 4c0 .88-.36 1.67-.93 2.25M13 19h-2v-2h2M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10c0-5.53-4.5-10-10-10"/></svg>');
+}
+.md-typeset .md-tooltip--active + .md-annotation__index::after {
+  transform: none;
+}

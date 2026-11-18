@@ -123,7 +123,32 @@ namespace TeensyStep
 
             bool alreadyThere = sigma == 0 && sT == 0 && diff(xT, x) == 0;
             mode              = alreadyThere ? Mode::idle : Mode::position;
-            return changed ? errorCode::speedLimited : errorCode::OK;
+            if (changed) return errorCode::speedLimited;
+
+            if (!runUp && !alreadyThere) // without a run-up the target speed is missed if the way is too short
+            {
+                if (sT != 0)
+                {
+                    int64_t rho = (int64_t)sT * diff(xT, x);
+                    if ((sigma == sT || sigma == 0) && rho >= 1 && !feasible(w, rho, wT < wMax ? wT : wMax)) return errorCode::targetSpeedNotReached;
+                }
+                else if (sigma != 0)
+                {
+                    int64_t rho = (int64_t)sigma * diff(xT, x);
+                    if (rho < 1 || !canStopIn(rho)) return errorCode::targetSpeedNotReached;
+                }
+            }
+            return errorCode::OK;
+        }
+
+        void Axis::setSpeed(float speed)
+        {
+            bool changed = false;
+            float v      = limited(std::fabs(speed), 0.0f, maxSpeedLimit, changed);
+            w            = toW(v);
+            vCur         = v;
+            sigma        = v == 0.0f ? 0 : (speed > 0 ? 1 : -1);
+            version++;
         }
 
         errorCode Axis::moveRel(int32_t delta, float speedAtTarget)
@@ -376,7 +401,11 @@ namespace TeensyStep
             // point from which the run-up fits exactly, and stops there.
             int64_t wTe = wT < wMax ? wT : wMax;
             int64_t rho = (int64_t)sT * diff(xT, x); // distance to the target, along the direction at the target
-            if ((sigma == sT || sigma == 0) && rho >= 1 && feasible(w, rho, wTe)) return stepToMovingTarget(rho, wTe);
+            if ((sigma == sT || sigma == 0) && rho >= 1)
+            {
+                if (feasible(w, rho, wTe)) return stepToMovingTarget(rho, wTe);
+                if (!runUp) return stepWithoutRunUp(rho, wTe);
+            }
 
             int32_t runUp = (int32_t)((uint32_t)xT - (uint32_t)(int32_t)(sT * runUpSteps(wTe)));
             return approachStop(runUp, false);
@@ -414,6 +443,30 @@ namespace TeensyStep
             return {Plan::step, sT, wNew, rho == 1, false};
         }
 
+        /// One step towards a target whose speed cannot be reached on the way that is left, for an axis
+        /// without a run-up: it gets as close to the speed as its limits allow.
+        Axis::Plan Axis::stepWithoutRunUp(int64_t rho, int64_t wTe)
+        {
+            int64_t wNew;
+            if (w > wTe) // too fast: decelerate all the way
+            {
+                wNew = w > wPull && w > twoD ? w - twoD : wTe;
+                if (wNew < wTe) wNew = wTe;
+            }
+            else // too slow: accelerate all the way
+            {
+                wNew = faster(wMax);
+                if (wNew > wTe) wNew = wTe;
+            }
+            return {Plan::step, sT, wNew, rho == 1, false};
+        }
+
+        /// Can the axis, moving towards a point in rho steps, stand still there?
+        bool Axis::canStopIn(int64_t rho) const
+        {
+            return w <= wPull || w - timesTwoD(rho) <= wPull;
+        }
+
         /// One step towards the point p, where the axis shall stand still: the commanded target (isMain) or
         /// the start of a run-up. If the axis moves away from p or is too fast to stop there, it brakes first.
         Axis::Plan Axis::approachStop(int32_t p, bool isMain)
@@ -427,7 +480,7 @@ namespace TeensyStep
             }
 
             int64_t rho = dir * q; // steps to p in the direction of motion
-            if (rho >= 1 && (w <= wPull || w - timesTwoD(rho) <= wPull))
+            if (rho >= 1 && canStopIn(rho))
             {
                 // after this step, rho - 1 steps remain to get down to the pull-in speed, from which the axis stops
                 int64_t cap  = wPull + timesTwoD(rho - 1);
@@ -436,7 +489,15 @@ namespace TeensyStep
                 return {Plan::step, dir, wNew, isMain && rho == 1, rho == 1};
             }
 
-            return brake();
+            Plan b = brake();
+            if (rho == 1 && b.kind == Plan::step && (b.w <= wPull || 2 * b.w <= twoD))
+            {
+                // Too fast for the approach above, but after this step of braking the axis is at p and slow
+                // enough to stand still: it stays there.
+                b.arrived  = isMain;
+                b.thenStop = true;
+            }
+            return b;
         }
 
         /// Decelerates: one step slower, or standstill once the axis is slow enough.

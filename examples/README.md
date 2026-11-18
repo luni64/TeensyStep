@@ -1,7 +1,7 @@
 # Examples
 
 Sketches that show how the library is used, from the smallest one to complete applications. They compile
-for all Teensy boards; on boards that have no backend yet (Teensy 3.x, LC) they do not move a motor.
+for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do not move a motor.
 
 | Sketch | Concept |
 |---|---|
@@ -11,8 +11,8 @@ for all Teensy boards; on boards that have no backend yet (Teensy 3.x, LC) they 
 | `04_Rotate` | Run at a speed in steps/s, change it while running, stop |
 | `05_ChangeTarget` | New target and new maximum speed during a move |
 | `06_TargetWithSpeed` | Target with a speed at the target; chaining moves from the arrival callback |
-| `07_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly |
-| `08_GroupWaypoints` | A group passes waypoints without stopping (**open decision, does not compile yet**) |
+| `07_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; speed of a group |
+| `08_GroupWaypoints` | A group passes waypoints without stopping: speed at the targets, next move from the arrival function |
 | `09_Homing` | Emergency stop from a switch interrupt, setting the position |
 | `10_Errors` | Returned `errorCode`, error function, built-in handler (pattern of TeensyTimerTool) |
 | `11_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
