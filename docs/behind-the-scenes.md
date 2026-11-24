@@ -204,109 +204,174 @@ The price is processor time: a decision per step costs more than reading a prepa
 
 ## The timers
 
-### One timer for each move
+### One timer channel for each active move
 
-Every active move uses one hardware timer. More exactly, it uses one channel of a timer: a QuadTimer of a
-Teensy 4.x has four channels and a FlexTimer of a Teensy 3.5 or 3.6 up to eight, and each of them can
-time one move. These timers are 16-bit counters that the processor clock drives. The library lets
-such a counter run freely and uses its *compare register* (1): the timer requests an interrupt when the
-counter reaches the value in that register.
-{ .annotate }
+Every active move has one channel of a hardware timer for itself. The library uses the timer only as a
+clock: a counter that runs freely, and one compare register that raises an interrupt when the counter
+reaches its value. The pins are not connected to the timer; the interrupt writes them as ordinary
+digital outputs. This is why any pin can be a STEP or DIR pin, and why a group can step up to 16 pins
+from one timer channel.
 
-1.  **Compare register**
+The two processor families differ in what a timer channel is:
 
-    A register of a timer that holds a number. When the running counter of the timer reaches this number,
-    the timer raises an interrupt (or switches a pin). The counter itself keeps running.
+| | Teensy 4.0, 4.1, MicroMod | Teensy 3.5, 3.6 |
+|---|---|---|
+| Timers | QuadTimer TMR1 to TMR4, four channels each: 16 channels | FlexTimer FTM0 to FTM3, with 8, 2, 2 and 8 channels: 20 channels |
+| Counter | every channel has its own 16-bit counter | all channels of a timer share one counter |
+| Set up by the library | the library sets the channel to count the bus clock (150 MHz) without a reload; the counter runs around every 437 µs | nothing: the counter stays as the Teensy core has set it up for PWM (`analogWrite`), counting from 0 to its top value 488 times per second |
+| What the library uses | the compare register of the channel and its interrupt | the channel in compare mode without a pin, and its interrupt |
+| Longest time for one event | 400 µs | 1 ms |
 
-Every step has a *due time*, a value of the counter. The interrupt at the due time makes the step, asks
-the motion calculation for the next event and sets the compare register to the next due time:
+On Teensy 3.5 and 3.6 the counter is left alone on purpose: the other channels of the same timer keep
+making PWM with unchanged frequency. The price is arithmetic modulo the top value of the counter
+instead of modulo 2^16.
+
+### Finding a free timer
+
+Timers are not reserved when the sketch starts. At the beginning of every move the library looks for a
+timer channel that nobody uses, by reading the hardware:
+
+- a channel whose interrupt is enabled, or that runs in a mode the Teensy core does not set, belongs to
+  somebody else and is skipped;
+- a channel whose pin is switched to PWM is skipped;
+- a timer whose interrupt vector points to the function of another library is skipped as a whole.
+
+Channels that cannot make PWM on any pin are taken first (Teensy 4.x), then channels whose PWM pin is
+a pin of the motor itself, then the others. Before the library changes a channel, it stores its
+registers; when the move ends, it writes them back. [Timers and interrupts](advanced/timers.md) lists
+the channels, their pins and the rules for PWM and other timer libraries.
+
+### Due times
+
+Every event has a *due time*, a value of the counter. The interrupt at the due time executes the event,
+gets the next event and sets the compare register to the next due time:
 
 ```
-due time of the next step = due time of this step + delay of the next event
+due time of the next event = due time of this event + delay of the next event     (modulo the counter range)
 ```
 
-The next due time is counted from the previous due time and not from the moment the interrupt was
-served. An interrupt that comes a little late, because another interrupt was running, delays one edge
-but nothing after it: the errors do not add up, and the mean step rate is exact.
+Three details keep the timing exact:
 
-### Which timer is taken
-
-The timers are not reserved in advance. At the start of a move the library looks for a free timer
-channel in the hardware itself: one that neither makes PWM nor is in use by another library. It first
-takes those that cannot make PWM on any pin, so that `analogWrite()` keeps working where possible. When
-the move ends, the registers of the timer channel are put back to the values they had. The rules, the
-pins and the cooperation with other timer libraries are described in
-[Timers and interrupts](advanced/timers.md).
+- **No drift from late interrupts.** The next due time is counted from the previous due time, not from
+  the moment the interrupt was served. An interrupt that is served late delays one edge and nothing
+  after it.
+- **No drift from rounding.** The motion calculation gives the delay in seconds, and the timer counts
+  whole counts. The fraction of a count that is cut off is carried over to the next delay, so that the
+  mean step rate is exact.
+- **Events that are already due.** If the interrupt was served so late that the next due time has
+  passed as well, the interrupt function executes that event at once, in the same call, instead of
+  waiting for the counter to come around again.
 
 ### Long times with a 16-bit timer
 
-On a Teensy 4.x the counter runs with 150 MHz. A 16-bit counter then runs around every 437 µs: too short
-for a motor that makes one step per second.
+A 16-bit counter at 150 MHz runs around every 437 µs: too short for a motor that makes one step per
+second. Slowing the counter down for slow motors would make the times of fast motors coarse, and on
+Teensy 3.5 and 3.6 the counter is not the library's to change.
 
-The library does not slow the counter down for slow motors, since that would make the times of fast
-motors coarse. Instead the motion calculation hands out **waits**: events with a delay and no step. A step period that
-is longer than the timer can count (the library uses at most 400 µs per event on a Teensy 4.x) is cut
-into equal pieces. Only the last piece makes the step:
+The solution is in the motion calculation, not in the timer. The pulse generation tells it the longest
+time it can wait in one event (400 µs or 1 ms, see the table above). A step period that is longer is cut
+into equal pieces, and the motion calculation hands them out as events **without a step**: *waits*.
+Only the last piece makes the step. For a Teensy 4.x:
 
 | Speed | Step period | Events per step |
 |---|---|---|
 | 10,000 steps/s | 100 µs | 1 |
-| 1,000 steps/s | 1 ms | 3 (two waits of 333 µs, then the step after another 333 µs) |
+| 1,000 steps/s | 1 ms | 3: two waits of 333 µs, then the step after another 333 µs |
 | 1 step/s | 1 s | 2,500 |
 
-A wait costs a short interrupt and nothing else. Speeds down to 0.001 steps/s are built this way, with
-the full resolution of the timer at every speed.
+For the pulse generation a wait is an event like any other: it sets the compare register and returns.
+Speeds down to 0.001 steps/s are built this way, with the full resolution of the timer at every speed.
 
-The waits have a second use. At each of them the motion calculation looks whether a new command has arrived. A motor
-that creeps at one step per second therefore reacts to `stop()` or to a new speed within a fraction of
-a millisecond, and not only at its next step a second later.
+The waits have a second use. At each of them the motion calculation notices a command that has arrived
+in the meantime and decides the step anew; the part of the period that has already passed counts for the
+new step. A motor that creeps at one step per second therefore reacts to `stop()` or to a new speed
+within the longest event time, and not only at its next step a second later.
 
 ### The step pulse
 
-A step pulse has two edges, and both are made by the same timer. No second timer is needed:
+A step pulse has two edges. Both are made by the same timer channel and the same compare register; no
+second timer is needed. A step therefore takes two interrupts:
 
-| Time | The interrupt |
+| Time | The interrupt function |
 |---|---|
-| due time of the step | sets the STEP pin to its active level, asks the motion calculation for the next event, and sets the compare register to the end of the pulse |
-| due time + pulse width | sets the STEP pin back, sets the DIR pin for the next step if the direction changes, and sets the compare register to the due time of the next step |
+| due time of the step | sets the STEP pins of the event to their active level; sets the compare register to the end of the pulse; calls the arrival function, if the event reaches a target; gets the next event from the motion calculation |
+| due time + pulse width | sets the STEP pins back; sets the DIR pins for the next event; sets the compare register to the due time of the next event |
 
-The pins are ordinary digital outputs that the interrupt writes; the timer only provides the times.
-This is why any pin can be a STEP or DIR pin, and why a group can step up to 16 pins from one timer.
+- **The next event is calculated while the pulse is running.** The time of the pulse is used for the
+  calculation instead of being waited for. If the calculation takes longer than the pulse, the pulse is
+  ended right after it, in the same call.
+- **DIR changes at the end of a pulse**, for the motors that step in the next event. The driver has the
+  pause until the next step to take over the new direction.
+- **The pause after a pulse** is at least 0.8 µs. Pulse and pause together limit the step rate: about
+  170,000 steps/s with the default pulse of 5 µs.
+- **Short pulses on Teensy 3.5 and 3.6.** A pulse of up to 2 µs is not worth a second interrupt there:
+  the interrupt function waits for its end and makes both edges in one call.
 
-While the pulse is running, the processor calculates the next event. If the calculation takes longer
-than the pulse, the pulse is ended right after it, in the same interrupt. On Teensy 3.5 and 3.6 a pulse
-of up to 2 µs is always ended in the interrupt that started it, which saves the second interrupt.
+### Several moves at the same time
 
-The DIR pin changes at the end of a pulse, so the driver has the whole pause until the next step to
-take over the new direction.
+The channels of one timer share an interrupt. When the compare values of several channels are due
+together, the interrupt function first makes the edges of all of them and only then does the rest of
+the work, one move after the other. Otherwise the edge of one motor would wait for the calculation of
+another.
+
+All step interrupts have the same priority (48: above the default of 128, below the millisecond
+interrupt of the Teensy core). They do not interrupt each other. A step of one move that becomes due
+while the interrupt of another move is being served is therefore made a little late, by up to the
+time one event takes; because of the due times this does not add up.
+[Performance](advanced/performance.md) has measured values.
+
+### An emergency stop
+
+`emergencyStop()` does not wait for the next event. It switches the interrupt of the timer channel off
+and releases the channel. A pulse that has begun is completed. At that moment the motion calculation is
+one event ahead of the pins: the step it has already counted, but that was not made, is taken off the
+position again. The position therefore matches the pulses that were made.
 
 ## Groups
 
 ### One ramp for the whole group
 
 A group does not run a ramp per motor. It treats the move as **one path** from the start positions to
-the targets and calculates one ramp for it, exactly as for a single motor. One step of the path is one
-step of the member with the longest way, the *lead motor*. The whole group therefore needs one active move
-and one timer, whether it has 2 or 16 members.
+the targets. The length of the path is the number of steps of the member with the longest way, the
+*lead motor*, and one step of the path is one step of that member.
 
-The limits of the path are derived from the limits of all members. A member that makes half as many
-steps as the lead motor moves at half its speed and half its acceleration. The path gets the highest
-speed and acceleration at which no member exceeds its own settings.
+The motion along the path is calculated by the same code that calculates a single motor: to the motion
+calculation the path is one motor that moves from 0 to the length of the path. Everything said in
+[How the ramp is calculated](#how-the-ramp-is-calculated) holds for a group as well. The group needs
+one active move and one timer channel, whether it has 2 or 16 members.
+
+### The limits of the path
+
+The path has to be slow enough for every member. A member that makes fewer steps than the lead motor
+moves slower in the same proportion, so each of its limits allows the path more:
+
+```
+limit of the path from one member = limit of the member × (steps of the path / steps of the member)
+```
+
+The path gets the smallest of these values over all members, separately for the maximum speed, the
+acceleration, the deceleration and the pull-in speed. A member that does not move sets no limit. If the
+group has a speed or an acceleration of its own (`StepperGroup::setMaxSpeed()`, ...), that value is used
+instead, as long as it is not above what the members allow.
+
+Example: x makes 4,000 steps and y 1,000, and both motors allow 800 steps/s. The path has 4,000 steps.
+x allows the path 800 steps/s, y allows it 800 × 4 = 3,200 steps/s. The path runs at 800 steps/s; x
+then runs at 800 and y at 200 steps/s.
 
 ### Distributing the steps: Bresenham
 
-At every step of the lead motor, the group decides for each other member whether it steps as well. The
-method is [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm),
-which was invented to draw straight lines on a grid of pixels.
+At every step of the path, the group decides for each member whether it steps as well. The method is
+[Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm), which was
+invented to draw straight lines on a grid of pixels.
 
-Every member has a counter, the *error*. At each step of the lead motor, the number of steps of the
-member is added to it. When the error reaches the number of steps of the lead motor, the member makes a
-step and that number is subtracted. Only whole numbers are added and compared, so nothing can drift.
+Every member has a counter, the *error*. At each step of the path, the number of steps of the member is
+added to it. When the error reaches the length of the path, the member makes a step and the length is
+subtracted. Only whole numbers are added and compared, so nothing can drift.
 
-Example: the lead motor makes 5 steps, a second member 2. The error of the member starts at half of 5
-(as a whole number: 2), so that it steps in the middle of its intervals:
+Example: a path of 5 steps, and a member that has to make 2. The error of the member starts at half the
+length (as a whole number: 2), so that the member steps in the middle of its intervals:
 
-| Step of the lead motor | 1 | 2 | 3 | 4 | 5 |
+| Step of the path | 1 | 2 | 3 | 4 | 5 |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Error after adding 2 | 4 | 6 | 3 | 5 | 2 |
 | Reaches 5: the member steps | | yes | | yes | |
@@ -314,10 +379,14 @@ Example: the lead motor makes 5 steps, a second member 2. The error of the membe
 | Position of the member | 0 | 1 | 1 | 2 | 2 |
 | Exact position on the line | 0.4 | 0.8 | 1.2 | 1.6 | 2.0 |
 
-The position of the member is the exact position rounded to the nearest whole step. No member is ever
-more than half a step away from the line, and this holds wherever the path is and whatever it does: the
-ramp decides *when* the next step of the path is made, Bresenham decides *who* steps. That is why a
-group stays synchronized while it accelerates, when a speed is changed, and when it is stopped early.
+The position of the member is the exact position rounded to the nearest whole step: no member is ever
+more than half a step away from the line. For the lead motor the same rule gives a step at every step
+of the path.
+
+The two tasks are separate: the ramp decides **when** the next step of the path is made, Bresenham
+decides **who** steps. The result is one event with a delay and one bit per member. That is why a group
+stays synchronized while it accelerates, when its speed is changed, and when it is stopped early: all
+of these change only the "when".
 
 A member always steps at the same moment as the lead motor. A member that is only a little slower than
 the lead motor therefore does not step evenly: it steps with the lead motor and leaves a step out from
@@ -325,8 +394,11 @@ time to time.
 
 ### Rotating groups
 
-A group that rotates with a fixed speed ratio uses the same mechanism: the speeds take the place of the
-ways, and the path has no end.
+A group that rotates with a fixed speed ratio uses the same mechanism. The speeds take the place of the
+ways: the fastest member is the lead motor, the path is given a fixed length of 2^30, and every member
+gets its share of it according to its speed. The motion calculation runs the path at a speed instead of
+to a target, so it never ends. The ratios are therefore kept with a resolution of 1 in 2^30, and they
+are kept exactly while the group accelerates or reverses, because again only the "when" changes.
 
 ## Why the lists in braces
 
@@ -337,56 +409,78 @@ StepperGroup xy{x, y};
 xy.moveAbs({4000, 1000});
 ```
 
-In the declarations of the library such a list appears as `std::initializer_list<...>`, which looks
-more complicated than what it is. The reasons for this design:
+In the declarations of the library such a list is a `std::initializer_list<...>`. The reasons for this
+design:
 
-- **Any number of values.** A list in braces can have 2 motors or 16. Without it the library would need
-  a separate function for every number of motors, or the sketch would have to fill an array first.
-- **No dynamic memory.** The compiler builds the list in place when the function is called, and it is
-  gone afterwards. Nothing is allocated with `new` or `malloc`, which matters on a microcontroller that
-  runs for weeks. The group copies what it needs into a fixed array of 16 entries.
+- **Any number of values.** A list in braces can have 2 entries or 16. Without it the library would
+  need a function for every number of motors, or the sketch would have to fill an array first.
+- **No dynamic memory.** The compiler builds the list on the stack when the function is called, and it
+  is gone afterwards. Nothing is allocated with `new` or `malloc`. The group copies what it needs into
+  a fixed array of 16 entries.
 - **Readable.** The values of the members stand side by side in the order of the members, like the
   coordinates of a point.
 
 A list of motors is declared as `std::initializer_list<std::reference_wrapper<Stepper>>`. The inner
-part exists for a technical reason: C++ cannot make a list of references, and a list of `Stepper`
-would be a list of *copies* of the motors. `std::reference_wrapper<Stepper>` is a reference that can be
-put into a list. The compiler creates it from the name of the motor; a sketch never writes it.
+type exists for a technical reason: C++ cannot make a list of references, and a list of `Stepper` would
+be a list of *copies* of the motors. `std::reference_wrapper<Stepper>` is a reference that can be put
+into a list. The compiler creates it from the name of the motor; a sketch never writes it.
 
-The group itself stores only the addresses of its motors, not the motors. That is why a group is a
-light object that can be created for a single command, why a motor can be in several groups, and why
-the motors have to exist for as long as the group is used.
+The group stores only the addresses of its motors. That is why a group is a light object that can be
+created for a single command, why a motor can be in several groups, and why the motors have to exist
+for as long as the group is used. A move that was started does not need the group object any more:
+everything it needs was copied into the active move.
 
-For values that are calculated or received at run time, every command also takes an array and its
-length, see [Values in braces or in an array](reference/stepper-group.md#values-in-braces-or-in-an-array).
+The number of values in a list is checked when the command runs, against the number of members; a
+wrong number returns `invalidArgument`. For values that are calculated or received at run time, every
+command also takes an array and its length, see
+[Values in braces or in an array](reference/stepper-group.md#values-in-braces-or-in-an-array).
 
 ## Commands and the interrupt
 
+### Protecting the data
+
 The steps are made in an interrupt, while the sketch gives its commands in `loop()` or in an interrupt
-of its own. Both work on the same data. To keep them apart, every command and every query disables the
-interrupts for the few instructions in which it reads or changes the state of a motor, typically a few
-microseconds. A step that becomes due in this time is made right afterwards; since the due times do not
-depend on when an interrupt was served, the steps after it are on time again.
+of its own. Both work on the same active move. Every command, and every function that reads the state
+of a motor, therefore disables the interrupts while it reads or changes an active move, and restores
+the previous interrupt state afterwards. This takes a few microseconds; for a command that starts a
+group it is longer, because the limits of the path are calculated in that time.
 
-This is also the reason for the advice not to call `getPosition()` in a tight loop without need: every
-call holds back the step interrupt for a moment.
+Because the interrupt state is restored and not simply enabled, the functions can also be called from
+interrupts of the sketch.
 
-The **blocking commands** (`moveAbs()`, `stop()`, ...) are the non-blocking ones followed by a loop that
+A step that becomes due while the interrupts are disabled is made right afterwards. This is the reason
+for the advice not to call `getPosition()` in a tight loop without need.
+
+### Blocking commands
+
+The blocking commands (`moveAbs()`, `stop()`, ...) are the non-blocking ones followed by a loop that
 waits until the motor has arrived. While they wait, the steps are made by the interrupt as always, and
 the loop calls `yield()`, so that the background tasks of the Teensy core keep running.
 
-The **arrival function** is called from the step interrupt, at the step that reaches the target and
-before the next step is calculated. A command given there takes effect for the very next step, which is
-why moves can follow each other without a gap. For the same reason an arrival function has to be short:
-while it runs, no motor steps.
+### The arrival function
+
+The arrival function is called from the step interrupt, at the event that reaches the target: after
+its STEP edge was made and **before** the next event is calculated. A command that the function gives
+changes the goal in the active move, and the next event is already calculated for the new goal. This is
+why moves can follow each other without a gap.
+
+For the same reason an arrival function has to be short: while it runs, no step interrupt is served,
+and the steps of all motors wait.
+
+### The enable signal
+
+The delays of `setEnablePin()` need no timer of their own either. The on-delay is a series of waits
+that the active move hands out before its first step, and the off-delay a series of waits after the
+last one. During the off-delay the active move and its timer channel are still occupied, although
+`isMoving()` already returns `false`.
 
 ## Where to find it in the source
 
 | File | Content |
 |---|---|
-| `src/core/Axis.h`, `Axis.cpp` | motion calculation of one motor: the decision per step |
-| `src/core/Group.h`, `Group.cpp` | motion calculation of a group: its path and Bresenham |
+| `src/core/Axis.h`, `Axis.cpp` | motion calculation of one motor: the decision per step, and the waits for long step periods |
+| `src/core/Group.h`, `Group.cpp` | motion calculation of a group: the path, its limits and Bresenham |
 | `src/backend/Backend.h` | the interface between the pulse generation (called *backend* in the source) and the rest of the library, with the event |
-| `src/backend/teensy4/`, `teensy3/` | the pulse generation of the boards: timers and step interrupt. The comment at the top of each file describes the timing |
-| `src/api/Channels.h`, `Channels.cpp` | the active moves (called *channels* in the source): reserving and releasing them, enable signals |
+| `src/backend/teensy4/`, `teensy3/` | the pulse generation of the boards: finding a timer, due times, the step interrupt. The comment at the top of each file describes the timing |
+| `src/api/Channels.h`, `Channels.cpp` | the active moves (called *channels* in the source): reserving and releasing them, the enable signals |
 | `src/api/Stepper.cpp`, `StepperGroup.cpp` | the commands of the sketch |
