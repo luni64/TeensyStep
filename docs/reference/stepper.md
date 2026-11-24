@@ -112,7 +112,8 @@ Stepper& setEnablePin(int pin, int activeLevel = LOW, unsigned onDelayMs = 0, un
 ```
 
 The enable input of the driver. The library switches the driver on before a move and off after it.
-See [The enable pin](../motor-settings.md#the-enable-pin).
+Several motors can be given the same pin, for drivers that share one enable signal: the signal stays on
+as long as one of these motors needs it. See [The enable pin](../motor-settings.md#the-enable-pin).
 
 | Parameter | |
 |---|---|
@@ -186,7 +187,9 @@ a motor that moves in a group, the whole group is stopped.
 
 ---
 
-## State
+## Position counter
+
+The library counts every step it makes: up in one direction, down in the other.
 
 ### getPosition()
 
@@ -202,7 +205,12 @@ The position in steps.
 void setPosition(int32_t pos);
 ```
 
-Sets the position counter. The motor does not move.
+Sets the position counter to `pos`, for example to 0 at the reference position of a machine. The motor
+does not move, and the function does not set a target: to move the motor to a position use `moveAbs()`.
+
+---
+
+## State
 
 ### getSpeed()
 
@@ -219,6 +227,10 @@ bool isMoving() const;
 ```
 
 `true` while the motor moves, on its own or in a group.
+
+---
+
+## Arrival function
 
 ### onArrival()
 

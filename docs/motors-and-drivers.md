@@ -17,9 +17,65 @@ and optionally a third one, ENABLE, which switches the motor current on and off
 turns the pulses into currents through the motor coils.
 
 Drivers with a STEP and DIR interface are available for motors of all sizes, from small modules for 1 A
-(for example with the DRV8825, A4988 or TMC2209) to industrial drivers for several amperes. Practically
-all of them are constant current drivers for bipolar motors, and they can divide the steps of the motor
-into microsteps.
+to industrial drivers for several amperes. Practically all of them are constant current drivers (1) for
+bipolar motors, and they can divide the steps of the motor into microsteps.
+{ .annotate }
+
+1.  **Constant current driver**
+
+    A driver that measures the current through each motor coil and switches the supply voltage on and off
+    many thousand times per second, so that the current keeps the value that was set (a *chopper*
+    driver). The supply voltage can therefore be much higher than the rated voltage of the motor, which
+    lets the current rise quickly and gives the motor torque at high speeds.
+
+## Drivers
+
+Typical drivers, with values from their data sheets. The data sheet of the driver in use decides.
+
+| Driver | Supply | Current per coil | Microsteps | Inputs | Shortest step pulse |
+|---|---|---|---|---|---|
+| [A4988](https://www.pololu.com/product/1182) module | 8 to 35 V | about 1 A, 2 A with cooling | up to 16 | 3.3 V and 5 V | 1 µs |
+| [DRV8825](https://www.pololu.com/product/2133) module | 8.2 to 45 V | about 1.5 A, 2.2 A with cooling | up to 32 | 3.3 V and 5 V | 1.9 µs |
+| TMC2209 module | 4.75 to 29 V | up to 2 A | up to 64, interpolated to 256 | 3.3 V and 5 V | 0.1 µs |
+| Industrial drivers in a housing (for example DM542, DM556, TB6600 types) | 20 to 50 V and more | 1 to 6 A | up to 128 and more, set with switches | opto-couplers, made for 5 V | 2.5 to 10 µs |
+
+Suppliers such as Pololu list many more [driver modules](https://www.pololu.com/category/120/stepper-motor-drivers)
+with their data.
+
+### Connecting a driver module
+
+The small modules (A4988, DRV8825, TMC2209 and similar) share the same pin layout. With 3.3 V compatible
+inputs they are connected directly to the Teensy:
+
+| Driver | Connect to |
+|---|---|
+| STEP | the STEP pin of the motor in the sketch, for example pin 2 for `Stepper motor(2, 3)` |
+| DIR | the DIR pin, pin 3 in this example |
+| GND (logic) | GND of the Teensy |
+| VDD or VIO (logic supply, if the module has it) | 3.3 V of the Teensy |
+| EN or ENABLE | leave open (the driver is then on), or connect it to a pin for [`setEnablePin()`](motor-settings.md#the-enable-pin) |
+| MS1, MS2, ... (microsteps) | to GND or to the logic supply, according to the table in the data sheet |
+| RESET and SLEEP (A4988, DRV8825) | A4988: connect the two to each other. DRV8825: connect both to 3.3 V |
+| VMOT and GND (motor supply) | the motor supply, with a capacitor of 100 µF or more close to the module |
+| 1A, 1B, 2A, 2B (or A1, A2, B1, B2) | the two coils of the motor, one coil per pin pair |
+
+Before the first move:
+
+- **Set the current** of the driver to the rated current of the motor or below, with the potentiometer of
+  the module as described in its data sheet. A current that is too high overheats motor and driver.
+- **Never connect or disconnect a motor while the driver is powered.** The voltage peak can destroy the
+  driver.
+
+### Connecting an industrial driver
+
+These drivers have opto-coupler inputs with two terminals per signal, named PUL+ / PUL− (step),
+DIR+ / DIR− and ENA+ / ENA−. Connect PUL−, DIR− and ENA− to GND and drive PUL+ and DIR+ with the
+signals. The inputs are made for 5 V. Some drivers also work with the 3.3 V of a Teensy 4, but most data
+sheets do not promise it: use a level shifter, as shown in the next section. ENA can stay unconnected;
+the driver is then on.
+
+Opto-couplers are slow. Set the step pulse to the width the data sheet asks for, often 5 to 10 µs
+([hardware settings](motor-settings.md#hardware-settings)); the width of the pulse limits the step rate.
 
 ## Logic levels
 
@@ -56,6 +112,26 @@ pulses of 10 µs or more.
 
 ![Series and parallel connection of the coil halves](images/configurations.png)
 
+### Motors for constant current and motors for constant voltage
+
+Bipolar motors are made in two kinds, which look alike:
+
+| | Made for a constant current driver | Made for a constant voltage |
+|---|---|---|
+| Rated voltage | low: 2 to 5 V | high: often 5 V, 12 V or 24 V |
+| Rated current | 1 A and more | low: 0.1 to 0.5 A |
+| Resistance of a coil | about 1 to 5 Ω | 20 Ω and more |
+| Inductance of a coil | about 1 to 5 mH | 20 to 50 mH and more |
+| Example | [NEMA 17, 2.8 V, 1.7 A, 1.65 Ω](https://www.pololu.com/product/2267) | [NEMA 14, 10 V, 0.5 A, 20 Ω](https://www.pololu.com/product/1208) |
+
+A motor of the second kind is made to be connected to its rated voltage through simple switches, without
+a control of the current: its high resistance limits the current. Its high inductance lets the current
+rise slowly, so that the torque falls off already at a few hundred steps per second.
+
+**For the drivers described here, choose a motor of the first kind.** A motor with a high rated voltage
+is not damaged by a constant current driver that is set to its rated current, but it stays slow, and
+the driver gains nothing from a supply voltage that is not well above the rated voltage of the motor.
+
 ## Choosing a motor
 
 Motors are usually named by the size of their flange according to the NEMA standard: the number is the
@@ -75,10 +151,10 @@ The data sheet of a motor states, among others:
 | Parameter | |
 |---|---|
 | Rated current | the current per coil for which the motor is made; set the driver to it |
-| Resistance, inductance | of one coil. The inductance limits how fast the current can change, and with it the speed |
+| Resistance, inductance | of one coil. The inductance limits how fast the current can change, and with it the speed. Typical values of motors for constant current drivers: 1 to 5 Ω and 1 to 5 mH; see [the two kinds of motors](#motors-for-constant-current-and-motors-for-constant-voltage) |
 | Rated voltage | resistance times rated current: the voltage for the rated current at standstill. A constant current driver is supplied with a much higher voltage |
 | Holding torque | the torque of the motor at standstill with the rated current |
-| Detent torque | the torque without current; it can be felt when turning the shaft by hand |
+| Detent torque | the torque without current; it can be felt when turning the shaft by hand. Seldom stated |
 
 How to choose:
 
