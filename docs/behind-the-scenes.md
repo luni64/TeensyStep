@@ -105,7 +105,8 @@ An *event* is the answer of the motion calculation. It contains:
 
 While the motor moves, its position is counted in the active move: every event that makes a step also
 counts it. `getPosition()` and `getSpeed()` of a moving motor read the values there, so they are
-current at every moment, not only at the end.
+current at every moment, not only at the end. Since the next step is calculated while the pulse of the
+current one is made, the position read can be one step ahead of the pulses.
 
 ### The end of a move
 
@@ -164,13 +165,12 @@ acceleration adds 2 · 2,500 = 5,000:
 
 From step 127 on the motor keeps its speed. But when does it have to slow down? The same arithmetic
 answers this. To get from 800 steps/s back down to 100 steps/s, the squared speed has to fall from
-640,000 to 10,000, by 5,000 per step: that takes 126 steps (the library may differ by a step, because
-the last step is treated separately). So at every step the calculation compares:
+640,000 to 10,000, by 5,000 per step: that takes 126 steps. So at every step the calculation compares:
 
 - more than 126 steps left to the target: keep the speed (or accelerate, if the maximum is not reached),
 - 126 steps left: start to decelerate.
 
-The motor then arrives at the target at the pull-in speed and stops there. If the move is too short to
+The motor then arrives at the target at about the pull-in speed and stops there. If the move is too short to
 reach the maximum speed, the same comparison makes the motor turn from accelerating to decelerating in
 the middle, without a special case.
 
