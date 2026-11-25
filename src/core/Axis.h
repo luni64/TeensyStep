@@ -101,6 +101,19 @@ namespace TeensyStep
             errorCode stop();                                          ///< decelerate to standstill
             void emergencyStop();                                      ///< stand still at once, without deceleration
 
+            /// @brief Holds the axis (true) or lets it go on (false). An axis that is held decelerates to
+            /// standstill and stands, whatever its command asks for; the command stays. On the way it still
+            /// arrives at a target: one that it shall pass is passed slower than asked for. While it stands,
+            /// next() hands out events without a step, none longer than a millisecond, so that it goes on
+            /// within that time. An axis without a command is idle, held or not.
+            void setHold(bool on)
+            {
+                if (held == on) return;
+                held = on;
+                version++;
+            }
+            bool isHeld() const { return held; }
+
             /// @brief Sets the position counter. Does not move the axis; a target stays where it is.
             void setPosition(int32_t pos)
             {
@@ -130,6 +143,7 @@ namespace TeensyStep
                     idle, // nothing to do
                     halt, // stand still now, without a step, then decide again
                     step,
+                    wait, // held at standstill: an event without a step, then decide again
                 } kind;
                 int8_t dir;
                 int64_t w;     // squared speed after the step
@@ -141,6 +155,7 @@ namespace TeensyStep
             float speedOf(int64_t wNew) const;
             Plan planPosition();
             Plan planVelocity();
+            Plan planHold();
             Plan approachStop(int32_t p, bool isMain);
             Plan stepToMovingTarget(int64_t rho, int64_t wTe);
             Plan stepWithoutRunUp(int64_t rho, int64_t wTe);
@@ -194,6 +209,7 @@ namespace TeensyStep
             int64_t timesTwoD(int64_t n) const { return n > maxStepsD ? ((int64_t)1 << 61) : n * twoD; }
             bool separateDeceleration = false;
             bool runUp                = true;
+            bool held                 = false; // setHold()
 
             // Steps at constant speed. When a step is decided that does not change the speed, the number of
             // steps after it that would be decided in exactly the same way is known. next() hands them out

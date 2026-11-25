@@ -97,7 +97,8 @@ arrived and there is room again.
   the warning `targetSpeedNotReached`.
 - **The length is taken as given.** A wrong length makes all speeds of the move wrong by the same factor.
 - **`stop()` and `emergencyStop()` of the group** end the path. A move that waits is dropped. `stop()`
-  brakes along the line of the move that runs, not along the path.
+  brakes along the line of the move that runs, not along the path. To stop on the path, hold it first,
+  see [Override and hold](#override-and-hold).
 - **A move command of the `StepperGroup`** (`moveAbs()` and the others) is accepted when the group stands
   still or runs on behind its targets; it ends a path with a stop at its targets.
 - **The arrival function of the group** is called at the targets of every move of the path.
@@ -106,15 +107,36 @@ arrived and there is room again.
   step. Called from the function of `onRoom()`, it runs in the interrupt and delays the steps of all
   moving motors by that time, which matters on a Teensy 3.x at high step rates.
 
-## Override
+## Override and hold
 
 ```cpp
 path.overrideSpeed(0.5f); // the path at half its speeds
 ```
 
 Runs the path at a fraction of the speeds of its moves: the move under way, the one that waits and all
-that follow, until another factor is set. The factor is above 0 and at most 1: a path that is planned
-for its speeds can always be run slower, but not faster.
+that follow, until another factor is set. The factor is at most 1: a path that is planned for its speeds
+can always be run slower, but not faster.
+
+```cpp
+path.overrideSpeed(0);    // hold: brake and stand on the path
+...
+path.overrideSpeed(1);    // go on
+```
+
+The factor 0 holds the path. The group slows down with the acceleration of its moves and stands on the
+path. If the move under way is too short for that, the group goes on into the moves that follow while it
+slows down, so the sketch keeps giving moves as before. A factor above 0 lets the path go on from where
+it stands.
+
+- **While the path is held,** its moves are kept and further ones are taken. `isMoving()` of the group
+  stays `true`, because the targets are not reached; the motors stay enabled. `getSpeed()` returns 0
+  when the group stands.
+- **To give the path up,** call `stop()` of the group when it stands. The motors are then on the path, at
+  the positions `getPosition()` returns, and a new path can start there.
+- **The factor stays,** also for the paths that follow: a path that is added while the factor is 0 waits
+  for a factor. Move commands of the `StepperGroup` are not held.
+- **The speeds of the motors still jump where two moves meet,** but never by more than at the speeds the
+  path was planned for.
 
 ## Reference
 
@@ -177,7 +199,7 @@ example to the object that holds the path. The function is called from an interr
 errorCode overrideSpeed(float factor);
 ```
 
-See [Override](#override). Returns `invalidArgument` for a factor that is not above 0 and at most 1.
+See [Override and hold](#override-and-hold). Returns `invalidArgument` for a factor below 0 or above 1.
 
 ### getSpeed()
 
@@ -185,7 +207,8 @@ See [Override](#override). Returns `invalidArgument` for a factor that is not ab
 float getSpeed() const;
 ```
 
-The current speed along the path, in the unit of the move under way. 0 at standstill.
+The current speed along the path, in the unit of the move under way. 0 at standstill, also when the
+path is held.
 
 ### movesDone()
 

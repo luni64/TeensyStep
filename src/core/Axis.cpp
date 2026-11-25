@@ -10,6 +10,7 @@ namespace TeensyStep
         {
             constexpr double wOne  = 1048576.0;             // 2^20: fixed point scale of the squared speeds
             constexpr int64_t wBig = (int64_t)1 << 61;      // "no limit"; sums of two such values still fit
+            constexpr float holdDelay = 0.001f;             // longest event of an axis that is held and stands, seconds
 
             int64_t toW(float v) // speed -> squared speed
             {
@@ -334,7 +335,8 @@ namespace TeensyStep
             for (int i = 0; i < 4; i++) // a halt is followed by a new decision; never more than two in a row
             {
                 headingRho = -1;
-                Plan p     = mode == Mode::position ? planPosition()
+                Plan p     = held ? planHold()
+                         : mode == Mode::position ? planPosition()
                          : mode == Mode::velocity ? planVelocity()
                                                   : Plan{Plan::idle, 0, 0, false, false};
                 if (p.kind == Plan::idle)
@@ -347,6 +349,20 @@ namespace TeensyStep
                 {
                     standStill();
                     continue;
+                }
+                if (p.kind == Plan::wait) // an event without a step
+                {
+                    pend         = p;
+                    pendV        = 0.0f;
+                    pendDone     = 0.0f;
+                    pendPieces   = 1;
+                    pendPiece    = maxDelay < holdDelay ? maxDelay : holdDelay;
+                    pendLeft     = 1;
+                    pendVersion  = version;
+                    pending      = true;
+                    coastLeft    = 0;
+                    coastVersion = version;
+                    return true;
                 }
 
                 float vNew, period;
@@ -473,6 +489,34 @@ namespace TeensyStep
             if (sigma == sG) return {Plan::step, sigma, faster(limit), false, false};
 
             return brake(); // wrong direction, or stop
+        }
+
+        //------------------------------------------------------------------------------------------------
+        // held: decelerate to standstill and stand, with the command kept
+
+        TEENSYSTEP_HOT Axis::Plan Axis::planHold()
+        {
+            if (mode == Mode::idle) return {Plan::idle, 0, 0, false, false};
+            if (sigma == 0)
+            {
+                // nothing left to do when it goes on: the command is done
+                bool done = mode == Mode::velocity ? sG == 0 : (sT == 0 && diff(xT, x) == 0);
+                return {done ? Plan::idle : Plan::wait, 0, 0, false, false};
+            }
+            Plan b = brake();
+            if (b.kind == Plan::step && mode == Mode::position && diff(xT, x) == sigma) // this step reaches the target
+            {
+                if (sT == sigma) // a target that is passed: slower than asked for
+                {
+                    b.arrived = true;
+                }
+                else if (sT == 0 && (b.w <= wPull || 2 * b.w <= twoD)) // slow enough to stand still there
+                {
+                    b.arrived  = true;
+                    b.thenStop = true;
+                }
+            }
+            return b;
         }
 
         //------------------------------------------------------------------------------------------------

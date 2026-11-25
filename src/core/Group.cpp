@@ -157,6 +157,7 @@ namespace TeensyStep
             unit      = 1;
             moveExit  = speedAtTarget;
             serial++;
+            path.setHold(false); // a hold is for the moves of addMove()
 
             // A new line, from where the members are. If the group runs on behind its last targets, this
             // is the next segment: the path goes on without a stop.
@@ -273,6 +274,7 @@ namespace TeensyStep
             passed      = false;
             stopping    = false;
             serial++;
+            path.setHold(holding);
             path.setPosition(0);
             path.setLimits(l.limits);
             path.scaleSpeed(factor);
@@ -344,7 +346,16 @@ namespace TeensyStep
 
         errorCode Group::setOverride(float factor)
         {
-            if (!(factor > 0 && factor <= 1)) return errorCode::invalidArgument;
+            if (!(factor >= 0 && factor <= 1)) return errorCode::invalidArgument;
+            bool onPath = path.isMoving() && kind == Kind::move && pathMove;
+            if (factor == 0) // hold: the speeds of the moves stay what they are
+            {
+                holding = true;
+                if (onPath) path.setHold(true);
+                return errorCode::OK;
+            }
+            holding = false;
+            if (onPath) path.setHold(false);
             feed = factor;
             if (hasQueued) finish(queued);
             if (path.isMoving() && kind == Kind::move && pathMove && !stopping)
@@ -368,6 +379,7 @@ namespace TeensyStep
                 pathMove  = false;
                 stopping  = false;
                 unit      = 1;
+                path.setHold(false); // a hold is for the moves of addMove()
             }
             float fastest = 0;
             for (unsigned i = 0; i < count; i++) fastest = std::fmax(fastest, std::fabs(speeds[i]));

@@ -83,8 +83,12 @@ namespace TeensyStep
             /// It is called from an interrupt: keep it short. nullptr removes it.
             void onRoom(void (*function)(GroupPath& path, void* context), void* context = nullptr);
 
-            /// @brief Runs the path at `factor` times the speeds of its moves (0 < factor <= 1): the move
+            /// @brief Runs the path at `factor` times the speeds of its moves (0 <= factor <= 1): the move
             /// under way, the one that waits and all that follow, until another factor is set.
+            /// @details 0 holds the path: the group slows down with the acceleration of its moves, goes on
+            /// into the moves that follow while it does, and stands on the path. Its moves are kept and
+            /// further ones are taken; the group counts as moving. A factor above 0 lets it go on, stop()
+            /// of the group gives the path up.
             /// @return invalidArgument for another factor
             errorCode overrideSpeed(float factor);
 

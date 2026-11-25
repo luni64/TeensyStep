@@ -24,7 +24,9 @@ All notable changes to TeensyStep are documented in this file. The format follow
   in mm). Its speeds and its acceleration are then in that unit, whichever motor has the longest way, and
   the speed along the path is kept where two moves meet. A motion planner no longer converts its speeds
   for every move.
-- `GroupPath::overrideSpeed()` runs a path at a fraction of its speeds, also while it runs.
+- `GroupPath::overrideSpeed()` runs a path at a fraction of its speeds, also while it runs. The factor 0
+  holds the path: the group brakes along the path, through the moves that follow if need be, and stands
+  on it until another factor is set.
   `GroupPath::getSpeed()` returns the speed along the path.
 
 **Changed**

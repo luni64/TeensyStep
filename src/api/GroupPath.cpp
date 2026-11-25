@@ -100,7 +100,7 @@ namespace TeensyStep
 
         errorCode GroupPath::overrideSpeed(float f)
         {
-            if (!(f > 0 && f <= 1)) return Engine::report(errorCode::invalidArgument);
+            if (!(f >= 0 && f <= 1)) return Engine::report(errorCode::invalidArgument);
             Lock lock;
             factor = f;
             int ch = g.runningChannel();

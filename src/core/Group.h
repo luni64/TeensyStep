@@ -128,11 +128,16 @@ namespace TeensyStep
             bool prepareWaiting(Line& line, const int32_t* targets, const PathMove& move, errorCode& code) const;
             bool commitWaiting(const Line& line);
 
-            /// @brief Runs the moves of addMove() at `factor` times their speeds (0 < factor <= 1): the one
-            /// under way, the one that waits and those that follow. @return invalidArgument for another factor
+            /// @brief Runs the moves of addMove() at `factor` times their speeds (0 <= factor <= 1): the one
+            /// under way, the one that waits and those that follow.
+            /// @details 0 holds the path: the group decelerates with the acceleration of its moves, goes on
+            /// into the move that waits while it does, and stands on the path. It keeps its moves and takes
+            /// further ones (isMoving() stays true); a factor above 0 lets it go on, stop() gives the path
+            /// up. The factor stays for the paths that follow; moveAbs() and rotate() are not held.
+            /// @return invalidArgument for another factor
             errorCode setOverride(float factor);
 
-            float overrideFactor() const { return feed; }
+            float overrideFactor() const { return holding ? 0.0f : feed; }
 
             /// @brief Current speed along the path, in the unit of the move under way.
             float pathSpeed() const;
@@ -232,7 +237,8 @@ namespace TeensyStep
             float unit       = 1;      // of the move under way: steps of the path per unit of the caller
             float moveSpeed = 0, moveAcc = 0; // of the move under way, as given, in steps of the path; 0: none
             float moveExit  = 0;       // its speed at the targets as given, in steps of the path
-            float feed      = 1;       // setOverride()
+            float feed      = 1;       // setOverride(), the last factor above 0
+            bool holding    = false;   // setOverride(0)
 
             float ownSpeed = 0, ownAcc = 0, ownDec = 0; // limits of the path as given for the group, 0: none
             bool separateDeceleration = false;
