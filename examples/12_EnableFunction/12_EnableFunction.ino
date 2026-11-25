@@ -6,7 +6,7 @@
  * gets a function that switches the driver.
  *
  * The library calls the function from an interrupt: it must not wait, and
- * no motor gets a step while it runs (here about 0.1 ms for the transfer).
+ * no motor gets a step while it runs (here about 0.3 ms for the transfer).
  *==========================================================================*/
 
 #include "TeensyStep.h"
@@ -30,8 +30,7 @@ void enableDriver(bool on) // called by the library
 
 void setup()
 {
-    Wire.begin();
-    Wire.setClock(400'000);    // a short transfer
+    Wire.begin();              // 100 kHz, the default
     writeExtender(0x12, 0x01); // GPA0 high: the driver is off
     writeExtender(0x00, 0xFE); // register IODIRA: GPA0 is an output
 

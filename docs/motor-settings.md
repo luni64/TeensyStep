@@ -91,6 +91,6 @@ last counts, and `setEnable(nullptr)` removes both.
 !!! warning "The function runs in an interrupt"
     The library calls the function from its step interrupt or with the interrupts disabled. It must not
     wait: no `delay()`, and nothing that needs an interrupt to finish. While it runs, no motor gets a
-    step, so a transfer that takes 100 µs (as in the sketch above) delays the steps of all moving motors by that time. If that
-    is too long, let the function only note the new state, write it to the extender in `loop()`, and
-    choose the on-delay long enough for that.
+    step, so a transfer that takes 0.3 ms (as in the sketch above) delays the steps of all moving motors
+    by that time. If that is too long, let the function only note the new state, write it to the
+    extender in `loop()`, and choose the on-delay long enough for that.
