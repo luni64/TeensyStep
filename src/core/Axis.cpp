@@ -101,6 +101,60 @@ namespace TeensyStep
             return changed ? errorCode::speedLimited : errorCode::OK;
         }
 
+        Axis::Limits Axis::makeLimits(float maxSpeed, float acceleration, float deceleration, float pullInSpeed)
+        {
+            bool changed = false;
+            Limits l;
+            l.vMax      = limited(maxSpeed, minSpeedLimit, maxSpeedLimit, changed);
+            l.wMax      = toW(l.vMax);
+            l.twoA      = toDelta(limited(acceleration, minAccelerationLimit, maxAccelerationLimit, changed));
+            l.twoD      = toDelta(limited(deceleration, minAccelerationLimit, maxAccelerationLimit, changed));
+            l.maxStepsA = wBig / l.twoA;
+            l.maxStepsD = wBig / l.twoD;
+            l.vPull     = limited(pullInSpeed, 0.0f, maxSpeedLimit, changed);
+            l.wPull     = toW(l.vPull);
+            return l;
+        }
+
+        TEENSYSTEP_HOT void Axis::setLimits(const Limits& l)
+        {
+            vMax                 = l.vMax;
+            wMax                 = l.wMax;
+            twoA                 = l.twoA;
+            twoD                 = l.twoD;
+            maxStepsA            = l.maxStepsA;
+            maxStepsD            = l.maxStepsD;
+            vPull                = l.vPull;
+            wPull                = l.wPull;
+            separateDeceleration = true;
+            version++;
+        }
+
+        int64_t Axis::squared(float v)
+        {
+            return toW(v);
+        }
+
+        TEENSYSTEP_HOT void Axis::scaleSpeed(float factor)
+        {
+            if (factor != 1.0f)
+            {
+                w    = (int64_t)((float)w * factor * factor);
+                vCur = vCur * factor;
+            }
+            version++;
+        }
+
+        TEENSYSTEP_HOT void Axis::startMove(int32_t pos, float speedAtTarget, int64_t squaredSpeed)
+        {
+            version++;
+            vTarget = speedAtTarget;
+            xT      = pos;
+            wT      = squaredSpeed > wMax ? wMax : squaredSpeed;
+            sT      = speedAtTarget != 0.0f ? 1 : 0;
+            mode    = sigma == 0 && sT == 0 && diff(xT, x) == 0 ? Mode::idle : Mode::position;
+        }
+
         void Axis::setMaxDelay(float seconds)
         {
             maxDelay = seconds >= 0.00001f ? seconds : 0.00001f;

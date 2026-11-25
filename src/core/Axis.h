@@ -68,6 +68,28 @@ namespace TeensyStep
             /// what a step of this axis is: the path of a group at the start of a new segment.
             void setSpeed(float stepsPerSec);
 
+            // The same for a caller that prepares a move ahead and starts it from the step calculation (the
+            // path of a group at the arrival of the move before): what takes time is done by makeLimits()
+            // and squared(), in the context of the caller; setLimits(), scaleSpeed() and startMove() only
+            // copy and multiply.
+
+            /// @brief The four limits as the axis keeps them.
+            struct Limits
+            {
+                int64_t wMax, twoA, twoD, wPull, maxStepsA, maxStepsD;
+                float vMax, vPull;
+            };
+            static Limits makeLimits(float maxSpeed, float acceleration, float deceleration, float pullInSpeed);
+            void setLimits(const Limits& limits);
+            static int64_t squared(float stepsPerSec); ///< a speed as the axis keeps it
+
+            /// @brief Multiplies the current speed by `factor` (> 0), without a ramp.
+            void scaleSpeed(float factor);
+
+            /// @brief moveAbs() for a target in the direction of counting up, without the checks:
+            /// `speedAtTarget` >= 0 and not above the maximum speed, `squaredSpeed` = squared(speedAtTarget).
+            void startMove(int32_t pos, float speedAtTarget, int64_t squaredSpeed);
+
             // Commands. Allowed at any time; a new command replaces the current one.
 
             /// @brief Move to `pos` and have the speed `speedAtTarget` there. The sign of the speed is the

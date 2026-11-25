@@ -27,6 +27,17 @@ namespace TeensyStep
             bool arrived;      ///< this event reaches the targets of the current move
         };
 
+        /// @brief A move of a path, for Group::addMove(). The speeds are in the unit of the caller: whatever
+        /// unit `length` is in, per second. With a length of 0 they are in steps of the member with the
+        /// longest way, like all other speeds of a group.
+        struct PathMove
+        {
+            float length        = 0; ///< length of the move in the unit of the caller, for example mm. 0: no unit of its own
+            float speed         = 0; ///< highest speed on the way. 0: as fast as the members allow
+            float speedAtTarget = 0; ///< 0: stop at the targets
+            float acceleration  = 0; ///< also for slowing down. 0: as much as the members allow
+        };
+
         /// @brief Motion of several motors that move synchronized. No hardware access.
         ///
         /// @details The members move along a straight line between their start positions and their targets
@@ -94,6 +105,28 @@ namespace TeensyStep
             /// @return notSupported if the group is not on its way to targets; otherwise as moveAbs()
             errorCode setSpeedAtTarget(float speedAtTarget);
 
+            // A path that is given ahead: one move runs, one waits. The move that waits is prepared when it
+            // is given and started by next() at the arrival of the one before it, so that the path goes on
+            // without a call from outside. The speed along the path is kept there in the unit of the
+            // caller, whichever members have the longest way in the two moves.
+
+            /// @brief Adds a move to these targets (one per member). It starts at once if the group stands
+            /// still or runs on behind its last targets, and waits if a move is on its way.
+            /// @return notSupported if a move is waiting already, while the group rotates and while it
+            ///         is stopping. invalidArgument for a negative value, and for a waiting move without a
+            ///         way. speedLimited / accelerationLimited if the members allow less than the move
+            ///         asks for. targetSpeedNotReached if the way is too short to get from the speed at
+            ///         its start to the speed at its targets
+            errorCode addMove(const int32_t* targets, const PathMove& move);
+            unsigned room() const; ///< moves that addMove() takes now: 2, 1 or 0
+
+            /// @brief Runs the moves of addMove() at `factor` times their speeds (0 < factor <= 1): the one
+            /// under way, the one that waits and those that follow. @return invalidArgument for another factor
+            errorCode setOverride(float factor);
+
+            /// @brief Current speed along the path, in the unit of the move under way.
+            float pathSpeed() const;
+
             /// @brief Rotate the members at these speeds (one per member, sign: direction). The ratio of
             /// the speeds is kept exactly. While the group rotates, speeds with the same ratio change the
             /// speed of the group; another ratio returns notSupported. All speeds 0: stop.
@@ -134,6 +167,33 @@ namespace TeensyStep
                 MotorLimits limits;
             };
 
+            // the limits of the path of a line: what the members allow, and what is asked for
+            struct PathLimits
+            {
+                float vMax, acc, dec, pull;
+                bool speedCapped, accCapped, decCapped;
+            };
+            PathLimits limitsOf(const uint32_t* share, uint32_t len, float wantSpeed, float wantAcc, float wantDec, float factor) const;
+
+            // a move of addMove(), prepared
+            struct Line
+            {
+                uint32_t share[maxMembers];
+                int32_t target[maxMembers];
+                int8_t dir[maxMembers];
+                uint32_t length = 0;          // steps of the member with the longest way
+                float unit      = 1;          // steps of that member per unit of the caller
+                float wantSpeed = 0, wantAcc = 0; // as given, in steps of that member; 0: none
+                float exit      = 0;          // speed at the targets as given, in steps of that member
+                float vT        = 0;          // the same with the override, not above the maximum speed
+                int64_t wT      = 0;
+                Axis::Limits limits;
+                bool speedCapped = false, accCapped = false;
+            };
+            errorCode prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed);
+            void finish(Line& l) const;
+            void activate(const Line& l);
+
             void applyLimits();
             errorCode limitWarning() const;
             void startPath(uint32_t pathLength);
@@ -148,6 +208,16 @@ namespace TeensyStep
             uint16_t all       = 1;   // bits of all members
             uint16_t lastDirs  = 0;   // direction bits of the last event
             bool passed        = false; // move: the targets are passed, the group runs on
+
+            // moves of addMove()
+            Line queued;               // the move that waits
+            bool hasQueued   = false;
+            bool pathMove    = false;  // the move under way came from addMove()
+            bool stopping    = false;  // stop() was called
+            float unit       = 1;      // of the move under way: steps of the path per unit of the caller
+            float moveSpeed = 0, moveAcc = 0; // of the move under way, as given, in steps of the path; 0: none
+            float moveExit  = 0;       // its speed at the targets as given, in steps of the path
+            float feed      = 1;       // setOverride()
 
             float ownSpeed = 0, ownAcc = 0, ownDec = 0; // limits of the path as given for the group, 0: none
             bool separateDeceleration = false;

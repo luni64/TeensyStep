@@ -32,6 +32,7 @@ namespace TeensyStep
         {
             m[i].limits = limits;
             if (kind != Kind::none && length > 0) applyLimits();
+            if (hasQueued) finish(queued);
         }
 
         void Group::setPosition(unsigned i, int32_t pos)
@@ -41,30 +42,49 @@ namespace TeensyStep
 
         /// The path may be as fast as every member allows. A member that makes only a part of the path's
         /// steps moves at that part of the path's speed, so it allows the path its own limit divided by its share.
-        void Group::applyLimits()
+        /// `want...` is what is asked for the path (0: nothing), `factor` the override of the speed.
+        Group::PathLimits Group::limitsOf(const uint32_t* share, uint32_t len, float wantSpeed, float wantAcc, float wantDec, float factor) const
         {
             float vMax = Axis::maxSpeedLimit, acc = Axis::maxAccelerationLimit, dec = Axis::maxAccelerationLimit, pull = Axis::maxSpeedLimit;
             for (unsigned i = 0; i < count; i++)
             {
-                if (m[i].share == 0) continue; // a member that does not move sets no limit
-                float perShare = (float)length / (float)m[i].share;
+                if (share[i] == 0) continue; // a member that does not move sets no limit
+                float perShare = (float)len / (float)share[i];
                 vMax           = std::fmin(vMax, m[i].limits.maxSpeed * perShare);
                 acc            = std::fmin(acc, m[i].limits.acceleration * perShare);
                 dec            = std::fmin(dec, m[i].limits.deceleration * perShare);
                 pull           = std::fmin(pull, m[i].limits.pullInSpeed * perShare);
             }
-            // what the group asks for, with the members as ceilings
-            speedCapped = ownSpeed > vMax;
-            accCapped   = ownAcc > acc;
-            decCapped   = ownDec > dec;
-            if (ownSpeed > 0 && !speedCapped) vMax = ownSpeed;
-            if (ownAcc > 0 && !accCapped) acc = ownAcc;
-            if (ownDec > 0 && !decCapped) dec = ownDec;
+            // What is asked for, with the members as ceilings. A value that is the ceiling itself, calculated
+            // by the caller with another rounding, is not "more than the members allow".
+            const float same = 1.0001f;
+            PathLimits l;
+            l.speedCapped = wantSpeed > vMax * same;
+            l.accCapped   = wantAcc > acc * same;
+            l.decCapped   = wantDec > dec * same;
+            if (wantSpeed > 0 && wantSpeed < vMax) vMax = wantSpeed;
+            if (wantAcc > 0 && wantAcc < acc) acc = wantAcc;
+            if (wantDec > 0 && wantDec < dec) dec = wantDec;
+            l.vMax = vMax * factor;
+            l.acc  = acc;
+            l.dec  = dec;
+            l.pull = pull;
+            return l;
+        }
 
-            path.setMaxSpeed(vMax);
-            path.setAcceleration(acc);
-            path.setDeceleration(dec);
-            path.setPullInSpeed(pull);
+        void Group::applyLimits()
+        {
+            uint32_t share[maxMembers];
+            for (unsigned i = 0; i < count; i++) share[i] = m[i].share;
+            bool own     = !(kind == Kind::move && pathMove); // a move of addMove() has its own values
+            PathLimits l = limitsOf(share, length, own ? ownSpeed : moveSpeed, own ? ownAcc : moveAcc, own ? ownDec : moveAcc, own ? 1.0f : feed);
+            speedCapped  = l.speedCapped;
+            accCapped    = l.accCapped;
+            decCapped    = l.decCapped;
+            path.setMaxSpeed(l.vMax);
+            path.setAcceleration(l.acc);
+            path.setDeceleration(l.dec);
+            path.setPullInSpeed(l.pull);
         }
 
         errorCode Group::limitWarning() const
@@ -131,6 +151,11 @@ namespace TeensyStep
                     return setSpeedAtTarget(speedAtTarget);
                 }
             }
+            hasQueued = false;
+            pathMove  = false;
+            stopping  = false;
+            unit      = 1;
+            moveExit  = speedAtTarget;
 
             // A new line, from where the members are. If the group runs on behind its last targets, this
             // is the next segment: the path goes on without a stop.
@@ -163,12 +188,164 @@ namespace TeensyStep
         {
             if (!(speedAtTarget >= 0)) return errorCode::invalidArgument;
             if (!path.isMoving() || kind != Kind::move || passed) return errorCode::notSupported;
+            moveExit       = speedAtTarget;
             errorCode code = path.moveAbs((int32_t)length, speedAtTarget);
             return code != errorCode::OK ? code : limitWarning();
         }
 
+        //------------------------------------------------------------------------------------------------
+        // a path that is given ahead
+
+        /// Fills a line from `from` to `targets`. `entrySpeed`: the speed along the path at its start, in
+        /// the unit of the caller of the move before (for the warning only).
+        errorCode Group::prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed)
+        {
+            uint32_t longest = 0;
+            for (unsigned i = 0; i < count; i++)
+            {
+                int64_t d   = diff(targets[i], from[i]);
+                l.dir[i]    = d < 0 ? -1 : 1;
+                int64_t a   = d < 0 ? -d : d;
+                l.share[i]  = a > INT32_MAX ? (uint32_t)INT32_MAX : (uint32_t)a;
+                l.target[i] = targets[i];
+                if (l.share[i] > longest) longest = l.share[i];
+            }
+            l.length = longest;
+            if (longest == 0) return errorCode::OK;
+            l.unit      = move.length > 0 ? (float)longest / move.length : 1.0f;
+            l.wantSpeed = move.speed * l.unit;
+            l.wantAcc   = move.acceleration * l.unit;
+            l.exit      = move.speedAtTarget * l.unit;
+            finish(l);
+            if (l.speedCapped || l.exit * feed > l.limits.vMax * 1.0001f) return errorCode::speedLimited;
+            if (l.accCapped) return errorCode::accelerationLimited;
+
+            // Is the way long enough to get from the speed at the start to the speed at the targets? A plan
+            // that uses exactly the whole way is long enough.
+            PathLimits p  = limitsOf(l.share, l.length, l.wantSpeed, l.wantAcc, l.wantAcc, feed);
+            double v0     = (double)entrySpeed * l.unit, vT = l.vT, pull = p.pull, way = longest;
+            double from0  = v0 > pull ? v0 : pull, toT = vT > pull ? vT : pull;
+            const double same = 1.002;
+            bool tooShortToReach = vT > pull && vT * vT > (from0 * from0 + 2.0 * p.acc * way) * same;
+            bool tooShortToSlow  = v0 > pull && v0 * v0 > (toT * toT + 2.0 * p.dec * way) * same;
+            return tooShortToReach || tooShortToSlow ? errorCode::targetSpeedNotReached : errorCode::OK;
+        }
+
+        /// The limits of a line and its speed at the targets, with the limits of the members and the
+        /// override as they are now.
+        void Group::finish(Line& l) const
+        {
+            PathLimits p  = limitsOf(l.share, l.length, l.wantSpeed, l.wantAcc, l.wantAcc, feed);
+            l.speedCapped = p.speedCapped;
+            l.accCapped   = p.accCapped;
+            l.limits      = Axis::makeLimits(p.vMax, p.acc, p.dec, p.pull);
+            l.vT          = std::fmin(l.exit * feed, l.limits.vMax);
+            l.wT          = Axis::squared(l.vT);
+        }
+
+        /// Starts a prepared line where the members are. Called from next() at an arrival: nothing here
+        /// takes long.
+        TEENSYSTEP_HOT void Group::activate(const Line& l)
+        {
+            float factor = l.unit / unit; // the speed along the path stays what it is in the unit of the caller
+            forward      = 0;
+            for (unsigned i = 0; i < count; i++)
+            {
+                Member& mem = m[i];
+                mem.share   = l.share[i];
+                mem.dir     = l.dir[i];
+                mem.target  = l.target[i];
+                mem.err     = l.length / 2;
+                if (l.dir[i] > 0) forward |= (uint16_t)(1u << i);
+            }
+            length      = l.length;
+            lastDirs    = forward;
+            unit        = l.unit;
+            moveSpeed   = l.wantSpeed;
+            moveAcc     = l.wantAcc;
+            moveExit    = l.exit;
+            speedCapped = l.speedCapped;
+            accCapped   = l.accCapped;
+            decCapped   = l.accCapped;
+            kind        = Kind::move;
+            pathMove    = true;
+            passed      = false;
+            stopping    = false;
+            path.setPosition(0);
+            path.setLimits(l.limits);
+            path.scaleSpeed(factor);
+            path.startMove((int32_t)l.length, l.vT, l.wT);
+        }
+
+        errorCode Group::addMove(const int32_t* targets, const PathMove& move)
+        {
+            if (!(move.length >= 0) || !(move.speed >= 0) || !(move.speedAtTarget >= 0) || !(move.acceleration >= 0)) return errorCode::invalidArgument;
+            bool moving = path.isMoving();
+            if (moving && (kind != Kind::move || stopping)) return errorCode::notSupported;
+
+            if (moving && !passed) // a move is on its way: this one waits
+            {
+                if (hasQueued) return errorCode::notSupported;
+                int32_t from[maxMembers];
+                for (unsigned i = 0; i < count; i++) from[i] = m[i].target;
+                errorCode code = prepare(queued, from, targets, move, moveExit * feed / unit);
+                if (queued.length == 0) return errorCode::invalidArgument;
+                hasQueued = true;
+                return code;
+            }
+
+            // the group stands still or runs on behind its last targets: the move starts where the members are
+            int32_t from[maxMembers];
+            for (unsigned i = 0; i < count; i++) from[i] = m[i].pos;
+            Line l;
+            errorCode code = prepare(l, from, targets, move, std::fabs(path.speed()) / unit);
+            hasQueued      = false;
+            if (l.length == 0) // all members are at their targets
+            {
+                if (!moving) return errorCode::OK;
+                path.emergencyStop(); // they are there, but moving: nothing is left to slow down on
+                return errorCode::targetSpeedNotReached;
+            }
+            if (!moving) unit = l.unit; // no speed to keep
+            activate(l);
+            return code;
+        }
+
+        unsigned Group::room() const
+        {
+            if (!path.isMoving()) return 2;
+            if (kind != Kind::move || stopping) return 0;
+            if (passed) return 2;
+            return hasQueued ? 0 : 1;
+        }
+
+        errorCode Group::setOverride(float factor)
+        {
+            if (!(factor > 0 && factor <= 1)) return errorCode::invalidArgument;
+            feed = factor;
+            if (hasQueued) finish(queued);
+            if (path.isMoving() && kind == Kind::move && pathMove && !stopping)
+            {
+                applyLimits();
+                if (!passed) path.moveAbs((int32_t)length, moveExit * feed);
+            }
+            return errorCode::OK;
+        }
+
+        float Group::pathSpeed() const
+        {
+            return std::fabs(path.speed()) / unit;
+        }
+
         errorCode Group::rotate(const float* speeds)
         {
+            if (!path.isMoving())
+            {
+                hasQueued = false;
+                pathMove  = false;
+                stopping  = false;
+                unit      = 1;
+            }
             float fastest = 0;
             for (unsigned i = 0; i < count; i++) fastest = std::fmax(fastest, std::fabs(speeds[i]));
             if (fastest == 0.0f) return stop();
@@ -218,11 +395,15 @@ namespace TeensyStep
 
         errorCode Group::stop()
         {
+            hasQueued = false;
+            stopping  = true;
             return path.stop();
         }
 
         void Group::emergencyStop()
         {
+            hasQueued = false;
+            stopping  = false;
             path.emergencyStop();
         }
 
@@ -237,7 +418,6 @@ namespace TeensyStep
             event.delay    = e.delay;
             event.arrived  = e.arrived;
             event.stepMask = 0;
-            if (e.arrived) passed = true;
             if (e.dir == 0) // wait only
             {
                 event.dirMask = lastDirs;
@@ -286,6 +466,18 @@ namespace TeensyStep
             }
             event.stepMask = (uint16_t)mask;
             lastDirs       = event.dirMask;
+            if (e.arrived)
+            {
+                if (hasQueued) // the path goes on with the move that waited
+                {
+                    hasQueued = false;
+                    activate(queued);
+                }
+                else
+                {
+                    passed = true;
+                }
+            }
             return true;
         }
 
