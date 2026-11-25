@@ -22,8 +22,8 @@ void tick() // called every 10 ms
     t += dt; // time of the next call
 
     float position = amplitude * cosf(omega * t);
-    float speed    = -amplitude * omega * sinf(omega * t);
-    motor.moveAbsAsync(position, speed); // be there, at this speed
+    float speed    = fabsf(amplitude * omega * sinf(omega * t)); // without a sign: the motor passes the point
+    motor.moveAbsAsync(position, speed);                         // in the direction in which it comes to it
 }
 
 void setup()

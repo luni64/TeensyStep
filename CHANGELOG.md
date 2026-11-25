@@ -17,6 +17,13 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 **Changed**
 
+- The sign of the speed at a target (`moveAbs(pos, speedAtTarget)`, `moveRel()` and their `Async` forms)
+  has a new meaning. A positive speed passes the target in the direction in which the motor comes to it,
+  also when the target is below the motor; before, a positive speed always meant "counting up" and made
+  the motor reverse for a target below it. A negative speed passes the target in the opposite direction:
+  the motor goes past it, turns and comes back through it. Sketches that gave a negative speed for a
+  target below the motor have to give it without the sign now; the examples `07_Follower` and
+  `14_RoseFunction` do so.
 - `setPosition()` is now `setPositionCounter()`, because the old name was mistaken for a command that
   moves the motor. The old name still works and is deprecated: the compiler prints a hint.
 - The examples are numbered by topic. `13_Follower` is now `07_Follower`, `16_HomingPrecise` is

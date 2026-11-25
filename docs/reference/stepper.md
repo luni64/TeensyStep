@@ -143,7 +143,7 @@ Starts a move to the position `pos`, or to `delta` steps from the current positi
 | Parameter | |
 |---|---|
 | `pos`, `delta` | the target, in steps |
-| `speedAtTarget` | 0 (default): stop at the target. Otherwise: pass the target at this speed and keep running at it. The sign is the direction of passing. See [Targets with a speed](../targets-with-speed.md) |
+| `speedAtTarget` | 0 (default): stop at the target. Otherwise: pass the target at this speed and keep running at it. Positive: the target is passed in the direction in which the motor comes to it; negative: in the opposite direction, after going past the target and turning. See [Targets with a speed](../targets-with-speed.md) |
 
 A speed at the target above the maximum speed is limited to it (warning `speedLimited`).
 

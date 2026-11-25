@@ -11,7 +11,8 @@
  *     slide.moveAbsAsync(position, speed);
  *
  * Because the target includes the speed, the slide does not stop at each
- * point but runs through the points smoothly.
+ * point but runs through the points smoothly. The speed is given without a
+ * sign: the slide passes each point in the direction in which it comes to it.
  *
  * The commands of the library may be called from a timer interrupt, as it
  * is done here. Give such a timer a low priority, so that it does not
@@ -33,7 +34,7 @@ constexpr float amplitude = 10'000; // steps
 // rose function r(phi) = amplitude * cos(k * phi) and its change per second
 constexpr float k = 5.0f / 8.0f;
 float slidePosition(float phi) { return amplitude * cosf(k * phi); }
-float slideSpeed(float phi) { return -amplitude * k * omega * sinf(k * phi); }
+float slideSpeed(float phi) { return fabsf(amplitude * k * omega * sinf(k * phi)); } // without a sign, see below
 
 Stepper spindle(1, 2);
 Stepper slide(3, 4);

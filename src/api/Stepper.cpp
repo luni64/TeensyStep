@@ -281,6 +281,17 @@ namespace TeensyStep
                 cmd          = Command::moveAbs;
             }
 
+            if (cmd == Command::moveAbs && speed != 0.0f)
+            {
+                // The sign of the speed at the target is relative to the way the motor comes: positive passes
+                // the target in the direction from the motor to the target, negative against it. The ramp
+                // wants the direction itself. A motor that is at the target has no such way: the direction is
+                // the one it moves in, and counting up if it stands still.
+                int32_t way = (int32_t)((uint32_t)p - (uint32_t)(c ? c->axis.position() : pos));
+                bool down   = way < 0 || (way == 0 && c && c->axis.speed() < 0.0f);
+                if (down) speed = -speed;
+            }
+
             if (!c) // the motor has no channel: it needs one, unless there is nothing to do
             {
                 if (cmd == Command::stop || (cmd == Command::rotate && speed == 0.0f)) goto done;

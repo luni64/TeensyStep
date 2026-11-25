@@ -9,9 +9,24 @@ motor.moveAbsAsync(10'000, 2'000); // pass 10000 at 2000 steps/s and run on at t
 ```
 
 The motor reaches the position exactly at that speed and then keeps it, like after `rotateAsync()`, until
-the next command. The sign of the speed is the direction in which the position is passed.
+the next command.
 
-If the target is too close to reach the speed, or lies behind the motor, the motor takes a run-up: it
+The speed is normally given without a sign. The motor then passes the target in the direction in which
+it comes to it: counting up if the target is above the position of the motor, counting down if it is
+below. With a negative speed the motor passes the target in the opposite direction: it goes past the
+target, turns and comes back through it.
+
+```cpp
+// the motor is at position 0
+motor.moveAbsAsync(10'000,  2'000); // passes 10000 counting up
+motor.moveAbsAsync(10'000, -2'000); // goes beyond 10000, turns, and passes 10000 counting down
+```
+
+What counts is where the motor is at the moment of the command. (A motor that is exactly at the target
+has no way to come from: it passes the target in the direction it is moving in, or counting up if it
+stands still, and the other way round with a negative speed.)
+
+If the target is too close to reach the speed, the motor takes a run-up: it
 first moves away from the target, reverses, and then passes the target at the required speed. This can
 happen when a target is given or changed while the motor runs, and when a motor that stands still is
 given a target that is too close for the speed. A target far enough ahead needs no run-up.
@@ -81,7 +96,8 @@ following sketch a motor swings back and forth like a pendulum:
 ```
 
 The timer runs every 10 ms and gives the motor the position and the speed of the curve for the time of
-its next call. The sketch first moves the motor to the start of the curve, where the speed is 0, so that
+its next call. The speed is given without its sign, so that the motor passes each point in the
+direction in which it comes to it. The sketch first moves the motor to the start of the curve, where the speed is 0, so that
 the motor does not have to catch up with a curve that is already moving.
 
 The motor reaches every point at the right speed, but the library does not control when it gets there:

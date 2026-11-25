@@ -64,8 +64,10 @@ namespace TeensyStep
 
         // Commands
 
-        /// @brief Move to `pos`. speedAtTarget = 0: stop there. Otherwise: pass `pos` at this speed (the
-        /// sign is the direction of passing) and keep running at it.
+        /// @brief Move to `pos`. speedAtTarget = 0: stop there. Otherwise: pass `pos` at this speed and keep
+        /// running at it. A positive speed passes the target in the direction in which the motor comes
+        /// to it; a negative speed passes it in the opposite direction (the motor goes past the target,
+        /// turns and comes back through it).
         /// @return OK, a warning (speedLimited), or an error (noTimer, motorBusy): then the motor is unchanged
         errorCode moveAbsAsync(int32_t pos, float speedAtTarget = 0);
         errorCode moveRelAsync(int32_t delta, float speedAtTarget = 0); ///< like moveAbsAsync, relative to the current position
