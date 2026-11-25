@@ -13,7 +13,7 @@ void setup()
         .setMaxSpeed(20'000)      // steps/s
         .setAcceleration(20'000); // steps/s^2: the maximum speed is reached after 1 s
 
-    motor.setPosition(0); // call the current position 0
+    motor.setPositionCounter(0); // call the current position 0
 }
 
 void loop()

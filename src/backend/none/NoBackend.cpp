@@ -18,6 +18,7 @@ namespace TeensyStep
         void lock() {}
         void unlock() {}
         void idle() {}
+        void setInterruptPriority(uint8_t) {}
     }
 }
 

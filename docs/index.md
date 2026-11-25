@@ -96,7 +96,7 @@ that matter most are therefore the maximum speed and the acceleration:
   20,000 steps/s²: the motor reaches its maximum speed of 20,000 steps/s after one second.
 - The settings can be chained, as in the sketch, and changed at any time.
 - `moveAbs(p)` moves to the position `p`. Positions are counted in steps, from where the motor stood at
-  power-up or from the last `setPosition()`.
+  power-up or from the last `setPositionCounter()`.
 
 An acceleration of 20,000 steps/s² means that the speed rises by 20,000 steps/s in every second of
 accelerating; read the unit as (steps per second) per second. A motor that shall reach 20,000 steps/s

@@ -199,14 +199,17 @@ int32_t getPosition() const;
 
 The position in steps.
 
-### setPosition()
+### setPositionCounter()
 
 ```cpp
-void setPosition(int32_t pos);
+void setPositionCounter(int32_t pos);
 ```
 
 Sets the position counter to `pos`, for example to 0 at the reference position of a machine. The motor
 does not move, and the function does not set a target: to move the motor to a position use `moveAbs()`.
+
+The function was called `setPosition()` before. The old name still works; the compiler prints a hint
+that it is deprecated.
 
 ---
 
@@ -236,10 +239,12 @@ bool isMoving() const;
 
 ```cpp
 void onArrival(void (*callback)());
+void onArrival(void (*callback)(Stepper& motor));
 ```
 
 Sets a function that is called when the motor reaches a target. It is called from an interrupt and may
-give the next command. `nullptr` removes it. See
+give the next command. The function has no parameter, or it has one and gets the motor that has
+arrived; the second form lets one function serve several motors. `nullptr` removes the function. See
 [The arrival function](../targets-with-speed.md#the-arrival-function).
 
 ---

@@ -2,6 +2,7 @@
 
 #include "../backend/Backend.h"
 #include "../core/errorCode.h"
+#include <cstddef>
 #include <cstdint>
 
 namespace TeensyStep
@@ -59,7 +60,7 @@ namespace TeensyStep
         Stepper& setEnablePin(int pin, int activeLevel = 0, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
 
         /// @brief Sets the position counter. Does not move the motor; a target stays where it is.
-        void setPosition(int32_t pos);
+        void setPositionCounter(int32_t pos);
 
         // Commands
 
@@ -87,7 +88,18 @@ namespace TeensyStep
 
         /// @brief Sets a function that is called when a target is reached. It may give the next command.
         /// It is called from an interrupt: keep it short. nullptr removes it.
+        ///
+        /// The function can have the motor as its parameter, so that one function serves several motors:
+        ///
+        ///     void arrived(Stepper& motor) { ... }
+        ///     x.onArrival(arrived);
+        ///     y.onArrival(arrived);
         void onArrival(void (*callback)());
+        void onArrival(void (*callback)(Stepper& motor)); ///< called with the motor that has arrived
+        void onArrival(std::nullptr_t);                   ///< removes the function
+
+        /// @deprecated The old name of setPositionCounter().
+        [[deprecated("use setPositionCounter()")]] void setPosition(int32_t pos) { setPositionCounter(pos); }
 
         /// @deprecated Version 2: separate pull-in and pull-out speeds. The lower one is used for both.
         [[deprecated("use setPullInSpeed()")]] Stepper& setPullInOutSpeed(float pullInSpeed, float pullOutSpeed);
@@ -119,7 +131,9 @@ namespace TeensyStep
         bool hasTarget = false; // false: the target is the current position
         int8_t channel = -1;    // channel of the running move, -1: none
         uint8_t member = 0;     // index of the motor in its channel
-        void (*arrival)()          = nullptr;
+        void (*arrival)()              = nullptr; // arrival function without a parameter, or
+        void (*arrivalMotor)(Stepper&) = nullptr; // the one that gets the motor; at most one of them is set
+        void callArrival();
         volatile uint32_t arrivals = 0; // counts the reached targets, for the blocking commands
 
         friend struct detail::Engine;

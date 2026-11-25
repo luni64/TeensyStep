@@ -47,10 +47,8 @@ namespace TeensyStep
             constexpr int32_t guard        = 4;       // counts; a compare value this close ahead of the counter may be missed
             constexpr float shortPulse     = 2.0e-6f; // seconds; a pulse up to this width is ended in the interrupt that started it
 
-            // Priority of the timer interrupts: above the default (128), so that other interrupts do not delay
-            // the steps, but one level below the millisecond interrupt of the core (32): whatever holds up a
-            // timer interrupt, for example an arrival function that takes long, does not stop millis().
-            constexpr uint8_t interruptPriority = 48;
+            // Priority of the timer interrupts, see defaultInterruptPriority and setInterruptPriority().
+            uint8_t interruptPriority = defaultInterruptPriority;
 
             struct Ftm // the registers of a FlexTimer module that are used here
             {
@@ -592,6 +590,13 @@ namespace TeensyStep
         void idle()
         {
             yield();
+        }
+
+        void setInterruptPriority(uint8_t priority)
+        {
+            interruptPriority = priority;
+            for (unsigned m = 0; m < 4; m++) // the timers the library uses now; the others get it when they are taken
+                if (_VectorsRam[moduleIrq[m] + 16] == moduleIsr[m]) NVIC_SET_PRIORITY(moduleIrq[m], priority);
         }
 
         uint32_t teensy3::interruptsWithoutWork()

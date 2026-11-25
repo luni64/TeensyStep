@@ -87,6 +87,31 @@ than the step interrupts.
 
 The library disables the interrupts for a few microseconds while a command changes the state of a motor.
 
+### Changing the priority
+
+A sketch that has interrupts which must not wait for the motors, or that wants its own interrupts to
+come first, can set the priority of the step interrupts. The function belongs to the advanced API:
+
+```cpp
+#include "TeensyStepAdvanced.h"
+using namespace TeensyStep;
+
+void setup()
+{
+    advanced::setInterruptPriority(128);   // the default priority of the Teensy core
+}
+```
+
+The numbers are those of the Teensy core (`NVIC_SET_PRIORITY`): 0 is the most urgent priority and 255
+the least urgent, in steps of 16. The default is `advanced::defaultInterruptPriority` (48). The new
+priority holds for all motors and takes effect at once, also for motors that are moving.
+
+- Interrupts with a lower number than the step interrupts delay the step pulses while they run. At 128
+  this includes every interrupt that was left at the default priority of the core; the precision values
+  in [Performance](performance.md) were measured with the default of the library.
+- With 32 or less, the step interrupts are as urgent as the millisecond interrupt of the core: an
+  arrival function that takes long then stops `millis()` for that time.
+
 ## Restoring the timers
 
 When a move ends, the library puts all registers of the timer channel back to the values it found, so

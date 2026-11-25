@@ -265,7 +265,7 @@ namespace TeensyStep
             }
             Stepper* s  = c.motors[0];
             s->arrivals = s->arrivals + 1;
-            if (s->arrival) s->arrival();
+            s->callArrival();
         }
 
         void Engine::finished(unsigned ch)

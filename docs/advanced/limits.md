@@ -37,7 +37,7 @@ continuously and passes the end of the range goes on at the other end; the step 
 A target on the other side of the wrap is reached the short way.
 
 At 100,000 steps/s the range lasts for about six hours of rotation in one direction. An application that
-rotates for longer and needs the position can set it back with `setPosition()` from time to time.
+rotates for longer and needs the position can set it back with `setPositionCounter()` from time to time.
 
 ## Number of motors
 

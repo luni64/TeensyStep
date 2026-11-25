@@ -24,7 +24,7 @@ void home()
     while (motor.isMoving()) {} // wait until the switch has stopped the motor
 
     detachInterrupt(switchPin);
-    motor.setPosition(0); // this is the reference position
+    motor.setPositionCounter(0); // this is the reference position
     motor.moveAbs(200);   // move off the switch
 }
 

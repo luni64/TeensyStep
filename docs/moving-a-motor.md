@@ -60,7 +60,7 @@ The getters can be called at any time, also from interrupts. Do not call them in
 need, however: every call takes processor time and holds back the step interrupt for a moment. Read the
 values as often as the sketch uses them, as the sketch above does every 100 ms.
 
-`setPosition(pos)` sets the position counter: it gives the place where the motor stands now the number
+`setPositionCounter(pos)` sets the position counter: it gives the place where the motor stands now the number
 `pos`, for example 0 after [homing](#homing). The motor does not move. It is not a target: the commands
 that send the motor to a position are `moveAbs()` and, in a group, `setTargetAbs()`.
 
@@ -95,7 +95,7 @@ the motor changes to the new target or speed without stopping first:
 ```
 
 The commands and getters can also be called from interrupts, for example from a timer that calculates new
-targets (example `13_Follower`), or from the encoder of a jog wheel that the motor follows.
+targets (example `07_Follower`), or from the encoder of a jog wheel that the motor follows.
 
 ## Stopping
 
@@ -134,4 +134,4 @@ to be precise, the following procedure has proven itself:
 3. Take the place where the switch opens as the reference: its interrupt sets the position counter while
    the motor runs.
 
-The example `16_HomingPrecise` does this.
+The example `09_HomingPrecise` does this.

@@ -39,6 +39,7 @@ namespace TeensyStep
     ///     lock()       keep fetch() and arrived() out while the library changes a channel
     ///     unlock()
     ///     idle()       called repeatedly while a blocking command waits
+    ///     setInterruptPriority()  priority of the interrupts in which the steps are made
     ///
     /// Functions the library provides, called by the backend:
     ///
@@ -50,6 +51,12 @@ namespace TeensyStep
         constexpr unsigned maxChannels = TEENSYSTEP_MAX_CHANNELS;
         constexpr unsigned maxMotors   = 16;  ///< motors of one channel
         constexpr uint8_t noPin        = 255; ///< for a signal that is not connected
+
+        /// Priority of the step interrupts unless setInterruptPriority() is called (lower number: more
+        /// urgent). Above the default of the Teensy core (128), so that other interrupts do not delay the
+        /// steps, and one level below its millisecond interrupt (32): whatever holds up a step interrupt,
+        /// for example an arrival function that takes long, does not stop millis().
+        constexpr uint8_t defaultInterruptPriority = 48;
 
         /// @brief The pins of one motor and their polarities.
         struct MotorPins
@@ -119,6 +126,12 @@ namespace TeensyStep
 
         /// @brief Called repeatedly by a blocking command while it waits for a move to end.
         void idle();
+
+        /// @brief Sets the priority of the interrupts in which the steps are made, as for
+        /// NVIC_SET_PRIORITY: 0 (most urgent) to 255, of which the processor uses the upper four bits.
+        /// Takes effect at once, also for moves that are under way. No effect on a backend without
+        /// interrupts of its own.
+        void setInterruptPriority(uint8_t priority);
 
         //----------------------------------------------------------------------------------------------------
         // provided by the library, called by the backend (from its interrupt)

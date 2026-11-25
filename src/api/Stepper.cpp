@@ -178,10 +178,33 @@ namespace TeensyStep
     void Stepper::onArrival(void (*callback)())
     {
         Lock lock;
-        arrival = callback;
+        arrival      = callback;
+        arrivalMotor = nullptr;
     }
 
-    void Stepper::setPosition(int32_t p)
+    void Stepper::onArrival(void (*callback)(Stepper&))
+    {
+        Lock lock;
+        arrival      = nullptr;
+        arrivalMotor = callback;
+    }
+
+    void Stepper::onArrival(std::nullptr_t)
+    {
+        Lock lock;
+        arrival      = nullptr;
+        arrivalMotor = nullptr;
+    }
+
+    void Stepper::callArrival()
+    {
+        if (arrival)
+            arrival();
+        else if (arrivalMotor)
+            arrivalMotor(*this);
+    }
+
+    void Stepper::setPositionCounter(int32_t p)
     {
         Lock lock;
         if (channel < 0)
@@ -280,7 +303,7 @@ namespace TeensyStep
         if (alreadyThere) // no step is made, so the backend will not report the arrival
         {
             arrivals = arrivals + 1;
-            if (arrival) arrival();
+            callArrival();
         }
         return Engine::report(code);
     }

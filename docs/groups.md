@@ -72,7 +72,7 @@ their own, and a motor can belong to several groups, see
 ## Moving a group
 
 ```cpp
---8<-- "07_Groups/07_Groups.ino"
+--8<-- "12_Groups/12_Groups.ino"
 ```
 
 The targets can be given in two ways:
@@ -165,7 +165,7 @@ group shall pass without stopping, use the advanced class `GroupPath`, see
 times, also while the motors accelerate, decelerate or reverse:
 
 ```cpp
---8<-- "12_SyncRotation/12_SyncRotation.ino"
+--8<-- "13_SyncRotation/13_SyncRotation.ino"
 ```
 
 - A further `rotateAsync()` with speeds of the same ratio changes the speed of the group. Another ratio
@@ -174,4 +174,4 @@ times, also while the motors accelerate, decelerate or reverse:
   factor reverses all members; 0 stops the group, and a later factor starts it again.
 
 For a ratio that changes while the motors run, use independent motors and adjust the speed of one of
-them, as the example `14_Winder` does.
+them, as the example `15_Winder` does.

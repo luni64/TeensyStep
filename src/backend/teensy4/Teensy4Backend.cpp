@@ -35,10 +35,8 @@ namespace TeensyStep
             constexpr uint16_t countsPerEvent = 60000; // longest delay of one event, in timer counts (the counter has 16 bit)
             constexpr uint16_t minCounts      = 120;   // shortest time between the end of a pulse and the next step (0.8 us at 150 MHz)
 
-            // Priority of the timer interrupts: above the default (128), so that other interrupts do not delay
-            // the steps, but one level below the millisecond interrupt of the core (32): whatever holds up a
-            // timer interrupt, for example an arrival function that takes long, does not stop millis().
-            constexpr uint8_t interruptPriority = 48;
+            // Priority of the timer interrupts, see defaultInterruptPriority and setInterruptPriority().
+            uint8_t interruptPriority = defaultInterruptPriority;
 
             // The 16 timer channels, in the order in which they are taken:
             //   1. channels that cannot make PWM on a pin of the board;
@@ -502,6 +500,13 @@ namespace TeensyStep
         void idle()
         {
             yield();
+        }
+
+        void setInterruptPriority(uint8_t priority)
+        {
+            interruptPriority = priority;
+            for (unsigned m = 0; m < 4; m++) // the timers the library uses now; the others get it when they are taken
+                if (_VectorsRam[moduleIrq[m] + 16] == moduleIsr[m]) NVIC_SET_PRIORITY(moduleIrq[m], priority);
         }
 
         uint32_t teensy4::interruptsWithoutWork()

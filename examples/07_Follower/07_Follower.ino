@@ -1,5 +1,5 @@
 /*==========================================================================
- * 13 Follower: a motor follows a calculated path
+ * 07 Follower: a motor follows a calculated path
  *
  * The motor swings back and forth like a pendulum (a cosine). A timer
  * calculates every 10 ms where the motor has to be at the next call and

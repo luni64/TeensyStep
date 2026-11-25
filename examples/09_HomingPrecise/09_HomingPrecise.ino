@@ -1,5 +1,5 @@
 /*==========================================================================
- * 16 HomingPrecise: the reference position is where the switch opens
+ * 09 HomingPrecise: the reference position is where the switch opens
  *
  * Reference switch on pin 8, LOW while it is active. Best is a switch the
  * mechanics can move through (for example a light barrier), not one they
@@ -15,7 +15,7 @@ constexpr int switchPin = 8;
 
 void onSwitchOpens() // interrupt: the motor has left the switch
 {
-    motor.setPosition(0); // this place is the reference position
+    motor.setPositionCounter(0); // this place is the reference position
     detachInterrupt(switchPin);
 }
 

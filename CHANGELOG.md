@@ -7,7 +7,22 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 ## Unreleased
 
+**Added**
+
+- An arrival function can have the motor as its parameter: `void arrived(Stepper& motor)`. It is called
+  with the motor that has arrived, so that one function can serve several motors. Functions without a
+  parameter work as before.
+- `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
+  the step pulses are made. The default is unchanged (48).
+
 **Changed**
+
+- `setPosition()` is now `setPositionCounter()`, because the old name was mistaken for a command that
+  moves the motor. The old name still works and is deprecated: the compiler prints a hint.
+- The examples are numbered by topic. `13_Follower` is now `07_Follower`, `16_HomingPrecise` is
+  `09_HomingPrecise`, `09_Errors` is `10_Errors`, `07_Groups` is `12_Groups`, `12_SyncRotation` is
+  `13_SyncRotation`, `15_RoseFunction` is `14_RoseFunction`, `14_Winder` is `15_Winder` and `10_LegacyV2`
+  is `16_LegacyV2`. The sketches themselves are unchanged.
 
 - Manual: new chapter "Behind the scenes", which explains how the library works inside (the ramp, the
   timers, low step rates, the step pulse, groups and Bresenham, the lists in braces). "Motors and drivers"
@@ -95,13 +110,13 @@ These points are under discussion. They can change the interface in details.
 
 - Groups: the way the speed and the acceleration of a group are given (`StepperGroup::setMaxSpeed()`,
   `setAcceleration()`, `setDeceleration()`) may be simplified.
-- `setPosition()` may get the new name `setCounter()`; the old name would remain as deprecated.
-- `onArrival()` may accept functions with captured values (lambdas), so that one function can serve
-  several motors. Plain functions keep working.
+- `setPosition()` gets a new name; the old name remains as deprecated. (Done after the beta: see
+  "Unreleased".)
+- `onArrival()` gets a way to serve several motors with one function. (Done after the beta: see
+  "Unreleased".)
 - `advanced::GroupPath` may be replaced by an interface made for motion planners.
 - `setDirSetupTime()` gets its function.
-- A protection against step rates that overload the board.
-- The numbers of the examples may change.
+- The numbers of the examples may change. (Done after the beta: see "Unreleased".)
 
 ## v2.3.4 - 2023-04-13
 

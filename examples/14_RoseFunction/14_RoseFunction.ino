@@ -1,5 +1,5 @@
 /*==========================================================================
- * 15 RoseFunction: a slide follows the angle of a spindle and draws a rose curve
+ * 14 RoseFunction: a slide follows the angle of a spindle and draws a rose curve
  *
  * A spindle rotates at constant speed. A slide moves in and out depending
  * on the angle of the spindle:  r = amplitude * cos(k * angle).

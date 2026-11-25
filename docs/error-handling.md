@@ -50,7 +50,7 @@ Checking every return value is tedious, and the setters return the motor and not
 registers a function of the sketch that is called for every warning and every error:
 
 ```cpp
---8<-- "09_Errors/09_Errors.ino"
+--8<-- "10_Errors/10_Errors.ino"
 ```
 
 The error function can be called from an interrupt, when the command that caused it was given from one.

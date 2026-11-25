@@ -43,6 +43,22 @@ at 50,000.
 The arrival function is also called when a move without a speed ends at its target. It is not called
 after `stop()` or `emergencyStop()`. `onArrival(nullptr)` removes the function.
 
+An arrival function can have the motor as its parameter. It is then called with the motor that has
+arrived, so that one function can serve several motors:
+
+```cpp
+void arrived(Stepper& motor)   // called for x and for y
+{
+    motor.moveRelAsync(-1000); // the motor that has arrived goes back
+}
+
+void setup()
+{
+    x.onArrival(arrived);
+    y.onArrival(arrived);
+}
+```
+
 ## Blocking moves with a speed
 
 `moveAbs(pos, speed)` and `moveRel(delta, speed)` return when the motor has reached the target. The motor
@@ -61,7 +77,7 @@ the motor arrives at each point with the right speed, it runs through the points
 following sketch a motor swings back and forth like a pendulum:
 
 ```cpp
---8<-- "13_Follower/13_Follower.ino"
+--8<-- "07_Follower/07_Follower.ino"
 ```
 
 The timer runs every 10 ms and gives the motor the position and the speed of the curve for the time of
@@ -73,5 +89,5 @@ it is on its way with the acceleration it is allowed. Set the acceleration of th
 the curve needs (here about 50,000 steps/s²); the motor then stays close to the curve, in this sketch
 within about 70 of the 5000 steps.
 
-The example `15_RoseFunction` uses the same method for a slide that follows the angle of a rotating
+The example `14_RoseFunction` uses the same method for a slide that follows the angle of a rotating
 spindle and draws a rose curve.

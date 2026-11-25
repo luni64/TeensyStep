@@ -1,5 +1,5 @@
 /*==========================================================================
- * 10 LegacyV2: sketches written for TeensyStep 2 still compile
+ * 16 LegacyV2: sketches written for TeensyStep 2 still compile
  *
  * StepControl and RotateControl of version 2 are kept as thin wrappers
  * around the new functions. They are deprecated: the compiler shows a

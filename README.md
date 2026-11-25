@@ -61,7 +61,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 - **Errors:** every command returns an `errorCode`. `attachErrFunc()` registers a function for warnings and
   errors; `ErrorHandler(Serial)` prints them.
 - **Sketches for version 2** compile unchanged: `StepControl` and `RotateControl` are kept as deprecated
-  wrappers (see [`examples/version2/`](examples/version2/) and `examples/10_LegacyV2`).
+  wrappers (see [`examples/version2/`](examples/version2/) and `examples/16_LegacyV2`).
 
 ## Boards
 

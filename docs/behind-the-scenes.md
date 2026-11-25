@@ -390,8 +390,9 @@ of a FlexTimer on Teensy 3.5 and 3.6. When several compare channels of one inter
 the interrupt function first makes the edges of all of them and only then does the rest of the work,
 one move after the other. Otherwise the edge of one motor would wait for the calculation of another.
 
-All step interrupts have the same priority (48: above the default of 128, below the millisecond
-interrupt of the Teensy core). They do not interrupt each other. A step of one move that becomes due
+All step interrupts have the same priority (48, unless the sketch sets another one with
+`advanced::setInterruptPriority()`: above the default of 128, below the millisecond interrupt of the
+Teensy core). They do not interrupt each other. A step of one move that becomes due
 while the interrupt of another move is being served is therefore made a little late, by up to the
 time one event takes; because of the due times this does not add up.
 [Performance](advanced/performance.md) has measured values.
