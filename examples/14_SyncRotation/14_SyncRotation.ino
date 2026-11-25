@@ -1,5 +1,5 @@
 /*==========================================================================
- * 13 SyncRotation: rotate several motors with a fixed speed ratio
+ * 14 SyncRotation: rotate several motors with a fixed speed ratio
  *
  * The second motor always makes 3 steps while the first makes 1.
  *==========================================================================*/

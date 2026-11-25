@@ -1,5 +1,5 @@
 /*==========================================================================
- * 15 Winder: two motors with a ratio that can be adjusted while running
+ * 16 Winder: two motors with a ratio that can be adjusted while running
  *
  * A string or coil winder: the spindle rotates the core, the feeder moves
  * the wire along it. The pitch (mm of feeder travel per spindle turn) is

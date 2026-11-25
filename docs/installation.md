@@ -47,7 +47,7 @@ keep working, because the controllers are still there as thin wrappers on the ne
 A sketch written for version 2 compiles without changes:
 
 ```cpp
---8<-- "16_LegacyV2/16_LegacyV2.ino"
+--8<-- "17_LegacyV2/17_LegacyV2.ino"
 ```
 
 - `StepControl` and `RotateControl` are deprecated: the compiler prints a hint for each of them. New

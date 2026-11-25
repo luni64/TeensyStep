@@ -1,5 +1,5 @@
 /*==========================================================================
- * 12 Groups: move several motors synchronized
+ * 13 Groups: move several motors synchronized
  *==========================================================================*/
 
 #include "TeensyStep.h"

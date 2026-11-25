@@ -105,5 +105,5 @@ it is on its way with the acceleration it is allowed. Set the acceleration of th
 the curve needs (here about 50,000 steps/s²); the motor then stays close to the curve, in this sketch
 within about 70 of the 5000 steps.
 
-The example `14_RoseFunction` uses the same method for a slide that follows the angle of a rotating
+The example `15_RoseFunction` uses the same method for a slide that follows the angle of a rotating
 spindle and draws a rose curve.

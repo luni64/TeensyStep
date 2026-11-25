@@ -13,7 +13,7 @@ All notable changes to TeensyStep are documented in this file. The format follow
   with the motor that has arrived, so that one function can serve several motors. Functions without a
   parameter work as before.
 - `setEnable()` also takes a function that switches the driver on and off, for an enable signal that is
-  not on a pin of the board (a port extender, for example).
+  not on a pin of the board (a port extender, for example). New example `12_EnableFunction`.
 - `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
   the step pulses are made. The default is unchanged (48).
 
@@ -25,15 +25,15 @@ All notable changes to TeensyStep are documented in this file. The format follow
   the motor reverse for a target below it. A negative speed passes the target in the opposite direction:
   the motor goes past it, turns and comes back through it. Sketches that gave a negative speed for a
   target below the motor have to give it without the sign now; the examples `07_Follower` and
-  `14_RoseFunction` do so.
+  `15_RoseFunction` do so.
 - `setEnablePin()` is now `setEnable()`, with one form for a pin and one for a function. The old name
   remains as deprecated.
 - `setPosition()` is now `setPositionCounter()`, because the old name was mistaken for a command that
   moves the motor. The old name still works and is deprecated: the compiler prints a hint.
 - The examples are numbered by topic. `13_Follower` is now `07_Follower`, `16_HomingPrecise` is
-  `09_HomingPrecise`, `09_Errors` is `10_Errors`, `07_Groups` is `12_Groups`, `12_SyncRotation` is
-  `13_SyncRotation`, `15_RoseFunction` is `14_RoseFunction`, `14_Winder` is `15_Winder` and `10_LegacyV2`
-  is `16_LegacyV2`. The sketches themselves are unchanged.
+  `09_HomingPrecise`, `09_Errors` is `10_Errors`, `07_Groups` is `13_Groups`, `12_SyncRotation` is
+  `14_SyncRotation`, `14_Winder` is `16_Winder` and `10_LegacyV2` is `17_LegacyV2`. The sketches
+  themselves are unchanged.
 
 - Manual: new chapter "Behind the scenes", which explains how the library works inside (the ramp, the
   timers, low step rates, the step pulse, groups and Bresenham, the lists in braces). "Motors and drivers"

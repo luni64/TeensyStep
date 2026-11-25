@@ -16,11 +16,12 @@ for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do n
 | `09_HomingPrecise` | A more precise reference: slowly out of the switch, position set where it opens |
 | `10_Errors` | Returned `errorCode`, error function, built-in handler (pattern of TeensyTimerTool) |
 | `11_MotorSettings` | Pull-in speed, pulse width, step polarity, inverse rotation, DIR setup time, enable pin, separate deceleration |
-| `12_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; speed of a group |
-| `13_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
-| `14_RoseFunction` | A slide follows the angle of a spindle and draws a rose curve (v2: RoseFunctionFollower) |
-| `15_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
-| `16_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
+| `12_EnableFunction` | An enable signal on a port extender: a function switches the driver instead of a pin |
+| `13_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; speed of a group |
+| `14_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
+| `15_RoseFunction` | A slide follows the angle of a spindle and draws a rose curve (v2: RoseFunctionFollower) |
+| `16_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
+| `17_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
 
 ## Advanced
 

@@ -76,15 +76,11 @@ A motor without the current of its driver has no holding torque and can be moved
 
 If the enable input of the driver is not connected to a pin of the board, but for example to a port
 extender, give the library a function instead of a pin. The library calls it with `true` where it would
-switch the pin on, and with `false` where it would switch it off:
+switch the pin on, and with `false` where it would switch it off. In this sketch the enable input is
+connected to an MCP23017:
 
 ```cpp
-void enableDriver(bool on)
-{
-    extender.digitalWrite(3, on ? LOW : HIGH); // whatever switches the driver
-}
-
-motor.setEnable(enableDriver, 50, 500); // on 50 ms before a move, off 500 ms after it
+--8<-- "12_EnableFunction/12_EnableFunction.ino"
 ```
 
 The two delays and the rules above are the same as for a pin. Motors that are given the same function
@@ -95,6 +91,6 @@ last counts, and `setEnable(nullptr)` removes both.
 !!! warning "The function runs in an interrupt"
     The library calls the function from its step interrupt or with the interrupts disabled. It must not
     wait: no `delay()`, and nothing that needs an interrupt to finish. While it runs, no motor gets a
-    step, so a transfer that takes 100 µs delays the steps of all moving motors by that time. If that
+    step, so a transfer that takes 100 µs (as in the sketch above) delays the steps of all moving motors by that time. If that
     is too long, let the function only note the new state, write it to the extender in `loop()`, and
     choose the on-delay long enough for that.
