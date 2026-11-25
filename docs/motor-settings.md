@@ -41,6 +41,7 @@ move they are refused, and the error `notSupported` is reported to the
 | `setInverseRotation(inverse)` | `false` | `true` swaps the direction of the motor |
 | `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse (no effect in this version, see [Limits](advanced/limits.md#timing-of-the-signals)) |
 | `setEnablePin(pin, ...)` | none | the enable input of the driver, see below |
+| `setEnableFunction(function, ...)` | none | a function that switches the driver, for an enable signal that is not on a pin, see below |
 
 The step pulse also limits the step rate: the pulse and a short pause after it have to fit into the step
 period. With the default width of 5 µs the limit is about 170,000 steps/s; for higher rates set a
@@ -70,3 +71,30 @@ motor.setEnablePin(6, LOW, 50, 500);
 
 A motor without the current of its driver has no holding torque and can be moved by its load. Without
 `setEnablePin()` the library does not touch the driver, and the driver stays on.
+
+### An enable signal that is not on a pin
+
+If the enable input of the driver is not connected to a pin of the board, but for example to a port
+extender, give the library a function instead of a pin. The library calls it with `true` where it would
+switch the pin on, and with `false` where it would switch it off:
+
+```cpp
+void enableDriver(bool on)
+{
+    extender.digitalWrite(3, on ? LOW : HIGH); // whatever switches the driver
+}
+
+motor.setEnableFunction(enableDriver, 50, 500); // on 50 ms before a move, off 500 ms after it
+```
+
+The two delays and the rules above are the same as for a pin. Motors that are given the same function
+share one signal: the function is called with `true` when the first of them starts and with `false`
+when the last of them is done. A motor has either an enable pin or an enable function: the call made
+last counts, and `setEnableFunction(nullptr)` removes the function.
+
+!!! warning "The function runs in an interrupt"
+    The library calls the function from its step interrupt or with the interrupts disabled. It must not
+    wait: no `delay()`, and nothing that needs an interrupt to finish. While it runs, no motor gets a
+    step, so a transfer that takes 100 µs delays the steps of all moving motors by that time. If that
+    is too long, let the function only note the new state, write it to the extender in `loop()`, and
+    choose the on-delay long enough for that.

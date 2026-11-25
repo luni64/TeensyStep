@@ -122,6 +122,24 @@ as long as one of these motors needs it. See [The enable pin](../motor-settings.
 | `onDelayMs` | time between switching on and the first step, milliseconds |
 | `offDelayMs` | time the driver stays on after a move; a new move within it starts at once |
 
+### setEnableFunction()
+
+```cpp
+Stepper& setEnableFunction(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+```
+
+Instead of `setEnablePin()`, for an enable signal that is not on a pin of the board: the library calls
+`function(true)` to switch the driver on before a move and `function(false)` to switch it off after it.
+Motors that are given the same function share one signal. `nullptr` removes the function. The function
+is called from an interrupt or with the interrupts disabled and must not wait. See
+[An enable signal that is not on a pin](../motor-settings.md#an-enable-signal-that-is-not-on-a-pin).
+
+| Parameter | |
+|---|---|
+| `function` | called with `true` to switch the driver on, with `false` to switch it off |
+| `onDelayMs` | time between switching on and the first step, in milliseconds |
+| `offDelayMs` | time the driver stays on after a move, in milliseconds |
+
 ---
 
 ## Commands

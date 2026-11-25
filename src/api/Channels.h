@@ -55,6 +55,7 @@ namespace TeensyStep
             static void emergencyStop(unsigned ch);                       // like endNow, but the drivers stay on for their off-delay
             static core::MotorLimits limitsOf(const Stepper& s, const Channel& c);
             static bool isMoving(int channel);
+            static void switchDriver(Stepper& s, bool on); // the enable signal of a motor that joins or leaves a channel
 
             static bool fetch(unsigned ch, backend::Event& event);
             static void arrived(unsigned ch);

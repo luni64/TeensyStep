@@ -168,9 +168,23 @@ namespace TeensyStep
         {
             enablePin        = (uint8_t)pin;
             enableActiveHigh = activeLevel != 0;
+            enableFunction   = nullptr;
             onDelay          = onDelayMs * 0.001f;
             offDelay         = offDelayMs * 0.001f;
             backend::setPin(enablePin, !enableActiveHigh); // driver off
+        }
+        return *this;
+    }
+
+    Stepper& Stepper::setEnableFunction(void (*function)(bool), unsigned onDelayMs, unsigned offDelayMs)
+    {
+        if (hardwareSetting())
+        {
+            enablePin      = backend::noPin;
+            enableFunction = function;
+            onDelay        = function ? onDelayMs * 0.001f : 0;
+            offDelay       = function ? offDelayMs * 0.001f : 0;
+            if (function) function(false); // driver off
         }
         return *this;
     }

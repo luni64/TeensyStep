@@ -12,6 +12,8 @@ All notable changes to TeensyStep are documented in this file. The format follow
 - An arrival function can have the motor as its parameter: `void arrived(Stepper& motor)`. It is called
   with the motor that has arrived, so that one function can serve several motors. Functions without a
   parameter work as before.
+- `setEnableFunction()`: a function that switches the driver on and off, in addition to `setEnablePin()`,
+  for an enable signal that is not on a pin of the board (a port extender, for example).
 - `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
   the step pulses are made. The default is unchanged (48).
 

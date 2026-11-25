@@ -59,6 +59,15 @@ namespace TeensyStep
         /// @param offDelayMs  time the driver stays on after the move; a new move within it starts at once
         Stepper& setEnablePin(int pin, int activeLevel = 0, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
 
+        /// @brief Optional, instead of setEnablePin(): a function that switches the driver, for an enable
+        /// signal that is not on a pin of the board (a port extender, a driver with a serial interface).
+        /// The library calls it with true before a move and with false after it, with the same delays as
+        /// for a pin. Motors that are given the same function share one signal. nullptr removes it.
+        ///
+        /// The function is called from an interrupt or with the interrupts disabled: it must not wait
+        /// (no delay()), and while it runs no motor gets a step.
+        Stepper& setEnableFunction(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+
         /// @brief Sets the position counter. Does not move the motor; a target stays where it is.
         void setPositionCounter(int32_t pos);
 
@@ -124,8 +133,9 @@ namespace TeensyStep
         bool reversed             = false; // version 2: a negative maximum speed, the direction of RotateControl
         float pulseWidth = 5, dirSetup = 5;
 
-        uint8_t enablePin     = backend::noPin;
+        uint8_t enablePin     = backend::noPin; // the enable signal is this pin, or
         bool enableActiveHigh = false;
+        void (*enableFunction)(bool) = nullptr; // it is switched by this function; at most one of them is set
         float onDelay = 0, offDelay = 0; // seconds
 
         int32_t pos    = 0;     // position while the motor has no channel

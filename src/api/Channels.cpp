@@ -55,6 +55,36 @@ namespace TeensyStep
             return !(c.ending && c.offDelay > 0); // while only the drivers wait to be switched off, the motors stand still
         }
 
+        /// Switches the enable signal of a motor that has just joined a channel (on) or left it (off). A
+        /// signal that other motors of running channels use too is left as it is: it goes on with the
+        /// first of them and off with the last.
+        void Engine::switchDriver(Stepper& s, bool on)
+        {
+            if (s.enablePin < enablePins)
+            {
+                uint8_t& use = enableUse[s.enablePin];
+                if (on)
+                {
+                    if (use++ == 0) backend::setPin(s.enablePin, s.enableActiveHigh);
+                }
+                else if (use > 0 && --use == 0)
+                    backend::setPin(s.enablePin, !s.enableActiveHigh);
+            }
+            else if (s.enableFunction)
+            {
+                for (const Channel& c : channels)
+                {
+                    if (!c.used) continue;
+                    for (unsigned i = 0; i < c.count; i++)
+                    {
+                        const Stepper* other = c.motors[i];
+                        if (other != &s && other->channel >= 0 && other->enableFunction == s.enableFunction) return;
+                    }
+                }
+                s.enableFunction(on);
+            }
+        }
+
         int Engine::setup(Stepper* const* motors, unsigned count, bool isGroup, float speedFactor, bool unlimitedSpeed, errorCode& code)
         {
             int idx = -1;
@@ -96,10 +126,10 @@ namespace TeensyStep
                 Stepper* s = motors[i];
                 s->channel = (int8_t)idx;
                 s->member  = (uint8_t)i;
-                if (s->enablePin >= enablePins) continue;
+                if (s->enablePin >= enablePins && !s->enableFunction) continue;
                 c.offDelay   = largest(c.offDelay, s->offDelay);
                 c.startDelay = largest(c.startDelay, s->onDelay); // also if another motor has just switched the shared signal on
-                if (enableUse[s->enablePin]++ == 0) backend::setPin(s->enablePin, s->enableActiveHigh);
+                switchDriver(*s, true);
             }
             c.starting = c.startDelay > 0;
 
@@ -136,8 +166,7 @@ namespace TeensyStep
                 int32_t here = c.isGroup ? c.group.position(i) : c.axis.position();
                 s->pos       = (int32_t)((uint32_t)here - (uint32_t)(notExecuted ? notExecuted[i] : 0));
                 s->channel   = -1;
-                if (s->enablePin < enablePins && enableUse[s->enablePin] > 0 && --enableUse[s->enablePin] == 0)
-                    backend::setPin(s->enablePin, !s->enableActiveHigh);
+                switchDriver(*s, false);
             }
             c.used = false;
         }
