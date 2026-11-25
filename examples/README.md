@@ -31,6 +31,7 @@ calculate the motion themselves:
 | Sketch | Concept |
 |---|---|
 | `GroupWaypoints` | A group passes waypoints without stopping (`advanced::GroupPath`): moves given ahead, with their speeds in mm/s |
+| `PathPlanner` | A small motion planner (`Planner.h`, a part of the example): an x-y table runs a path of points in mm and passes each point as fast as the motors allow |
 
 ## Sketches of version 2
 
