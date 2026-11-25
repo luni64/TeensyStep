@@ -15,6 +15,9 @@
  * there. Choose the speed at the waypoints low enough for the motors to
  * follow. The library does not plan ahead across the moves, and it does
  * not round corners; cut a corner into short moves, as in this path.
+ *
+ * The example PathPlanner calculates these speeds from the limits of the
+ * motors instead of taking them from a table.
  *==========================================================================*/
 
 #include "TeensyStepAdvanced.h"
