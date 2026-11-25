@@ -57,16 +57,16 @@ namespace TeensyStep
         /// @param activeLevel level that switches the driver on, LOW (0, default) or HIGH (1)
         /// @param onDelayMs   time between switching on and the first step
         /// @param offDelayMs  time the driver stays on after the move; a new move within it starts at once
-        Stepper& setEnablePin(int pin, int activeLevel = 0, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+        Stepper& setEnable(int pin, int activeLevel = 0, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
 
-        /// @brief Optional, instead of setEnablePin(): a function that switches the driver, for an enable
+        /// @brief Optional, instead of a pin: a function that switches the driver, for an enable
         /// signal that is not on a pin of the board (a port extender, a driver with a serial interface).
         /// The library calls it with true before a move and with false after it, with the same delays as
         /// for a pin. Motors that are given the same function share one signal. nullptr removes it.
         ///
         /// The function is called from an interrupt or with the interrupts disabled: it must not wait
         /// (no delay()), and while it runs no motor gets a step.
-        Stepper& setEnableFunction(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+        Stepper& setEnable(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
 
         /// @brief Sets the position counter. Does not move the motor; a target stays where it is.
         void setPositionCounter(int32_t pos);
@@ -108,6 +108,12 @@ namespace TeensyStep
         void onArrival(void (*callback)());
         void onArrival(void (*callback)(Stepper& motor)); ///< called with the motor that has arrived
         void onArrival(std::nullptr_t);                   ///< removes the function
+
+        /// @deprecated The old name of setEnable().
+        [[deprecated("use setEnable()")]] Stepper& setEnablePin(int pin, int activeLevel = 0, unsigned onDelayMs = 0, unsigned offDelayMs = 0)
+        {
+            return setEnable(pin, activeLevel, onDelayMs, offDelayMs);
+        }
 
         /// @deprecated The old name of setPositionCounter().
         [[deprecated("use setPositionCounter()")]] void setPosition(int32_t pos) { setPositionCounter(pos); }

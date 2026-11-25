@@ -53,7 +53,7 @@ inputs they are connected directly to the Teensy:
 | DIR | the DIR pin, pin 3 in this example |
 | GND (logic) | GND of the Teensy |
 | VDD or VIO (logic supply, if the module has it) | 3.3 V of the Teensy |
-| EN or ENABLE | leave open (the driver is then on), or connect it to a pin for [`setEnablePin()`](motor-settings.md#the-enable-pin) |
+| EN or ENABLE | leave open (the driver is then on), or connect it to a pin for [`setEnable()`](motor-settings.md#the-enable-pin) |
 | MS1, MS2, ... (microsteps) | to GND or to the logic supply, according to the table in the data sheet |
 | RESET and SLEEP (A4988, DRV8825) | A4988: connect the two to each other. DRV8825: connect both to 3.3 V |
 | VMOT and GND (motor supply) | the motor supply, with a capacitor of 100 µF or more close to the module |

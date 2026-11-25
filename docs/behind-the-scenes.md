@@ -563,7 +563,7 @@ and the steps of all motors wait.
 
 ### The enable signal
 
-The delays of `setEnablePin()` need no timer of their own either. The on-delay is a series of waits
+The delays of `setEnable()` need no timer of their own either. The on-delay is a series of waits
 that the active move hands out before its first step, and the off-delay a series of waits after the
 last one. During the off-delay the active move and its compare channel are still occupied, although
 `isMoving()` already returns `false`.

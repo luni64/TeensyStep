@@ -13,7 +13,7 @@
  * - setInverseRotation(b):   true: swaps the direction of the motor
  * - setDirSetupTime(us):     time the driver needs between a change of the
  *                            DIR signal and the next step pulse
- * - setEnablePin(pin, ...):  optional. If the driver has an enable input, the
+ * - setEnable(pin, ...):  optional. If the driver has an enable input, the
  *                            library switches the driver on before a move and
  *                            off after it. Without this call the motor works
  *                            the same way, and the driver stays on.
@@ -37,7 +37,7 @@ void setup()
         .setStepPinPolarity(LOW)  // and steps on the falling edge
         .setInverseRotation(true) // positive direction = away from the motor
         .setDirSetupTime(5)       // us
-        .setEnablePin(6, LOW, 50, 500) // pin 6, active low; on 50 ms before a move, off 500 ms after it
+        .setEnable(6, LOW, 50, 500) // pin 6, active low; on 50 ms before a move, off 500 ms after it
         .setPullInSpeed(400)      // steps/s
         .setMaxSpeed(30'000)      // steps/s
         .setAcceleration(80'000)  // steps/s^2

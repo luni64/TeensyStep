@@ -162,7 +162,7 @@ namespace TeensyStep
         return *this;
     }
 
-    Stepper& Stepper::setEnablePin(int pin, int activeLevel, unsigned onDelayMs, unsigned offDelayMs)
+    Stepper& Stepper::setEnable(int pin, int activeLevel, unsigned onDelayMs, unsigned offDelayMs)
     {
         if (hardwareSetting())
         {
@@ -176,7 +176,7 @@ namespace TeensyStep
         return *this;
     }
 
-    Stepper& Stepper::setEnableFunction(void (*function)(bool), unsigned onDelayMs, unsigned offDelayMs)
+    Stepper& Stepper::setEnable(void (*function)(bool), unsigned onDelayMs, unsigned offDelayMs)
     {
         if (hardwareSetting())
         {

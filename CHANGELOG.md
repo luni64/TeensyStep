@@ -12,8 +12,8 @@ All notable changes to TeensyStep are documented in this file. The format follow
 - An arrival function can have the motor as its parameter: `void arrived(Stepper& motor)`. It is called
   with the motor that has arrived, so that one function can serve several motors. Functions without a
   parameter work as before.
-- `setEnableFunction()`: a function that switches the driver on and off, in addition to `setEnablePin()`,
-  for an enable signal that is not on a pin of the board (a port extender, for example).
+- `setEnable()` also takes a function that switches the driver on and off, for an enable signal that is
+  not on a pin of the board (a port extender, for example).
 - `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
   the step pulses are made. The default is unchanged (48).
 
@@ -26,6 +26,8 @@ All notable changes to TeensyStep are documented in this file. The format follow
   the motor goes past it, turns and comes back through it. Sketches that gave a negative speed for a
   target below the motor have to give it without the sign now; the examples `07_Follower` and
   `14_RoseFunction` do so.
+- `setEnablePin()` is now `setEnable()`, with one form for a pin and one for a function. The old name
+  remains as deprecated.
 - `setPosition()` is now `setPositionCounter()`, because the old name was mistaken for a command that
   moves the motor. The old name still works and is deprecated: the compiler prints a hint.
 - The examples are numbered by topic. `13_Follower` is now `07_Follower`, `16_HomingPrecise` is

@@ -40,8 +40,8 @@ move they are refused, and the error `notSupported` is reported to the
 | `setStepPinPolarity(level)` | `HIGH` | `HIGH`: the step pulse is a positive pulse; `LOW`: a negative pulse |
 | `setInverseRotation(inverse)` | `false` | `true` swaps the direction of the motor |
 | `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse (no effect in this version, see [Limits](advanced/limits.md#timing-of-the-signals)) |
-| `setEnablePin(pin, ...)` | none | the enable input of the driver, see below |
-| `setEnableFunction(function, ...)` | none | a function that switches the driver, for an enable signal that is not on a pin, see below |
+| `setEnable(pin, ...)` | none | the enable input of the driver, see below |
+| `setEnable(function, ...)` | none | the same with a function that switches the driver, for an enable signal that is not on a pin |
 
 The step pulse also limits the step rate: the pulse and a short pause after it have to fit into the step
 period. With the default width of 5 µs the limit is about 170,000 steps/s; for higher rates set a
@@ -53,7 +53,7 @@ Most drivers have an enable input that switches the motor current on and off. If
 library can switch the driver on before a move and off after it:
 
 ```cpp
-motor.setEnablePin(6, LOW, 50, 500);
+motor.setEnable(6, LOW, 50, 500);
 ```
 
 | Parameter | Default | |
@@ -70,7 +70,7 @@ motor.setEnablePin(6, LOW, 50, 500);
   `false`.
 
 A motor without the current of its driver has no holding torque and can be moved by its load. Without
-`setEnablePin()` the library does not touch the driver, and the driver stays on.
+`setEnable()` the library does not touch the driver, and the driver stays on.
 
 ### An enable signal that is not on a pin
 
@@ -84,13 +84,13 @@ void enableDriver(bool on)
     extender.digitalWrite(3, on ? LOW : HIGH); // whatever switches the driver
 }
 
-motor.setEnableFunction(enableDriver, 50, 500); // on 50 ms before a move, off 500 ms after it
+motor.setEnable(enableDriver, 50, 500); // on 50 ms before a move, off 500 ms after it
 ```
 
 The two delays and the rules above are the same as for a pin. Motors that are given the same function
 share one signal: the function is called with `true` when the first of them starts and with `false`
 when the last of them is done. A motor has either an enable pin or an enable function: the call made
-last counts, and `setEnableFunction(nullptr)` removes the function.
+last counts, and `setEnable(nullptr)` removes both.
 
 !!! warning "The function runs in an interrupt"
     The library calls the function from its step interrupt or with the interrupts disabled. It must not

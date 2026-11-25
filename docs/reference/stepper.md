@@ -105,40 +105,32 @@ Stepper& setDirSetupTime(float microseconds);
 Time between a change of DIR and the next step pulse. Default 5 µs. No effect in this version, see
 [Limits](../advanced/limits.md#timing-of-the-signals).
 
-### setEnablePin()
+### setEnable()
 
 ```cpp
-Stepper& setEnablePin(int pin, int activeLevel = LOW, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+Stepper& setEnable(int pin, int activeLevel = LOW, unsigned onDelayMs = 0, unsigned offDelayMs = 0);
+Stepper& setEnable(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
 ```
 
-The enable input of the driver. The library switches the driver on before a move and off after it.
-Several motors can be given the same pin, for drivers that share one enable signal: the signal stays on
-as long as one of these motors needs it. See [The enable pin](../motor-settings.md#the-enable-pin).
+The enable signal of the driver. The library switches the driver on before a move and off after it.
+The first form names the pin that is connected to the enable input. The second form is for an enable
+signal that is not on a pin of the board: the library calls `function(true)` to switch the driver on
+and `function(false)` to switch it off. The function is called from an interrupt or with the interrupts
+disabled and must not wait.
+
+Several motors can be given the same pin or the same function, for drivers that share one enable
+signal: the signal stays on as long as one of these motors needs it. The call made last counts;
+`setEnable(nullptr)` removes the signal. See [The enable pin](../motor-settings.md#the-enable-pin).
 
 | Parameter | |
 |---|---|
 | `pin` | the pin connected to the enable input |
 | `activeLevel` | the level that switches the driver on |
+| `function` | called with `true` to switch the driver on, with `false` to switch it off |
 | `onDelayMs` | time between switching on and the first step, milliseconds |
 | `offDelayMs` | time the driver stays on after a move; a new move within it starts at once |
 
-### setEnableFunction()
-
-```cpp
-Stepper& setEnableFunction(void (*function)(bool on), unsigned onDelayMs = 0, unsigned offDelayMs = 0);
-```
-
-Instead of `setEnablePin()`, for an enable signal that is not on a pin of the board: the library calls
-`function(true)` to switch the driver on before a move and `function(false)` to switch it off after it.
-Motors that are given the same function share one signal. `nullptr` removes the function. The function
-is called from an interrupt or with the interrupts disabled and must not wait. See
-[An enable signal that is not on a pin](../motor-settings.md#an-enable-signal-that-is-not-on-a-pin).
-
-| Parameter | |
-|---|---|
-| `function` | called with `true` to switch the driver on, with `false` to switch it off |
-| `onDelayMs` | time between switching on and the first step, in milliseconds |
-| `offDelayMs` | time the driver stays on after a move, in milliseconds |
+`setEnablePin()`, the name of this function in 3.0.0-beta.1, remains as deprecated.
 
 ---
 
