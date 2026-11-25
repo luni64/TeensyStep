@@ -27,6 +27,9 @@ All notable changes to TeensyStep are documented in this file. The format follow
 - Example `advanced/PathPlanner`: a small motion planner on top of `advanced::GroupPath`. It takes a path
   of points in mm with a feed rate, decides how fast each point can be passed, and runs the path without
   stopping where the motors allow it. The planner is a header of the example, made to be copied.
+  The manual explains it in "Writing a motion planner".
+- Example `advanced/CoreXY`: the same planner on a CoreXY machine, with speed override and hold from the
+  serial monitor.
 - `GroupPath::overrideSpeed()` runs a path at a fraction of its speeds, also while it runs. The factor 0
   holds the path: the group brakes along the path, through the moves that follow if need be, and stands
   on it until another factor is set.

@@ -32,6 +32,7 @@ calculate the motion themselves:
 |---|---|
 | `GroupWaypoints` | A group passes waypoints without stopping (`advanced::GroupPath`): moves given ahead, with their speeds in mm/s |
 | `PathPlanner` | A small motion planner (`Planner.h`, a part of the example): an x-y table runs a path of points in mm and passes each point as fast as the motors allow |
+| `CoreXY` | The same planner on a CoreXY machine (motor A = x + y, motor B = x - y), with speed override and hold from the serial monitor |
 
 ## Sketches of version 2
 

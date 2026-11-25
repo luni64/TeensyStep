@@ -12,9 +12,9 @@ calculates: [`GroupPath`](group-paths.md) takes the moves of a path ahead and jo
     the motors. It looks ahead over the coming moves, decides how fast each point can be passed, and
     gives every move its speeds.
 
-This chapter shows how a planner is built on the library, with the example `advanced/PathPlanner`. Its
-planner is a single header of about 300 lines, `Planner.h`, in the folder of the sketch. It is example
-code, made to be read, copied and changed.
+This chapter shows how a planner is built on the library, with the examples `advanced/PathPlanner` and
+`advanced/CoreXY`. Their planner is a single header of about 300 lines, `Planner.h`, in the folder of
+each sketch. It is example code, made to be read, copied and changed.
 
 ## The example
 
@@ -180,6 +180,28 @@ runner.moves.overrideSpeed(1);    // go on at the planned speeds
 While the path is held, `giveMoves()` goes on as before: the group needs the following moves to brake
 along the path. See [Override and hold](group-paths.md#override-and-hold) for the details, and for how
 a path that is held is given up.
+
+## Another machine: CoreXY
+
+On a CoreXY machine two motors move the head together through one belt: motor A makes the sum of the
+ways in x and y, motor B their difference. A move along x turns both motors, and on a diagonal only one
+of them turns. For the planner this is another kinematics and nothing else; the points of the path stay
+in x and y:
+
+```cpp
+--8<-- "advanced/CoreXY/CoreXY.ino"
+```
+
+The limits follow from the kinematics by themselves. Along x and y both motors share the work, so the
+head accelerates at 625 mm/s² with the values of the sketch (1); on a diagonal one motor does it alone,
+at 442 mm/s². The sketch also shows override and hold from the serial monitor.
+{ .annotate }
+
+1.  **Where the numbers come from**
+
+    A motor accelerates at 50,000 steps/s². Along x each motor makes 80 steps per mm of the path:
+    50,000 / 80 = 625 mm/s². On a diagonal one motor makes 113 steps per mm of the path (80 × √2), the
+    other none: 50,000 / 113 = 442 mm/s².
 
 ## What the example does not do
 

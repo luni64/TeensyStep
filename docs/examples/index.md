@@ -41,6 +41,7 @@ the first motor; change the pin numbers to match the wiring.
 |---|---|
 | `advanced/GroupWaypoints` | a group that passes waypoints without stopping, with `advanced::GroupPath`; see [Paths of a group](../advanced/group-paths.md) |
 | `advanced/PathPlanner` | a small motion planner: an x-y table runs a path of points in mm and passes each point as fast as the motors allow; see [Writing a motion planner](../advanced/motion-planner.md) |
+| `advanced/CoreXY` | the same planner on a CoreXY machine, with speed override and hold from the serial monitor |
 
 ## Sketches of version 2
 

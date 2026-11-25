@@ -4,7 +4,7 @@
  * Planner.h: a small motion planner for TeensyStep
  *
  * Example code, made to be read, copied and changed. It is not a part of
- * the library.
+ * the library. The examples PathPlanner and CoreXY hold the same file.
  *
  * A path is a list of points in mm with a feed rate. The planner turns it
  * into moves of the motors and decides how fast each point can be passed,
