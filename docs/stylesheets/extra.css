@@ -14,3 +14,21 @@
 .md-typeset .md-tooltip--active + .md-annotation__index::after {
   transform: none;
 }
+
+/* Figures (<figure markdown="span"> with <figcaption>): the caption close under the picture, smaller than
+   the text. */
+.md-typeset figure {
+  margin: 1.2em auto 1.4em;
+}
+.md-typeset figcaption {
+  margin: 0.2em auto 0;
+  max-width: 32rem;
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--md-default-fg-color--light);
+}
+
+/* "Behind the scenes" has many sub-sections: its table of contents (right side) shows the top level only. */
+.md-main:has(h1#behind-the-scenes) .md-nav--secondary .md-nav__item > .md-nav {
+  display: none;
+}

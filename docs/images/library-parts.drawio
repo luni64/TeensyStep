@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="library-parts" id="library-parts">
+    <mxGraphModel dx="1000" dy="400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="frame" value="TeensyStep" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#78909c;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=2;fontSize=12;fontColor=#546e7a;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="125" y="20" width="550" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="sketch" value="Sketch" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;fillColor=#eceff1;strokeColor=#78909c;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="0" y="70" width="70" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="cmd" value="&lt;b&gt;Commands&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e0f2f1;strokeColor=#00796b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="145" y="60" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="calc" value="&lt;b&gt;Motion&lt;br&gt;calculation&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e0f2f1;strokeColor=#00796b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="325" y="60" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="pulse" value="&lt;b&gt;Pulse&lt;br&gt;generation&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e0f2f1;strokeColor=#00796b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="525" y="60" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="driver" value="Driver" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;fillColor=#eceff1;strokeColor=#78909c;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="730" y="70" width="70" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="moveAbs()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#37474f;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#ffffff;verticalAlign=bottom;" edge="1" parent="1" source="sketch" target="cmd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="goal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#37474f;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#ffffff;verticalAlign=bottom;" edge="1" parent="1" source="cmd" target="calc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="next step" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#37474f;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#ffffff;verticalAlign=bottom;" edge="1" parent="1" source="calc" target="pulse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="STEP, DIR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#37474f;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#ffffff;verticalAlign=bottom;" edge="1" parent="1" source="pulse" target="driver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

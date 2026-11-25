@@ -15,14 +15,9 @@ The library consists of three parts with separate tasks:
 | **Motion calculation** | Works out the motion: at which time the next step has to be made, and in which direction | `src/core/` |
 | **Pulse generation** | Switches the STEP and DIR pins at the calculated times, with a hardware timer of the processor | `src/backend/` |
 
-```
-  sketch                 library                                              driver
-            +----------+           +-------------+           +------------+
- moveAbs()  |          |   goal    |   motion    | next step |   pulse    |  STEP, DIR
- ---------> | commands | --------> | calculation | --------> | generation | ----------->
-            |          |           |             |           |  (timer)   |
-            +----------+           +-------------+           +------------+
-```
+<figure markdown="span">
+  ![The three parts of the library between the sketch and the driver](images/library-parts.png)<figcaption>The way of a command through the three parts of the library.</figcaption>
+</figure>
 
 The motion calculation is arithmetic only: it works with positions, speeds and times and never touches
 a timer or a pin. The pulse generation is the only part that depends on the processor. It exists once
@@ -184,15 +179,21 @@ If the move is too short to reach the maximum speed, the same comparison makes t
 accelerating to decelerating in the middle, without a special case. A move of 150 steps accelerates for
 75 steps, up to 620 steps/s, and decelerates for the other 75.
 
-![Squared speed and speed over the steps, for a move of 600 steps and a move of 150 steps](images/ramp-moves.png)
-
-*Squared speed (left) and speed (right) over the steps, for the move of 600 steps and for one of 150
-steps. The squared speed changes along straight lines, by 5,000 per step; the speed is its square
-root. The curves are the output of the motion calculation of the library, not drawings.*
+<figure markdown="span">
+  ![Squared speed and speed over the steps, for a move of 600 steps and a move of 150 steps](images/ramp-moves.png)<figcaption>Squared speed (left) and speed (right) over the steps, for the move of 600 steps and for one of 150 steps. The squared speed changes along straight lines, by 5,000 per step; the speed is its square root. The curves of all graphs of this chapter are the output of the motion calculation of the library, not drawings.</figcaption>
+</figure>
 
 The time to wait for a step follows from the speed: the step takes one divided by the mean of the speeds
 at its beginning and its end. The first step of the example takes 1 / 111 s, about 9 ms; a step at the
 maximum speed takes 1 / 800 s = 1.25 ms.
+
+With these times, the same two moves look as ramps are usually drawn, over the time instead of over the
+steps. A squared speed that changes by the same amount with every step is a speed that changes by the
+same amount in every unit of time: the ramp is linear, with the acceleration that was set.
+
+<figure markdown="span">
+  ![Position and speed over the time, for a move of 600 steps and a move of 150 steps](images/ramp-moves-time.png)<figcaption>Position (left) and speed (right) over the time, for the same two moves. The move of 600 steps takes 1.0 s, the one of 150 steps 0.42 s.</figcaption>
+</figure>
 
 ### Speeds between the steps of 2a
 
@@ -222,13 +223,14 @@ speed changes during a part of the step only and is constant for the rest of it.
 
 ### The decision as a flow chart
 
-![Flow chart of the decision for one step](images/ramp-decision.png){ width="520" }
+<figure markdown="span">
+  ![Flow chart of the decision for one step](images/ramp-decision.png){ width="520" }<figcaption>The decision for one step of a move to a target at which the motor stops. v² is the squared speed after the step.</figcaption>
+</figure>
 
-*The decision for one step of a move to a target at which the motor stops. v² is the squared speed
-after the step. The chart shows the usual case. Left out are: a deceleration of its own
-(`setDeceleration()`; the chart uses the acceleration for both), the first step from standstill, a
-motor that moves away from its target or is too fast to stop there (it brakes first and comes back),
-targets with a speed, and the waits for long step times.*
+The chart shows the usual case. Left out are: a deceleration of its own (`setDeceleration()`; the chart
+uses the acceleration for both), the first step from standstill, a motor that moves away from its
+target or is too fast to stop there (it brakes first and comes back), targets with a speed, and the
+waits for long step times.
 
 ### Why a new command needs nothing special
 
@@ -238,9 +240,9 @@ faster than allowed and subtracts 5,000 from the squared speed, step after step,
 reached at step 346. From 400 steps/s the motor needs only 30 steps to stop, so it also starts to
 decelerate later: at step 571 instead of step 475.
 
-![Squared speed and speed over the steps, with a new maximum speed during the move](images/ramp-speed-change.png)
-
-*The move of 600 steps, with `setMaxSpeed(400)` called after step 250.*
+<figure markdown="span">
+  ![Squared speed over the steps and speed over the time, with a new maximum speed during the move](images/ramp-speed-change.png)<figcaption>The move of 600 steps, with <code>setMaxSpeed(400)</code> called after step 250: squared speed over the steps (left) and speed over the time (right).</figcaption>
+</figure>
 
 The same holds for a new target or a new acceleration: they are new inputs of the next decision.
 
