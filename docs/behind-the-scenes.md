@@ -241,7 +241,7 @@ reached at step 346. From 400 steps/s the motor needs only 30 steps to stop, so 
 decelerate later: at step 571 instead of step 475.
 
 <figure markdown="span">
-  ![Squared speed over the steps and speed over the time, with a new maximum speed during the move](images/ramp-speed-change.png)<figcaption>The move of 600 steps, with <code>setMaxSpeed(400)</code> called after step 250: squared speed over the steps (left) and speed over the time (right).</figcaption>
+  ![Squared speed over the steps and position over the time, with a new maximum speed during the move](images/ramp-speed-change.png)<figcaption>The move of 600 steps, with <code>setMaxSpeed(400)</code> called after step 250: squared speed over the steps (left) and position over the time (right).</figcaption>
 </figure>
 
 The same holds for a new target or a new acceleration: they are new inputs of the next decision.

@@ -35,30 +35,11 @@ The library offers
     still change in details until version 3.0.0**; the changelog lists every change. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
     **Teensy 3.5 and 3.6**. Teensy 3.0 to 3.2 and LC are not supported: the library compiles there, but
     no motor moves; use version 2.3.4 on these boards. Sketches written for version 2
-    still compile, see [Upgrading from version 2](upgrading.md).
+    still compile, see [Upgrading from version 2](installation.md#upgrading-from-version-2).
 
-## Installation
-
-=== "Arduino IDE"
-
-    Open the Library Manager (*Tools → Manage Libraries…*), search for TeensyStep and install version
-    3.0.0-beta.1 or later. To go back to version 2, select 2.3.4 in the same place.
-
-=== "PlatformIO"
-
-    Add the version to `platformio.ini`:
-
-    ```ini
-    lib_deps = https://github.com/luni64/TeensyStep#v3.0.0-beta.1
-    ```
-
-=== "git"
-
-    Clone the repository into the libraries folder of the sketchbook and check out the version:
-
-    ```
-    git clone -b v3.0.0-beta.1 https://github.com/luni64/TeensyStep
-    ```
+Install the library with the Library Manager of the Arduino IDE (*Tools → Manage Libraries…*, search for
+TeensyStep, version 3.0.0-beta.1 or later). [Installation and upgrading](installation.md) describes the
+installation for PlatformIO and from git, and what to do with sketches written for version 2.
 
 ## Connecting a motor
 

@@ -47,7 +47,7 @@ the first motor; change the pin numbers to match the wiring.
 | `10_LegacyV2` | an unchanged version 2 sketch on the deprecated controllers, with a translation table |
 | `version2/` | examples of TeensyStep 2, unchanged: HelloStepper, MultipleSteppers, StepperArray, Interfacing, Winder, RoseFunctionFollower |
 
-See [Upgrading from version 2](../upgrading.md).
+See [Upgrading from version 2](../installation.md#upgrading-from-version-2).
 
 ## The simplest example
 

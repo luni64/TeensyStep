@@ -21,4 +21,4 @@ interrupts. Commands that return an `errorCode` report every warning and error t
 [error function](errors.md#attacherrfunc) as well.
 
 The controllers of version 2, `StepControl` and `RotateControl`, are still available but deprecated; see
-[Upgrading from version 2](../upgrading.md).
+[Upgrading from version 2](../installation.md#upgrading-from-version-2).

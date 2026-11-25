@@ -36,8 +36,8 @@ nav:
       - Stepper: reference/stepper.md
       - StepperGroup: reference/stepper-group.md
       - Errors and other functions: reference/errors.md
-  - Upgrading from version 2: upgrading.md
   - Behind the scenes: behind-the-scenes.md
+  - Installation and upgrading: installation.md
 
 theme:
   name: material

@@ -12,7 +12,8 @@ All notable changes to TeensyStep are documented in this file. The format follow
 - Manual: new chapter "Behind the scenes", which explains how the library works inside (the ramp, the
   timers, low step rates, the step pulse, groups and Bresenham, the lists in braces). "Motors and drivers"
   has a section on typical drivers and how to connect them, and on the two kinds of bipolar motors. The
-  reference of `StepperGroup` explains the two forms of its commands (values in braces or in an array).
+  reference of `StepperGroup` explains the two forms of its commands (values in braces or in an array). The installation and
+  "Upgrading from version 2" are now one chapter, "Installation and upgrading", at the end of the manual.
 
 ## v3.0.0-beta.1 - 2026-11-18
 
