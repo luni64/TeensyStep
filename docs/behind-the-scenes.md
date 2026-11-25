@@ -50,6 +50,12 @@ The library has room for 16 active moves. A single motor that moves needs one of
 moves also needs only one, however many motors it has, because its motors are calculated together. This
 is where the limit "16 motors or groups at the same time" comes from.
 
+The number 16 is the size of a table that is fixed when the library is compiled, so that the library
+needs no dynamic memory. It is a choice, not a property of the hardware: a Teensy 4.x happens to have
+16 timers the library can use, a Teensy 3.5 or 3.6 has 20 compare channels, and both get the same 16
+active moves. A build that needs fewer can make the table smaller, see
+[Compile-time settings](reference/errors.md#compile-time-settings).
+
 (In the source code an active move is called a `Channel`. The word is avoided here, because the hardware
 timers have channels as well, and the two are different things.)
 
@@ -64,30 +70,30 @@ Take `motor.moveAbsAsync(4000)` for a motor that stands still:
    it gives the motion calculation the goal: "go to position 4000 and stop there".
 3. **The command starts the timer** and returns. `loop()` runs on.
 
-From this moment the move runs by itself, in the interrupt (1) of the timer. The sketch is not involved
+From this moment the move runs by itself, in the interrupt of the timer. The sketch is not involved
 any more, unless it gives a new command.
-{ .annotate }
 
-1.  **Interrupt**
-
-    A short function that the processor runs when a piece of hardware asks for it, here a timer that has
-    reached a certain time. The processor stops what it is doing, for example `loop()`, runs the
-    function, and continues where it was.
+A command for a motor that is **already moving** needs none of the three steps: the motor has its
+active move and its timer already. The command only changes the goal in the active move, and the next
+step is calculated for the new goal.
 
 ### What happens at every step
 
-The timer is set to the time of the next step. When that time has come, the timer calls the pulse
-generation, which does three things:
+The timer is set to the time at which the next step has to be made, its *due time*. A step then takes
+two interrupts of the timer:
 
-1. It makes the step pulse on the STEP pin.
-2. It asks the motion calculation: **"what is next?"** The calculation answers with the next *event*
-   (see below): how long to wait, and whether to step then.
-3. It sets the timer to that time and returns.
+| Interrupt | What the pulse generation does |
+|---|---|
+| at the due time of the step | 1. It sets the STEP pin to its active level: the step pulse begins.<br>2. It sets the timer to the end of the pulse.<br>3. It asks the motion calculation: **"what is next?"** The calculation answers with the next *event* (see below): how long to wait, and whether to step then. |
+| at the end of the pulse | 4. It sets the STEP pin back: the pulse ends.<br>5. It sets the timer to the due time of the next event. |
 
-Then the same happens again, step after step. Two points are worth noting:
+Then the same happens again, step after step. The next event is calculated while the pulse of the
+current step is on; [The step pulse](#the-step-pulse) describes the two interrupts in detail. Two points
+are worth noting:
 
-- **The pulse generation asks; the motion calculation never acts by itself.** It only answers when it is
-  asked, and it calculates exactly one step ahead. There is no list of prepared steps.
+- **The pulse generation asks, once for every event; the motion calculation never acts by itself.** It
+  only answers when it is asked, and it calculates exactly one step ahead. There is no list of prepared
+  steps.
 - **Only the next step is calculated in the interrupt.** There is no planning of the whole move, neither
   here nor anywhere else; how the next step is found is the subject of
   [the next section](#how-the-ramp-is-calculated).
@@ -115,9 +121,6 @@ The pulse generation then stops the timer and puts its registers back as they we
 is free again: for the next move, for PWM, or for another library. The final position is copied from
 the active move into the `Stepper` object, and the active move is free for the next command.
 
-A command for a motor that is **already moving** needs none of this. It only changes the goal in the
-active move, and the next "what is next?" is answered for the new goal.
-
 ## How the ramp is calculated
 
 Many stepper libraries plan a move when it starts: so many steps of acceleration, so many at constant
@@ -127,23 +130,28 @@ TeensyStep makes no plan. **For every step, the motion calculation decides anew*
 where the motor is, how fast it is, and what the goal is (a position with the speed to have there, or a
 speed). The decision for one step is always one of: go faster, keep the speed, go slower.
 
+The decision is made with the values that hold at that moment. If the sketch has changed the target,
+the maximum speed or the acceleration since the previous step, the new values are used. A command can
+therefore be given at any time, and the motor adjusts to it from the next step on.
+
 ### The rule for one step
 
-The rule behind the decision is the formula for constant acceleration. It connects the speed v₀ before a
-distance s with the speed v after it, for the acceleration a:
+The rule behind the decision is the formula for constant acceleration. For a motor that has the speed
+vₙ after step n and accelerates with the acceleration a, it gives the speed vₙ₊₁ after the next step:
 
 ```
-v² = v₀² + 2·a·s
+vₙ₊₁² = vₙ² + 2a
 ```
 
-For a distance of one step (s = 1) the formula says: **with every step, the square of the speed changes
-by twice the acceleration.** The motion calculation therefore remembers the squared speed of the motor.
-To accelerate for one step it adds 2·a to this number; to decelerate it subtracts 2·a.
+(In general the formula reads v² = v₀² + 2as for a distance s; here the distance is one step, s = 1.)
+It says: **with every step, the square of the speed changes by twice the acceleration.** The motion
+calculation therefore remembers the squared speed of the motor. To accelerate for one step it adds 2a
+to this number; to decelerate it subtracts 2a.
 
 ### An example
 
 A motor with the default settings: maximum speed 800 steps/s, acceleration 2,500 steps/s², pull-in
-speed (1) 100 steps/s. It is told to move 4,000 steps.
+speed (1) 100 steps/s. It is told to move 600 steps.
 { .annotate }
 
 1.  **Pull-in speed**
@@ -170,28 +178,81 @@ answers this. To get from 800 steps/s back down to 100 steps/s, the squared spee
 - more than 126 steps left to the target: keep the speed (or accelerate, if the maximum is not reached),
 - 126 steps left: start to decelerate.
 
-The motor then arrives at the target at about the pull-in speed and stops there. If the move is too short to
-reach the maximum speed, the same comparison makes the motor turn from accelerating to decelerating in
-the middle, without a special case.
+The motor decelerates from step 475 on, arrives at the target at the pull-in speed and stops there.
+
+If the move is too short to reach the maximum speed, the same comparison makes the motor turn from
+accelerating to decelerating in the middle, without a special case. A move of 150 steps accelerates for
+75 steps, up to 620 steps/s, and decelerates for the other 75.
+
+![Squared speed and speed over the steps, for a move of 600 steps and a move of 150 steps](images/ramp-moves.png)
+
+*Squared speed (left) and speed (right) over the steps, for the move of 600 steps and for one of 150
+steps. The squared speed changes along straight lines, by 5,000 per step; the speed is its square
+root. The curves are the output of the motion calculation of the library, not drawings.*
 
 The time to wait for a step follows from the speed: the step takes one divided by the mean of the speeds
 at its beginning and its end. The first step of the example takes 1 / 111 s, about 9 ms; a step at the
 maximum speed takes 1 / 800 s = 1.25 ms.
 
+### Speeds between the steps of 2a
+
+In the example the numbers fit: from 10,000 up to 640,000 it is exactly 126 times 5,000. In general
+they do not fit. With a maximum speed of 750 steps/s the squared speed has to reach 562,500, and that
+is 110.5 times 5,000 above the start. A calculation that knew only "plus 2a" and "minus 2a" could never
+get to this speed; it would have to swing around it.
+
+The motion calculation therefore limits every change: **a step that would pass a limit ends exactly at
+the limit.** With the maximum speed of 750 steps/s:
+
+| After step | Squared speed | |
+|:---:|:---:|---|
+| 109 | 555,000 | |
+| 110 | 560,000 | |
+| 111 | 562,500 | only 2,500 are added: exactly 750 steps/s |
+| 112 | 562,500 | constant from here on |
+
+The speed is then constant; it does not swing. The same is done on the way down. The limit there is
+the highest squared speed from which the motor can still stop at the target, which falls by 2a with
+every step that brings the motor closer. In the move with 750 steps/s the first step of the
+deceleration takes off only 2,500 (from 562,500 to 560,000), and all further ones 5,000, so that the
+motor arrives at the target with exactly the pull-in speed.
+
+The step time takes this into account: in a step that changes the squared speed by less than 2a, the
+speed changes during a part of the step only and is constant for the rest of it.
+
+### The decision as a flow chart
+
+![Flow chart of the decision for one step](images/ramp-decision.png){ width="520" }
+
+*The decision for one step of a move to a target at which the motor stops. v² is the squared speed
+after the step. The chart shows the usual case. Left out are: a deceleration of its own
+(`setDeceleration()`; the chart uses the acceleration for both), the first step from standstill, a
+motor that moves away from its target or is too fast to stop there (it brakes first and comes back),
+targets with a speed, and the waits for long step times.*
+
 ### Why a new command needs nothing special
 
-Suppose the sketch calls `motor.setMaxSpeed(400)` while the motor of the example runs at 800 steps/s.
-Nothing is planned again. At the next step the calculation finds that the motor is faster than allowed
-and subtracts 5,000 from the squared speed, step after step, until 400 steps/s are reached. The number
-of steps needed to stop is smaller at that speed, so the motor will also start to decelerate later.
+Suppose the sketch calls `motor.setMaxSpeed(400)` while the motor of the example runs at 800 steps/s,
+after step 250. Nothing is planned again. At the next step the calculation finds that the motor is
+faster than allowed and subtracts 5,000 from the squared speed, step after step, until 400 steps/s are
+reached at step 346. From 400 steps/s the motor needs only 30 steps to stop, so it also starts to
+decelerate later: at step 571 instead of step 475.
+
+![Squared speed and speed over the steps, with a new maximum speed during the move](images/ramp-speed-change.png)
+
+*The move of 600 steps, with `setMaxSpeed(400)` called after step 250.*
 
 The same holds for a new target or a new acceleration: they are new inputs of the next decision.
 
 ### Details
 
 - The squared speeds are kept as whole numbers, so that no rounding errors add up over a long ramp.
-- A step on a ramp needs one square root, to get the speed from its square. At constant speed nothing
-  is calculated at all: the time of the last step is used again.
+- A step on a ramp needs one square root, to get the speed from its square, and one division, to get
+  the step time from the speed. All supported processors have a floating point unit that does both in
+  hardware, in about 14 clock cycles each: about 25 ns on a Teensy 4.x at 600 MHz, about 80 ns on a
+  Teensy 3.6 at 180 MHz. (These are estimates from the documentation of the processors, not
+  measurements.)
+- At constant speed nothing of this is calculated: the time of the last step is used again.
 
 What this method gives:
 
@@ -199,47 +260,61 @@ What this method gives:
   input for the next decision. There is no plan that has to be repaired.
 - **Targets with a speed** and the run-up they may need come from the same decision.
 
-The price is processor time: a decision per step costs more than reading a prepared plan.
-[Performance](advanced/performance.md) shows what it amounts to.
+The price is processor time: a decision per step costs more than reading a prepared plan. Measured on a
+Teensy 4.1, a step costs about 1 µs of processor time in all, and a step on a ramp about 0.5 µs more;
+the square root and the division are a small part of that. [Performance](advanced/performance.md) has
+the numbers.
 
 ## The timers
 
-### One timer channel for each active move
+### One compare channel for each active move
 
-Every active move has one channel of a hardware timer for itself. The library uses the timer only as a
-clock: a counter that runs freely, and one compare register that raises an interrupt when the counter
-reaches its value. The pins are not connected to the timer; the interrupt writes them as ordinary
-digital outputs. This is why any pin can be a STEP or DIR pin, and why a group can step up to 16 pins
-from one timer channel.
+The word *timer* is used for different things. In this chapter a **timer** is one counter together
+with its compare registers, and a **compare channel** is one compare register with its interrupt.
+(The reference manuals of the processors use their own words: the four independent timers of a
+QuadTimer module are called "channels" there.)
 
-The two processor families differ in what a timer channel is:
+Every active move has one compare channel for itself. The library uses it only as a clock: the counter
+runs freely, and the compare register raises an interrupt when the counter reaches its value. The pins
+are not connected to the timer; the interrupt writes them as ordinary digital outputs. This is why any
+pin can be a STEP or DIR pin, and why a group can step up to 16 pins from one compare channel.
+
+The two processor families differ:
 
 | | Teensy 4.0, 4.1, MicroMod | Teensy 3.5, 3.6 |
 |---|---|---|
-| Timers | QuadTimer TMR1 to TMR4, four channels each: 16 channels | FlexTimer FTM0 to FTM3, with 8, 2, 2 and 8 channels: 20 channels |
-| Counter | every channel has its own 16-bit counter | all channels of a timer share one counter |
-| Set up by the library | the library sets the channel to count the bus clock (150 MHz) without a reload; the counter runs around every 437 µs | nothing: the counter stays as the Teensy core has set it up for PWM (`analogWrite`), counting from 0 to its top value 488 times per second |
-| What the library uses | the compare register of the channel and its interrupt | the channel in compare mode without a pin, and its interrupt |
+| Timers | 16: each of the QuadTimer modules TMR1 to TMR4 holds four independent timers, every one with its own 16-bit counter | 4: the FlexTimers FTM0 to FTM3, every one with one 16-bit counter |
+| Compare channels | 16: one for each timer (the library uses one compare register of a timer) | 20: the timers have 8, 2, 2 and 8 of them, on the one counter of the timer |
+| An active move takes | a whole timer | one compare channel; the other channels of the timer stay free for PWM and for other moves |
+| Counter | set up by the library: it counts the bus clock (150 MHz) without a reload and runs around every 437 µs | not touched: it stays as the Teensy core has set it up for PWM (`analogWrite`), counting from 0 to its top value 488 times per second |
+| Interrupts | one for each module, shared by its four timers | one for each timer, shared by its channels |
 | Longest time for one event | 400 µs | 1 ms |
 
-On Teensy 3.5 and 3.6 the counter is left alone on purpose: the other channels of the same timer keep
+On Teensy 3.5 and 3.6 the counters are left alone on purpose: the other channels of the same timer keep
 making PWM with unchanged frequency. The price is arithmetic modulo the top value of the counter
 instead of modulo 2^16.
 
-### Finding a free timer
+### Finding a free compare channel
 
-Timers are not reserved when the sketch starts. At the beginning of every move the library looks for a
-timer channel that nobody uses, by reading the hardware:
+Compare channels are not reserved when the sketch starts. At the beginning of every move the library
+looks for one that nobody uses, by reading the hardware:
 
-- a channel whose interrupt is enabled, or that runs in a mode the Teensy core does not set, belongs to
-  somebody else and is skipped;
-- a channel whose pin is switched to PWM is skipped;
-- a timer whose interrupt vector points to the function of another library is skipped as a whole.
+- A compare channel whose interrupt is enabled, or that runs in a mode the Teensy core does not set,
+  belongs to somebody else and is skipped.
+- A compare channel whose pin is switched to PWM is skipped. Its neighbours are not: on a Teensy 4.x
+  the PWM of a pin has a timer with a counter of its own, and on a Teensy 3.5 or 3.6, where the
+  channels of a timer share the counter, the library never writes to the counter and so cannot disturb
+  the PWM of the other channels.
+- All compare channels behind an interrupt that another library has taken are skipped: the four timers
+  of a QuadTimer module, or all channels of a FlexTimer.
+- On Teensy 3.5 and 3.6 a timer is skipped as a whole if its counter cannot be used as it is: it counts
+  an encoder, or its PWM frequency was raised so far that it runs around in less than 1.2 ms.
 
-Channels that cannot make PWM on any pin are taken first (Teensy 4.x), then channels whose PWM pin is
-a pin of the motor itself, then the others. Before the library changes a channel, it stores its
-registers; when the move ends, it writes them back. [Timers and interrupts](advanced/timers.md) lists
-the channels, their pins and the rules for PWM and other timer libraries.
+Compare channels that cannot make PWM on any pin of the board are taken first (they exist on Teensy 4.x
+only, for example the four timers of TMR4), then those whose PWM pin is a pin of the motor itself, then
+the others. Before the library changes a compare channel, it stores its registers; when the move ends,
+it writes them back. [Timers and interrupts](advanced/timers.md) lists the channels, their pins and
+the rules for PWM and other timer libraries.
 
 ### Due times
 
@@ -289,8 +364,7 @@ within the longest event time, and not only at its next step a second later.
 
 ### The step pulse
 
-A step pulse has two edges. Both are made by the same timer channel and the same compare register; no
-second timer is needed. A step therefore takes two interrupts:
+A step pulse has two edges. Both are made by the same compare channel; no second timer is needed. A step therefore takes two interrupts:
 
 | Time | The interrupt function |
 |---|---|
@@ -309,10 +383,10 @@ second timer is needed. A step therefore takes two interrupts:
 
 ### Several moves at the same time
 
-The channels of one timer share an interrupt. When the compare values of several channels are due
-together, the interrupt function first makes the edges of all of them and only then does the rest of
-the work, one move after the other. Otherwise the edge of one motor would wait for the calculation of
-another.
+Compare channels share interrupts: the four timers of a QuadTimer module on Teensy 4.x, the channels
+of a FlexTimer on Teensy 3.5 and 3.6. When several compare channels of one interrupt are due together,
+the interrupt function first makes the edges of all of them and only then does the rest of the work,
+one move after the other. Otherwise the edge of one motor would wait for the calculation of another.
 
 All step interrupts have the same priority (48: above the default of 128, below the millisecond
 interrupt of the Teensy core). They do not interrupt each other. A step of one move that becomes due
@@ -322,56 +396,69 @@ time one event takes; because of the due times this does not add up.
 
 ### An emergency stop
 
-`emergencyStop()` does not wait for the next event. It switches the interrupt of the timer channel off
-and releases the channel. A pulse that has begun is completed. At that moment the motion calculation is
-one event ahead of the pins: the step it has already counted, but that was not made, is taken off the
-position again. The position therefore matches the pulses that were made.
+`emergencyStop()` does not wait for the next event. It switches the interrupt of the compare channel
+off and releases the channel. A pulse that has begun is completed.
+
+The position counter then needs a correction. The motion calculation is always one event ahead of the
+pins (see [What happens at every step](#what-happens-at-every-step)): while the timer waits for the
+due time of a step, this step is calculated already, and it is counted in the position already. The
+emergency stop discards the prepared step. No pulse is made for it, so the library takes it off the
+position counter again.
+
+After an emergency stop the position counter is therefore exactly the number of step pulses that went
+to the driver. A homing routine can rely on this: a motor that runs below its pull-in speed stands
+still when the pulses end, and the counter is its position. A motor that was faster may lose steps
+when its pulses end without a ramp, which the library cannot know.
 
 ## Groups
 
 ### One ramp for the whole group
 
-A group does not run a ramp per motor. It treats the move as **one path** from the start positions to
-the targets. The length of the path is the number of steps of the member with the longest way, the
-*lead motor*, and one step of the path is one step of that member.
+A group does not run a ramp per motor. The member that has to make the most steps in the move is the
+*lead motor*. Only the number of steps counts for this, not a distance: the members may have different
+step sizes, and one of them may be a rotary axis.
 
-The motion along the path is calculated by the same code that calculates a single motor: to the motion
-calculation the path is one motor that moves from 0 to the length of the path. Everything said in
-[How the ramp is calculated](#how-the-ramp-is-calculated) holds for a group as well. The group needs
-one active move and one timer channel, whether it has 2 or 16 members.
+The ramp of the group is calculated for the lead motor alone, by the same code that calculates a single
+motor: to the motion calculation the group is one motor that moves by the number of steps of the lead
+motor. The times at which the other members step are derived from the steps of the lead motor (see
+[below](#distributing-the-steps-bresenham)). Everything said in
+[How the ramp is calculated](#how-the-ramp-is-calculated) holds for a group as well. A group needs one
+active move and one compare channel, whether it has 2 or 16 members.
 
-### The limits of the path
+### The limits of the ramp
 
-The path has to be slow enough for every member. A member that makes fewer steps than the lead motor
-moves slower in the same proportion, so each of its limits allows the path more:
+The ramp of the lead motor has to be slow enough for every member. A member that makes fewer steps than
+the lead motor moves slower in the same proportion, so each of its limits allows the lead motor more:
 
 ```
-limit of the path from one member = limit of the member × (steps of the path / steps of the member)
+limit for the lead motor from one member = limit of the member × (steps of the lead motor / steps of the member)
 ```
 
-The path gets the smallest of these values over all members, separately for the maximum speed, the
+The ramp gets the smallest of these values over all members, separately for the maximum speed, the
 acceleration, the deceleration and the pull-in speed. A member that does not move sets no limit. If the
 group has a speed or an acceleration of its own (`StepperGroup::setMaxSpeed()`, ...), that value is used
 instead, as long as it is not above what the members allow.
 
-Example: x makes 4,000 steps and y 1,000, and both motors allow 800 steps/s. The path has 4,000 steps.
-x allows the path 800 steps/s, y allows it 800 × 4 = 3,200 steps/s. The path runs at 800 steps/s; x
-then runs at 800 and y at 200 steps/s.
+Example: x makes 4,000 steps and y 1,000, so x is the lead motor. Both motors allow 800 steps/s. x
+allows the lead motor 800 steps/s, y allows it 800 × 4 = 3,200 steps/s. The ramp runs up to 800 steps/s;
+x then runs at 800 and y at 200 steps/s. If y allowed only 100 steps/s, the ramp would run up to
+100 × 4 = 400 steps/s: x at 400 and y at 100 steps/s.
 
 ### Distributing the steps: Bresenham
 
-At every step of the path, the group decides for each member whether it steps as well. The method is
-[Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm), which was
-invented to draw straight lines on a grid of pixels.
+At every step of the lead motor, the group decides for each other member whether it steps as well. The
+method is [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm),
+which was invented to draw straight lines on a grid of pixels.
 
-Every member has a counter, the *error*. At each step of the path, the number of steps of the member is
-added to it. When the error reaches the length of the path, the member makes a step and the length is
-subtracted. Only whole numbers are added and compared, so nothing can drift.
+Every member has a counter, the *error*. At each step of the lead motor, the number of steps of the
+member is added to it. When the error reaches the number of steps of the lead motor, the member makes a
+step and that number is subtracted. Only whole numbers are added and compared, so nothing can drift.
 
-Example: a path of 5 steps, and a member that has to make 2. The error of the member starts at half the
-length (as a whole number: 2), so that the member steps in the middle of its intervals:
+Example: the lead motor makes 5 steps, and a member has to make 2. The error of the member starts at
+half the steps of the lead motor (as a whole number: 2), so that the member steps in the middle of its
+intervals:
 
-| Step of the path | 1 | 2 | 3 | 4 | 5 |
+| Step of the lead motor | 1 | 2 | 3 | 4 | 5 |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Error after adding 2 | 4 | 6 | 3 | 5 | 2 |
 | Reaches 5: the member steps | | yes | | yes | |
@@ -380,13 +467,13 @@ length (as a whole number: 2), so that the member steps in the middle of its int
 | Exact position on the line | 0.4 | 0.8 | 1.2 | 1.6 | 2.0 |
 
 The position of the member is the exact position rounded to the nearest whole step: no member is ever
-more than half a step away from the line. For the lead motor the same rule gives a step at every step
-of the path.
+more than half a step away from the line. The lead motor is treated in the same way; for it the rule
+gives a step every time.
 
-The two tasks are separate: the ramp decides **when** the next step of the path is made, Bresenham
-decides **who** steps. The result is one event with a delay and one bit per member. That is why a group
-stays synchronized while it accelerates, when its speed is changed, and when it is stopped early: all
-of these change only the "when".
+The two tasks are separate: the ramp decides **when** the next step of the lead motor is made, Bresenham
+decides **who** steps with it. The result is one event with a delay and one bit per member. That is why
+a group stays synchronized while it accelerates, when its speed is changed, and when it is stopped
+early: all of these change only the "when".
 
 A member always steps at the same moment as the lead motor. A member that is only a little slower than
 the lead motor therefore does not step evenly: it steps with the lead motor and leaves a step out from
@@ -395,10 +482,11 @@ time to time.
 ### Rotating groups
 
 A group that rotates with a fixed speed ratio uses the same mechanism. The speeds take the place of the
-ways: the fastest member is the lead motor, the path is given a fixed length of 2^30, and every member
-gets its share of it according to its speed. The motion calculation runs the path at a speed instead of
-to a target, so it never ends. The ratios are therefore kept with a resolution of 1 in 2^30, and they
-are kept exactly while the group accelerates or reverses, because again only the "when" changes.
+step counts: the fastest member is the lead motor and gets the fixed number 2^30, and every other member
+gets its share of that number according to its speed. The motion calculation runs the lead motor at a
+speed instead of to a target, so the move never ends. The ratios are therefore kept with a resolution of
+1 in 2^30, and they are kept exactly while the group accelerates or reverses, because again only the
+"when" changes.
 
 ## Why the lists in braces
 
@@ -431,8 +519,11 @@ for as long as the group is used. A move that was started does not need the grou
 everything it needs was copied into the active move.
 
 The number of values in a list is checked when the command runs, against the number of members; a
-wrong number returns `invalidArgument`. For values that are calculated or received at run time, every
-command also takes an array and its length, see
+wrong number returns `invalidArgument`.
+
+A list in braces has to be written in the sketch. For values that are calculated or received at run
+time, every command that takes a list also exists in a second form that takes an array and its length;
+this includes the path commands of the advanced API (`advanced::GroupPath`). See
 [Values in braces or in an array](reference/stepper-group.md#values-in-braces-or-in-an-array).
 
 ## Commands and the interrupt
@@ -443,7 +534,7 @@ The steps are made in an interrupt, while the sketch gives its commands in `loop
 of its own. Both work on the same active move. Every command, and every function that reads the state
 of a motor, therefore disables the interrupts while it reads or changes an active move, and restores
 the previous interrupt state afterwards. This takes a few microseconds; for a command that starts a
-group it is longer, because the limits of the path are calculated in that time.
+group it is longer, because the limits of the ramp are calculated in that time.
 
 Because the interrupt state is restored and not simply enabled, the functions can also be called from
 interrupts of the sketch.
@@ -471,7 +562,7 @@ and the steps of all motors wait.
 
 The delays of `setEnablePin()` need no timer of their own either. The on-delay is a series of waits
 that the active move hands out before its first step, and the off-delay a series of waits after the
-last one. During the off-delay the active move and its timer channel are still occupied, although
+last one. During the off-delay the active move and its compare channel are still occupied, although
 `isMoving()` already returns `false`.
 
 ## Where to find it in the source
@@ -479,8 +570,8 @@ last one. During the off-delay the active move and its timer channel are still o
 | File | Content |
 |---|---|
 | `src/core/Axis.h`, `Axis.cpp` | motion calculation of one motor: the decision per step, and the waits for long step periods |
-| `src/core/Group.h`, `Group.cpp` | motion calculation of a group: the path, its limits and Bresenham |
+| `src/core/Group.h`, `Group.cpp` | motion calculation of a group: the ramp of the lead motor (called the *path* in the source), its limits and Bresenham |
 | `src/backend/Backend.h` | the interface between the pulse generation (called *backend* in the source) and the rest of the library, with the event |
-| `src/backend/teensy4/`, `teensy3/` | the pulse generation of the boards: finding a timer, due times, the step interrupt. The comment at the top of each file describes the timing |
+| `src/backend/teensy4/`, `teensy3/` | the pulse generation of the boards: finding a compare channel, due times, the step interrupt. The comment at the top of each file describes the timing |
 | `src/api/Channels.h`, `Channels.cpp` | the active moves (called *channels* in the source): reserving and releasing them, the enable signals |
 | `src/api/Stepper.cpp`, `StepperGroup.cpp` | the commands of the sketch |
