@@ -144,8 +144,9 @@ namespace TeensyStep
                     code = c.group.moveAbs(targets, speedAtTarget, speedAtStart); // notSupported for other targets while the group is on its way
                     if (!isError(code))
                     {
-                        c.ending  = false;
-                        c.arrival = arrival;
+                        c.ending    = false;
+                        c.arrival   = arrival;
+                        c.pathOwner = nullptr;
                         backend::start((unsigned)ch);
                     }
                 }
@@ -163,17 +164,6 @@ namespace TeensyStep
         int32_t targets[maxMembers];
         for (unsigned i = 0; i < count; i++) targets[i] = (int32_t)((uint32_t)motors[i]->getPosition() + (uint32_t)distances[i]);
         return start(targets, count, speedAtTarget, speedAtStart);
-    }
-
-    errorCode StepperGroup::changeSpeedAtTarget(float speedAtTarget)
-    {
-        errorCode code = errorCode::notSupported; // if the group is not moving
-        {
-            Lock lock;
-            int ch = runningChannel();
-            if (ch >= 0 && !Engine::channels[ch].ending) code = Engine::channels[ch].group.setSpeedAtTarget(speedAtTarget);
-        }
-        return Engine::report(code);
     }
 
     errorCode StepperGroup::moveAbsAsync(const int32_t* targets, unsigned n)
@@ -263,8 +253,9 @@ namespace TeensyStep
                     code       = c.group.rotate(speeds); // notSupported for another ratio while the group is moving
                     if (!isError(code))
                     {
-                        c.ending  = false;
-                        c.arrival = arrival;
+                        c.ending    = false;
+                        c.arrival   = arrival;
+                        c.pathOwner = nullptr;
                         backend::start((unsigned)ch);
                     }
                 }

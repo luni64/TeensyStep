@@ -8,9 +8,11 @@
 //
 //   StepperGroup xy{x, y};
 //   advanced::GroupPath path(xy);
-//   path.moveAbsAsync({10000, 0}, 500);   // pass the targets at 500 steps/s; the next move follows without a stop
+//   path.add({10000, 0},    {100, 50, 10});   // 100 mm at 50 mm/s, pass the targets at 10 mm/s
+//   path.add({10000, 5000}, {50, 50, 0});     // the next move, given ahead: it follows without a stop
 //
-// advanced::GroupPath: moves of a group that follow each other without a stop.
+// advanced::GroupPath: moves of a group that follow each other without a stop, given ahead, with their
+//                      speeds in the unit of the caller.
 // advanced::setInterruptPriority(): priority of the interrupts in which the steps are made.
 
 #include "TeensyStep.h"

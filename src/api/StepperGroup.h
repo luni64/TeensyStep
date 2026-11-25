@@ -34,7 +34,7 @@ namespace TeensyStep
     /// changed. New targets are accepted when the group stands still.
     ///
     /// A group always stops at its targets. Moves that follow each other without a stop (a path through
-    /// several points) are made with advanced::GroupPath, see TeensyStepAdvanced.h.
+    /// several points) are given with advanced::GroupPath, see TeensyStepAdvanced.h.
     class StepperGroup
     {
      public:
@@ -103,10 +103,8 @@ namespace TeensyStep
         enum class Setting { none, speed, acceleration, deceleration };
         void applySettings(detail::Channel& c, Setting changed);
 
-        // for advanced::GroupPath: moves with a speed at the targets and at the start
         errorCode start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart);
         errorCode startRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart);
-        errorCode changeSpeedAtTarget(float speedAtTarget);
 
         Stepper* motors[maxMembers] = {};
         unsigned count              = 0;

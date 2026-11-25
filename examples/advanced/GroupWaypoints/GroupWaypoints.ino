@@ -2,27 +2,19 @@
  * GroupWaypoints: a group passes several points without stopping
  *
  * An example of the advanced functions (TeensyStepAdvanced.h). A group
- * always stops at its targets. advanced::GroupPath makes moves of a group
- * that follow each other without a stop, for programs that calculate a
- * path themselves.
+ * always stops at its targets. advanced::GroupPath takes moves ahead: one
+ * runs, one waits, and at the targets of a move the group goes on with the
+ * move that waits, without a stop.
  *
- * A move of a GroupPath has a speed at its targets: the speed of the motor
- * with the longest way in this move, like the maximum speed of a group.
- * The group passes its targets at this speed and runs on along the line
- * until the next command.
- *
- * The next move is given from the arrival function of the group. It starts
- * where the motors are, so the group goes through the point without a stop.
+ * Each move says how long it is in the unit of the sketch (here: mm). Its
+ * speeds are then in that unit per second, whichever motor has the longest
+ * way. The targets are positions of the motors in steps, as always.
  *
  * Within each move the motors stay on a straight line. At a waypoint the
  * direction of the line changes, so the speeds of the single motors jump
- * there: below, y starts at 500 steps/s when the group passes the first
- * point. Choose the speed at the waypoints low enough for the motors to
+ * there. Choose the speed at the waypoints low enough for the motors to
  * follow. The library does not plan ahead across the moves, and it does
  * not round corners; cut a corner into short moves, as in this path.
- *
- * New targets are accepted when the group has passed its targets (or stands
- * still), not in the middle of a move.
  *==========================================================================*/
 
 #include "TeensyStepAdvanced.h"
@@ -33,28 +25,41 @@ Stepper y(4, 5);
 StepperGroup xy{x, y};
 advanced::GroupPath path(xy);
 
+const float stepsPerMm = 100;
+
 struct Waypoint
 {
-    int32_t x, y; // steps
-    float speed;  // steps/s at this point; 0: stop there
+    float x, y;           // mm
+    float speed;          // mm/s on the way to this point
+    float speedAtThePoint; // mm/s; 0: stop there
 };
 
 const Waypoint waypoints[] = {
-    {10'000, 0, 500},
-    {10'400, 400, 500}, // corner, cut by a short diagonal move
-    {10'400, 8'000, 500},
-    {0, 0, 0}, // back to the start and stop
+    {100, 0, 80, 5},
+    {104, 4, 80, 5}, // corner, cut by a short diagonal move
+    {104, 80, 80, 5},
+    {0, 0, 80, 0}, // back to the start and stop
 };
 const unsigned nrOfWaypoints = sizeof(waypoints) / sizeof(waypoints[0]);
 
-volatile unsigned next = 0;
+unsigned next = 0;
+float fromX = 0, fromY = 0; // where the move that is given next starts
 
-void nextWaypoint() // called from an interrupt at every arrival: keep it short
+void giveMoves() // gives the library as many moves as it takes
 {
-    if (next < nrOfWaypoints)
+    while (next < nrOfWaypoints && path.room() > 0)
     {
-        path.moveAbsAsync({waypoints[next].x, waypoints[next].y}, waypoints[next].speed);
-        next = next + 1;
+        const Waypoint& w = waypoints[next];
+
+        advanced::PathMove move;
+        move.length        = hypotf(w.x - fromX, w.y - fromY); // in mm, so the speeds are in mm/s
+        move.speed         = w.speed;
+        move.speedAtTarget = w.speedAtThePoint;
+        path.add({(int32_t)lroundf(w.x * stepsPerMm), (int32_t)lroundf(w.y * stepsPerMm)}, move);
+
+        fromX = w.x;
+        fromY = w.y;
+        next  = next + 1;
     }
 }
 
@@ -62,13 +67,9 @@ void setup()
 {
     x.setMaxSpeed(15'000).setAcceleration(30'000); // what the motors can do
     y.setMaxSpeed(15'000).setAcceleration(30'000);
-
-    xy.setMaxSpeed(8'000); // what the group shall do: the motor with the longest way runs at 8000 steps/s
-
-    xy.onArrival(nextWaypoint);
-    nextWaypoint();
 }
 
 void loop()
 {
+    giveMoves(); // the next move has to be there before the one that runs arrives
 }

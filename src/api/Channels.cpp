@@ -1,5 +1,6 @@
 #include "Channels.h"
 #include "../core/Hot.h"
+#include "GroupPath.h"
 #include "Stepper.h"
 
 namespace TeensyStep
@@ -289,7 +290,9 @@ namespace TeensyStep
             if (!c.used) return;
             if (c.isGroup)
             {
+                advanced::GroupPath* path = c.pathOwner; // the arrival function may start a move that is not of the path
                 if (c.arrival) c.arrival();
+                if (path && c.pathOwner == path) path->moveArrived();
                 return;
             }
             Stepper* s  = c.motors[0];

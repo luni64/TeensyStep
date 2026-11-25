@@ -120,9 +120,19 @@ namespace TeensyStep
             errorCode addMove(const int32_t* targets, const PathMove& move);
             unsigned room() const; ///< moves that addMove() takes now: 2, 1 or 0
 
+            // addMove() in two parts, for a caller that keeps next() out with a lock: preparing a move takes
+            // time (divisions, double precision), and next() may run during it. prepareWaiting() fills
+            // `line` for a move that shall wait and needs no lock; commitWaiting() hands it over and is
+            // short. Both refuse if no move is on its way or one waits already: then addMove() is the way.
+            struct Line;
+            bool prepareWaiting(Line& line, const int32_t* targets, const PathMove& move, errorCode& code) const;
+            bool commitWaiting(const Line& line);
+
             /// @brief Runs the moves of addMove() at `factor` times their speeds (0 < factor <= 1): the one
             /// under way, the one that waits and those that follow. @return invalidArgument for another factor
             errorCode setOverride(float factor);
+
+            float overrideFactor() const { return feed; }
 
             /// @brief Current speed along the path, in the unit of the move under way.
             float pathSpeed() const;
@@ -175,9 +185,11 @@ namespace TeensyStep
             };
             PathLimits limitsOf(const uint32_t* share, uint32_t len, float wantSpeed, float wantAcc, float wantDec, float factor) const;
 
+         public:
             // a move of addMove(), prepared
             struct Line
             {
+                uint32_t serial = 0;          // the move it follows
                 uint32_t share[maxMembers];
                 int32_t target[maxMembers];
                 int8_t dir[maxMembers];
@@ -190,7 +202,9 @@ namespace TeensyStep
                 Axis::Limits limits;
                 bool speedCapped = false, accCapped = false;
             };
-            errorCode prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed);
+
+         protected:
+            errorCode prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed) const;
             void finish(Line& l) const;
             void activate(const Line& l);
 
@@ -212,6 +226,7 @@ namespace TeensyStep
             // moves of addMove()
             Line queued;               // the move that waits
             bool hasQueued   = false;
+            uint32_t serial  = 0;      // counts the moves that were started
             bool pathMove    = false;  // the move under way came from addMove()
             bool stopping    = false;  // stop() was called
             float unit       = 1;      // of the move under way: steps of the path per unit of the caller

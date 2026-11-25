@@ -8,62 +8,102 @@
 
 namespace TeensyStep
 {
+    namespace detail
+    {
+        struct Engine;
+    }
+
     namespace advanced
     {
+        /// @brief One move of a GroupPath: a straight line to the targets, with its speeds.
+        ///
+        /// The speeds are in the unit of the caller. `length` says how long the move is in that unit, for
+        /// example in mm; all speeds of the move are then in mm/s and its acceleration in mm/s². The library
+        /// converts them for the motors: it knows the ways of the motors in steps from the targets, so it
+        /// needs no more than the length. With a length of 0 the speeds are in steps of the motor with the
+        /// longest way in the move, like the speeds of a StepperGroup.
+        ///
+        ///     float length;        // length of the move in the unit of the caller. 0: no unit of its own
+        ///     float speed;         // highest speed on the way. 0: as fast as the motors allow
+        ///     float speedAtTarget; // 0: stop at the targets
+        ///     float acceleration;  // also for slowing down. 0: as much as the motors allow
+        using PathMove = core::PathMove;
+
         /// @brief Moves of a group that follow each other without a stop: a path through several points.
         ///
         /// @details For programs that calculate a path, for example a motion planner. A sketch that moves
         /// a group from one position to the next needs StepperGroup only.
         ///
-        /// A move of a GroupPath has a speed at its targets. The group passes the targets at this speed and
-        /// runs on along the line until the next command. The next move is given when the targets are
-        /// passed, in most cases from the arrival function of the group (StepperGroup::onArrival); it
-        /// starts where the members are, without a gap in time. Within each move the members stay on a
-        /// straight line, as in every move of a group.
-        ///
-        /// All speeds are those of the member with the longest way in the move, like the maximum speed of
-        /// the group. This member changes from move to move, so the same speed along the path is another
-        /// number before and after a corner; speedAtStart gives the second one.
+        /// The moves are given ahead: one runs, one waits. When the group arrives at the targets of a move
+        /// with a speed, it goes on with the move that waits, without a gap in time and without a call of
+        /// the sketch in between. The speed along the path stays the same there, in the unit of the
+        /// caller. Within each move the members stay on a straight line, as in every move of a group.
         ///
         /// What the caller has to take care of:
-        /// - Where two moves meet, the speeds of the single members jump, without a ramp. The speed at
-        ///   such a point has to be low enough for the motors. The library does not plan ahead and does
-        ///   not round corners.
-        /// - A group never reverses to take a run-up. If the way is too short to reach the speed at the
-        ///   targets or to slow down to it, the group arrives as close to it as it can, and the command
-        ///   returns the warning targetSpeedNotReached. A move that shall stop at its targets, but is too
-        ///   short for it, passes them, stops and returns along the line.
-        /// - Other targets are refused (notSupported) while the group is on its way; they are accepted
-        ///   when it stands still or has passed its targets.
+        /// - Where two moves meet, the speeds of the single motors jump, without a ramp. The speed at such
+        ///   a point has to be low enough for the motors. The library does not plan ahead and does not
+        ///   round corners.
+        /// - The next move has to be given while the one before it runs: from loop() while room() is not 0,
+        ///   or from the function set with onRoom(). If none waits when the group arrives with a speed, it
+        ///   runs on along its line until a move is given, which then starts where the motors are.
+        /// - A group never reverses to take a run-up. If the way is too short to get from the speed at its
+        ///   start to the speed at its targets, the group arrives as close to it as it can, and add()
+        ///   returns the warning targetSpeedNotReached.
+        /// - The length of a move is taken as given. A wrong length makes all speeds of the move wrong by
+        ///   the same factor; the limits of the motors stay ceilings.
         ///
-        /// Speed, acceleration, arrival function, stop and state are those of the StepperGroup. The group
-        /// has to exist as long as the GroupPath.
+        /// Speed and acceleration of a move are given with the move; those of the StepperGroup
+        /// (setMaxSpeed, setAcceleration) are not used for the moves of a path. Arrival function, stop and
+        /// state are those of the StepperGroup. The group has to exist as long as the GroupPath.
         class GroupPath
         {
          public:
-            /// for speedAtStart: the group keeps the speed it has
-            static constexpr float keepSpeed = core::Group::keepSpeed;
-
             explicit GroupPath(StepperGroup& group) : g(group) {}
+            ~GroupPath();
+            GroupPath(const GroupPath&)            = delete;
+            GroupPath& operator=(const GroupPath&) = delete;
 
-            /// @brief Starts a move to the positions `targets` (moveAbsAsync) or over the distances
-            /// (moveRelAsync), in the order of the members of the group.
-            /// @param speedAtTarget speed at the targets, steps/s. 0: stop there
-            /// @param speedAtStart speed at the start of the move, steps/s. Default: the speed the group
-            ///        has, so that the member with the longest way starts at the speed the one of the
-            ///        move before had
-            errorCode moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-            errorCode moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-            errorCode moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-            errorCode moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
+            /// @brief Adds a move to the positions `targets`, in the order of the members of the group. It
+            /// starts at once if the group stands still or runs on behind its last targets, and waits if
+            /// a move is on its way. Returns at once.
+            /// @return notSupported if a move is waiting already (see room()), and while the group is
+            ///         stopping or rotates. invalidArgument for a wrong number of targets, a negative
+            ///         value, or a waiting move without a way. speedLimited / accelerationLimited if the
+            ///         motors allow less than the move asks for. targetSpeedNotReached if the way is too
+            ///         short for its speeds. motorBusy, noTimer as for a move of the group
+            errorCode add(std::initializer_list<int32_t> targets, const PathMove& move);
+            errorCode add(const int32_t* targets, unsigned n, const PathMove& move);
 
-            /// @brief Changes the speed at the targets of the move that is under way: raise it when
-            /// further moves follow, set it to 0 to stop at the targets after all.
-            /// @return notSupported if the group is not on its way to targets
-            errorCode setSpeedAtTarget(float speedAtTarget);
+            /// @brief Moves that add() takes now: 2 (the group stands still or runs on behind its targets),
+            /// 1 (a move is on its way, none waits) or 0.
+            unsigned room() const;
+
+            /// @brief Sets a function that is called when a move of the path has arrived, which is when
+            /// there is room for a move again. It gets this object and `context`, a pointer of the caller.
+            /// It is called from an interrupt: keep it short. nullptr removes it.
+            void onRoom(void (*function)(GroupPath& path, void* context), void* context = nullptr);
+
+            /// @brief Runs the path at `factor` times the speeds of its moves (0 < factor <= 1): the move
+            /// under way, the one that waits and all that follow, until another factor is set.
+            /// @return invalidArgument for another factor
+            errorCode overrideSpeed(float factor);
+
+            /// @brief Current speed along the path, in the unit of the move under way. 0 at standstill.
+            float getSpeed() const;
+
+            /// @brief Number of moves of this path that have arrived at their targets, since the object exists.
+            uint32_t movesDone() const { return done; }
 
          private:
+            void moveArrived(); // called by the library at the arrival of a move of this path
+
             StepperGroup& g;
+            void (*roomFunction)(GroupPath&, void*) = nullptr;
+            void* roomContext                       = nullptr;
+            volatile uint32_t done                  = 0;
+            float factor                            = 1;
+
+            friend struct detail::Engine;
         };
     }
 }

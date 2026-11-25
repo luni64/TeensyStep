@@ -156,6 +156,7 @@ namespace TeensyStep
             stopping  = false;
             unit      = 1;
             moveExit  = speedAtTarget;
+            serial++;
 
             // A new line, from where the members are. If the group runs on behind its last targets, this
             // is the next segment: the path goes on without a stop.
@@ -198,7 +199,7 @@ namespace TeensyStep
 
         /// Fills a line from `from` to `targets`. `entrySpeed`: the speed along the path at its start, in
         /// the unit of the caller of the move before (for the warning only).
-        errorCode Group::prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed)
+        errorCode Group::prepare(Line& l, const int32_t* from, const int32_t* targets, const PathMove& move, float entrySpeed) const
         {
             uint32_t longest = 0;
             for (unsigned i = 0; i < count; i++)
@@ -271,6 +272,7 @@ namespace TeensyStep
             pathMove    = true;
             passed      = false;
             stopping    = false;
+            serial++;
             path.setPosition(0);
             path.setLimits(l.limits);
             path.scaleSpeed(factor);
@@ -309,6 +311,27 @@ namespace TeensyStep
             if (!moving) unit = l.unit; // no speed to keep
             activate(l);
             return code;
+        }
+
+        bool Group::prepareWaiting(Line& line, const int32_t* targets, const PathMove& move, errorCode& code) const
+        {
+            if (!(move.length >= 0) || !(move.speed >= 0) || !(move.speedAtTarget >= 0) || !(move.acceleration >= 0)) return false;
+            if (!path.isMoving() || kind != Kind::move || stopping || passed || hasQueued) return false;
+            line.serial = serial;
+            int32_t from[maxMembers];
+            for (unsigned i = 0; i < count; i++) from[i] = m[i].target;
+            code = prepare(line, from, targets, move, moveExit * feed / unit);
+            if (line.length == 0) code = errorCode::invalidArgument;
+            return true;
+        }
+
+        bool Group::commitWaiting(const Line& line)
+        {
+            // still the move the line was prepared for, still on its way, and none waits
+            if (!path.isMoving() || kind != Kind::move || stopping || passed || hasQueued || line.serial != serial || line.length == 0) return false;
+            queued    = line;
+            hasQueued = true;
+            return true;
         }
 
         unsigned Group::room() const
