@@ -157,7 +157,7 @@ interrupt.
 
 A group always stops at its targets. Programs that calculate a path through several points, which the
 group shall pass without stopping, use the advanced class `GroupPath`, see
-[Paths of a group](advanced/group-paths.md).
+[Paths of a group](advanced/group-paths.md) and [Writing a motion planner](advanced/motion-planner.md).
 
 ## Rotating a group
 

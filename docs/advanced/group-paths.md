@@ -10,7 +10,8 @@ to the caller than the other commands of the library.
 
     A program that turns a list of coordinates and a speed along the path into moves for the motors. It
     looks ahead over the coming moves, decides how fast each corner can be taken, and gives every move
-    its speeds. The library does not contain a planner.
+    its speeds. The library does not contain a planner; [Writing a motion planner](motion-planner.md)
+    shows how one is built, with an example.
 
 ```cpp
 #include "TeensyStepAdvanced.h"

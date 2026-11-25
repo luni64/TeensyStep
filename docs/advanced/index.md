@@ -11,3 +11,4 @@ calculate the motion themselves.
 | [Limits](limits.md) | range of speeds and positions, number of motors, timing of the signals |
 | [Behind the scenes](../behind-the-scenes.md) | how the library works inside: the ramp, the timers, the step pulse, groups |
 | [Paths of a group](group-paths.md) | moves of a group that follow each other without a stop, for motion planners (`TeensyStepAdvanced.h`) |
+| [Writing a motion planner](motion-planner.md) | how a planner is built on these moves: from points in mm to a path that is run without stopping, with an example |

@@ -31,6 +31,7 @@ nav:
       - Performance: advanced/performance.md
       - Limits: advanced/limits.md
       - Paths of a group: advanced/group-paths.md
+      - Writing a motion planner: advanced/motion-planner.md
   - Reference:
       - reference/index.md
       - Stepper: reference/stepper.md
