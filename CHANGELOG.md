@@ -16,9 +16,26 @@ All notable changes to TeensyStep are documented in this file. The format follow
   not on a pin of the board (a port extender, for example). New example `12_EnableFunction`.
 - `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
   the step pulses are made. The default is unchanged (48).
+- `advanced::GroupPath` takes its moves ahead: one runs and one waits, and at the targets of a move the
+  group goes on with the move that waits, by itself. The next move no longer has to be given in the
+  arrival function. `room()` tells whether a move can be added, `onRoom()` sets a function that is called
+  when it can, `movesDone()` counts.
+- A move of a `GroupPath` says how long it is in the unit of the sketch (`PathMove::length`, for example
+  in mm). Its speeds and its acceleration are then in that unit, whichever motor has the longest way, and
+  the speed along the path is kept where two moves meet. A motion planner no longer converts its speeds
+  for every move.
+- `GroupPath::overrideSpeed()` runs a path at a fraction of its speeds, also while it runs.
+  `GroupPath::getSpeed()` returns the speed along the path.
 
 **Changed**
 
+- `advanced::GroupPath`: `add(targets, move)` replaces `moveAbsAsync()` and `moveRelAsync()` with their
+  speeds, and `setSpeedAtTarget()`. A sketch for the beta that gave the next move in the arrival function
+  of the group now gives it ahead, see the example `advanced/GroupWaypoints` and "Paths of a group" in
+  the manual. Speed and acceleration of a move are given with the move; those of the `StepperGroup` are
+  not used for the moves of a path.
+- A speed or an acceleration of a group that is exactly what its motors allow no longer returns the
+  warning `speedLimited` or `accelerationLimited` because of a rounding difference.
 - The sign of the speed at a target (`moveAbs(pos, speedAtTarget)`, `moveRel()` and their `Async` forms)
   has a new meaning. A positive speed passes the target in the direction in which the motor comes to it,
   also when the target is below the motor; before, a positive speed always meant "counting up" and made
@@ -125,7 +142,8 @@ These points are under discussion. They can change the interface in details.
   "Unreleased".)
 - `onArrival()` gets a way to serve several motors with one function. (Done after the beta: see
   "Unreleased".)
-- `advanced::GroupPath` may be replaced by an interface made for motion planners.
+- `advanced::GroupPath` may be replaced by an interface made for motion planners. (Done after the beta: see
+  "Unreleased".)
 - `setDirSetupTime()` gets its function.
 - The numbers of the examples may change. (Done after the beta: see "Unreleased".)
 

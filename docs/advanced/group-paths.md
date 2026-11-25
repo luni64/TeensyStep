@@ -1,16 +1,16 @@
 # Paths of a group
 
-A [group](../groups.md) moves on a straight line and stops at its targets. `GroupPath` makes moves of a
-group that follow each other without a stop: a path through several points. It is meant for programs that
-calculate such a path themselves, for example a motion planner (1), and it leaves more to the caller than
-the other commands of the library.
+A [group](../groups.md) moves on a straight line and stops at its targets. `GroupPath` takes moves of a
+group ahead, so that they follow each other without a stop: a path through several points. It is meant
+for programs that calculate such a path themselves, for example a motion planner (1), and it leaves more
+to the caller than the other commands of the library.
 { .annotate }
 
 1.  **Motion planner**
 
     A program that turns a list of coordinates and a speed along the path into moves for the motors. It
     looks ahead over the coming moves, decides how fast each corner can be taken, and gives every move
-    the speeds at its start and its end. The library does not contain a planner.
+    its speeds. The library does not contain a planner.
 
 ```cpp
 #include "TeensyStepAdvanced.h"
@@ -20,42 +20,65 @@ StepperGroup xy{x, y};
 advanced::GroupPath path(xy);
 ```
 
-`TeensyStepAdvanced.h` includes `TeensyStep.h`. A `GroupPath` works on a group and adds the moves described
-here; speed, acceleration, arrival function, stop and state remain those of the
-[`StepperGroup`](../reference/stepper-group.md).
+`TeensyStepAdvanced.h` includes `TeensyStep.h`. A `GroupPath` works on a group; arrival function, stop
+and state remain those of the [`StepperGroup`](../reference/stepper-group.md).
 
-## A speed at the targets
+## A move and its speeds
+
+A move of a path is a straight line to targets, given as positions of the motors in steps, and a
+`PathMove` with its speeds:
 
 ```cpp
-path.moveAbsAsync({10'000, 0});      // stop at the targets, as a move of the group does
-path.moveAbsAsync({10'000, 0}, 500); // pass them at 500 steps/s and run on along the line
+advanced::PathMove move;
+move.length        = 100; // the move is 100 mm long
+move.speed         = 50;  // 50 mm/s on the way
+move.speedAtTarget = 10;  // pass the targets at 10 mm/s
+path.add({10'000, 0}, move);
 ```
 
-The speed is that of the lead motor (1), like the maximum speed of a group. The group passes its targets
-at this speed and runs on along the line until the next command.
+`length` says how long the move is in the unit of the sketch, here in mm. All speeds of the move are then
+in that unit per second, and its acceleration in that unit per second squared. The library converts them
+for the motors (1). It needs nothing but the length for that: no steps per mm, and nothing about how the
+motors are arranged.
 { .annotate }
 
-1.  **Lead motor**
+1.  **How the library converts**
 
-    The member with the most steps to make in a move. The other members step together with it, each at
-    its share of the lead motor's steps.
+    From the targets, the library knows the way of every motor in steps. If the motor with the longest
+    way makes 4,000 steps in a move that is 50 mm long, 1 mm of this move is 80 steps of that motor, and
+    20 mm/s are 1,600 steps/s. The factor is worked out again for every move.
 
-## The next move
+| Field of `PathMove` | Default | |
+|---|---|---|
+| `length` | 0 | length of the move in the unit of the sketch. 0: the speeds are in steps of the motor with the longest way, like the speeds of a group |
+| `speed` | 0 | highest speed on the way. 0: as fast as the motors allow |
+| `speedAtTarget` | 0 | speed at the targets. 0: stop there |
+| `acceleration` | 0 | acceleration, also for slowing down. 0: as much as the motors allow |
 
-The next move is given when the group has passed its targets, in most cases from the
-[arrival function](../groups.md#the-arrival-function-of-a-group) of the group. It starts where the motors
-are, so the group goes through the point without a stop:
+The maximum speed and the acceleration of the motors stay ceilings for every move. The speed and the
+acceleration of the `StepperGroup` (`setMaxSpeed()`, `setAcceleration()`) are not used for the moves of a
+path: a move brings its own.
+
+## Moves given ahead
+
+One move runs and one waits. When the group arrives at the targets of a move with a speed, it goes on
+with the move that waits: without a gap in time, without a call of the sketch in between, and at the same
+speed along the path. The sketch gives the next move while the one before it runs:
 
 ```cpp
 --8<-- "advanced/GroupWaypoints/GroupWaypoints.ino"
 ```
 
-!!! warning "The speeds of the motors jump at such a point"
+`room()` tells how many moves `add()` takes now: 2 while the group stands still, 1 while a move runs and
+none waits, 0 while one waits. The sketch above asks in `loop()`. A sketch that cannot be sure to come by
+in time sets a function with `onRoom()`; the library calls it, from its interrupt, whenever a move has
+arrived and there is room again.
+
+!!! warning "The speeds of the motors jump where two moves meet"
     Within each move the motors stay on a straight line. Where two moves meet, the direction of the line
-    changes, and with it the speed of every single motor, without a ramp. In the sketch above, y starts
-    at 500 steps/s when the group passes the first point. The speed at these points has to be low enough
-    for the motors to follow (1). The library does not plan ahead across the moves and does not round
-    corners.
+    changes, and with it the speed of every single motor, without a ramp. The speed at these points has
+    to be low enough for the motors to follow (1). The library does not plan ahead across the moves and
+    does not round corners.
     { .annotate }
 
     1.  **How low**
@@ -66,40 +89,38 @@ are, so the group goes through the point without a stop:
 
 ## Rules
 
-- **New targets** are accepted when the group stands still and when it has passed its targets and runs
-  on. In the middle of a move, other targets return the error `notSupported`. This also holds for the
-  move commands of the `StepperGroup` itself, which end a path with a stop at their targets.
-- **The speed at the targets can be changed during the move** with `setSpeedAtTarget()`: raised when
-  further moves follow, or set to 0 to stop at the targets after all.
-- **No run-up.** A single motor reverses and takes a run-up if a target is too close for its speed. A
-  group never leaves its line: if the way is too short to reach the speed, or to slow down to it, the
-  group arrives as close to the speed as it can and changes to it behind the targets. The move command
-  then returns the warning `targetSpeedNotReached`. A move that shall stop at its targets, but is too
-  short for it, passes the targets, stops and returns to them along the line.
-- **After `stop()`** within a move, the same targets continue it.
-- **Time in the interrupt.** On a Teensy 4.1 a move command given in the arrival function takes about
-  6 µs for a group of two motors and 10 µs for a group of 16.
+- **In time.** The next move has to be given before the move that runs arrives. If none waits when the
+  group arrives with a speed, it runs on along its line until a move is given; that move then starts
+  where the motors are. A path whose last move has the speed 0 at its targets ends there.
+- **No run-up.** A group never leaves its line: if a move is too short to get from the speed at its start
+  to the speed at its targets, the group arrives as close to that speed as it can. `add()` then returns
+  the warning `targetSpeedNotReached`.
+- **The length is taken as given.** A wrong length makes all speeds of the move wrong by the same factor.
+- **`stop()` and `emergencyStop()` of the group** end the path. A move that waits is dropped. `stop()`
+  brakes along the line of the move that runs, not along the path.
+- **A move command of the `StepperGroup`** (`moveAbs()` and the others) is accepted when the group stands
+  still or runs on behind its targets; it ends a path with a stop at its targets.
+- **The arrival function of the group** is called at the targets of every move of the path.
+- **Where `add()` is called.** Preparing a move takes time: about 3 µs on a Teensy 4.1 and 35 µs on a
+  Teensy 3.6 for a group of two motors, 5 µs and 80 µs for 16. Called from `loop()`, this holds off no
+  step. Called from the function of `onRoom()`, it runs in the interrupt and delays the steps of all
+  moving motors by that time, which matters on a Teensy 3.x at high step rates.
 
-## The speed at the start of a move
-
-A move that follows another one starts at the speed the group has: the new lead motor starts at the
-speed the old one had. A third parameter sets this speed explicitly:
+## Override
 
 ```cpp
-path.moveAbsAsync({10'400, 8'000}, 500, 300); // start this move at 300 steps/s, pass its targets at 500
+path.overrideSpeed(0.5f); // the path at half its speeds
 ```
 
-A planner needs it because it thinks in the speed along the path, for example in mm/s. The library
-measures the speed of a group at its lead motor, and the lead motor can change from one move to the next.
-At a corner the same speed along the path is therefore a different number for the move before and the
-move after it. The planner converts its speed for each move:
-
-speed for the library = speed along the path × steps of the lead motor / length of the move
+Runs the path at a fraction of the speeds of its moves: the move under way, the one that waits and all
+that follow, until another factor is set. The factor is above 0 and at most 1: a path that is planned
+for its speeds can always be run slower, but not faster.
 
 ## Reference
 
 ```cpp
-class GroupPath; // namespace TeensyStep::advanced, header TeensyStepAdvanced.h
+struct PathMove;  // namespace TeensyStep::advanced, header TeensyStepAdvanced.h
+class GroupPath;
 ```
 
 ### GroupPath()
@@ -108,35 +129,68 @@ class GroupPath; // namespace TeensyStep::advanced, header TeensyStepAdvanced.h
 explicit GroupPath(StepperGroup& group);
 ```
 
-The group has to exist as long as the `GroupPath`.
+The group has to exist as long as the `GroupPath`. Moves that were started go on when the `GroupPath` is
+gone; its function for `onRoom()` is not called any more.
 
-### moveAbsAsync(), moveRelAsync()
+### add()
 
 ```cpp
-errorCode moveAbsAsync(std::initializer_list<int32_t> targets, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveAbsAsync(const int32_t* targets, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveRelAsync(std::initializer_list<int32_t> distances, float speedAtTarget = 0, float speedAtStart = keepSpeed);
-errorCode moveRelAsync(const int32_t* distances, unsigned n, float speedAtTarget = 0, float speedAtStart = keepSpeed);
+errorCode add(std::initializer_list<int32_t> targets, const PathMove& move);
+errorCode add(const int32_t* targets, unsigned n, const PathMove& move);
 ```
 
-Starts a move to the positions `targets`, or over the `distances` from where the members are, and returns
-at once.
+Adds a move to the positions `targets`, in the order of the members of the group, as a list or as an
+array with its length `n`. The move starts at once if the group stands still or runs on behind its last
+targets, and waits if a move is on its way. Returns at once.
 
-| Parameter | |
+| Returns | |
 |---|---|
-| `targets`, `distances` | in the order of the members of the group, as a list or as an array with its length `n` |
-| `speedAtTarget` | 0 (default): stop at the targets. Otherwise: pass them at this speed (steps/s of the lead motor) and run on along the line |
-| `speedAtStart` | the speed at the start of the move, steps/s of the lead motor. Default (`GroupPath::keepSpeed`): the speed the group has |
+| `OK` | |
+| `speedLimited`, `accelerationLimited` | warning: the motors allow less than the move asks for; their limit is used |
+| `targetSpeedNotReached` | warning: the way is too short for the speeds of the move |
+| `notSupported` | a move is waiting already (see `room()`), or the group is stopping or rotates |
+| `invalidArgument` | wrong number of targets, a negative value, or a move that shall wait and has no way |
+| `motorBusy`, `noTimer` | as for the [moves of a group](../reference/stepper-group.md#moves) |
 
-Returns the errors of the [moves of a group](../reference/stepper-group.md#moves), and the warnings
-`speedLimited`, `accelerationLimited` and `targetSpeedNotReached`. A negative speed returns
-`invalidArgument`.
-
-### setSpeedAtTarget()
+### room()
 
 ```cpp
-errorCode setSpeedAtTarget(float speedAtTarget);
+unsigned room() const;
 ```
 
-Changes the speed at the targets of the move that is under way. Returns `notSupported` if the group is
-not on its way to targets: it stands still, has passed them, or rotates.
+The number of moves `add()` takes now: 2, 1 or 0.
+
+### onRoom()
+
+```cpp
+void onRoom(void (*function)(GroupPath& path, void* context), void* context = nullptr);
+```
+
+Sets a function that is called when a move of the path has arrived at its targets, which is when there
+is room for a move again. It gets the `GroupPath` and `context`, a pointer of the sketch's choice, for
+example to the object that holds the path. The function is called from an interrupt: keep it short.
+`nullptr` removes it.
+
+### overrideSpeed()
+
+```cpp
+errorCode overrideSpeed(float factor);
+```
+
+See [Override](#override). Returns `invalidArgument` for a factor that is not above 0 and at most 1.
+
+### getSpeed()
+
+```cpp
+float getSpeed() const;
+```
+
+The current speed along the path, in the unit of the move under way. 0 at standstill.
+
+### movesDone()
+
+```cpp
+uint32_t movesDone() const;
+```
+
+The number of moves of this path that have arrived at their targets, since the object exists.

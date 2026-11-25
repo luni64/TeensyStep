@@ -30,7 +30,7 @@ calculate the motion themselves:
 
 | Sketch | Concept |
 |---|---|
-| `GroupWaypoints` | A group passes waypoints without stopping (`advanced::GroupPath`): speed at the targets, next move from the arrival function |
+| `GroupWaypoints` | A group passes waypoints without stopping (`advanced::GroupPath`): moves given ahead, with their speeds in mm/s |
 
 ## Sketches of version 2
 

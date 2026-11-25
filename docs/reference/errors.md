@@ -13,7 +13,7 @@ The result of a command. See [Error handling](../error-handling.md).
 | `OK` | 0 | success |
 | `speedLimited` | −1000 | warning: speed outside the supported range, above the maximum speed, or above what the members of a group allow; the limit is used |
 | `accelerationLimited` | −1001 | warning: acceleration outside the supported range, or above what the members of a group allow; the limit is used |
-| `targetSpeedNotReached` | −1002 | warning: a move of a [`GroupPath`](../advanced/group-paths.md) is too short for the speed at its targets. The group arrives as close to the speed as it can |
+| `targetSpeedNotReached` | −1002 | warning: a move of a [`GroupPath`](../advanced/group-paths.md) is too short for its speeds. The group arrives as close to the speed at the targets as it can |
 | `invalidArgument` | 1000 | error: invalid argument, for example the wrong number of targets for a group |
 | `motorBusy` | 1001 | error: the motor is moving in another group |
 | `noTimer` | 1002 | error: no free hardware timer for this move |
