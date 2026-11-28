@@ -16,5 +16,9 @@
   "homepage": "https://luni64.github.io/TeensyStep",
   "version": "3.0.0",
   "frameworks": "arduino",
-  "platforms": ["teensy"]
+  "platforms": ["teensy"],
+  "export":
+  {
+    "include": ["src", "examples", "library.json", "library.properties", "README.md", "CHANGELOG.md", "LICENCE"]
+  }
 }
