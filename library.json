@@ -1,7 +1,7 @@
 {
   "name": "TeensyStep",
   "keywords": "teensy, stepper, motor, high-speed",
-  "description": "Stepper motor library for PJRC Teensy boards (Teensy 4.0, 4.1, MicroMod, 3.5, 3.6), for drivers with STEP and DIR inputs. Version 3 is a beta: the interface can still change in details. Teensy 3.0 to 3.2, LC and STM32: use version 2.3.4.",
+  "description": "Stepper motor library for PJRC Teensy boards (Teensy 4.0, 4.1, MicroMod, 3.5, 3.6), for drivers with STEP and DIR inputs. Teensy 3.0 to 3.2, LC and STM32: use version 2.3.4.",
   "repository":
   {
     "type": "git",
@@ -14,7 +14,7 @@
     "maintainer": true
   },
   "homepage": "https://luni64.github.io/TeensyStep",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0",
   "frameworks": "arduino",
   "platforms": ["teensy"]
 }

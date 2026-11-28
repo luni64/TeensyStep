@@ -15,6 +15,10 @@
 // served, a late interrupt delays one edge but nothing after it: the steps do not drift. If an interrupt comes
 // so late that the next due time has passed already, the next action is made at once.
 //
+// The width of the pulse. An interrupt that is served late makes its step late. The end of the pulse is
+// counted from the moment the step pins were really set, so that the pulse keeps its width; the due time of
+// the next step stays where it was.
+//
 // The setup time of DIR. Where the DIR pin of a motor changes, its step is made no earlier than the setup
 // time after the pin was written: the due time of the step is moved back if it is closer, and with it all
 // steps that follow.
@@ -102,6 +106,7 @@ namespace TeensyStep
                 uint16_t dirs         = 0;     // bit i: DIR of motor i is at "count up"
                 uint16_t dirsKnown    = 0;     // bit i: `dirs` holds the level of the DIR pin of motor i
                 uint16_t dirCounts    = 750;   // setup time of DIR in timer counts
+                uint16_t late         = 0;     // counts by which the steps of the current event were made after their due time
                 Event cur, next;
                 Motor motors[maxMotors];
             };
@@ -231,11 +236,16 @@ namespace TeensyStep
                     if (c.phase == Phase::beforeStep) // the current event is due: make its steps
                     {
                         tmr->CSCTRL = TMR_CSCTRL_TCF1EN; // clears the compare flag; one write instead of read and write
-                        if (!edgeDone) makeEdge(c);
-                        edgeDone   = false;
-                        c.phase    = Phase::inPulse;
-                        bool pulse = c.cur.stepMask != 0;                  // false: a wait, nothing to end
-                        if (pulse) tmr->COMP1 = c.due + c.pulseCounts; // the end of the pulse
+                        bool pulse = c.cur.stepMask != 0; // false: a wait, nothing to end
+                        if (!edgeDone)
+                        {
+                            makeEdge(c);
+                            c.late = pulse ? (uint16_t)(tmr->CNTR - c.due) : 0;
+                        }
+                        edgeDone       = false;
+                        c.phase        = Phase::inPulse;
+                        uint16_t width = (uint16_t)(c.late + c.pulseCounts); // of the pulse, counted from the due time
+                        if (pulse) tmr->COMP1 = (uint16_t)(c.due + width);   // the end of the pulse
 
                         if (c.cur.arrived)
                         {
@@ -248,7 +258,7 @@ namespace TeensyStep
 
                         if (pulse)
                         {
-                            if ((uint16_t)(tmr->CNTR - c.due) < c.pulseCounts) return; // wait for the end of the pulse
+                            if ((uint16_t)(tmr->CNTR - c.due) < width) return; // wait for the end of the pulse
                             tmr->CSCTRL = TMR_CSCTRL_TCF1EN;                           // it has passed already
                         }
                     }
@@ -265,6 +275,12 @@ namespace TeensyStep
                         return;
                     }
                     uint16_t previous = c.due;
+                    if (c.late != 0) // the pulse ended later: the pause after it is kept
+                    {
+                        uint32_t least = (uint32_t)c.late + c.pulseCounts + minCounts;
+                        if (c.cur.stepMask != 0 && least > c.nextTotal) c.nextTotal = (uint16_t)(least > 65000 ? 65000 : least);
+                        c.late = 0;
+                    }
                     c.due             = previous + c.nextTotal;
                     c.cur             = c.next;
                     c.hasNext         = false;
@@ -300,7 +316,9 @@ namespace TeensyStep
                 {
                     int8_t ch = channelOfModule[module][k];
                     if (ch < 0 || !(modules[module]->CH[k].CSCTRL & TMR_CSCTRL_TCF1)) continue;
-                    makeEdge(chans[ch]);
+                    Chan& c = chans[ch];
+                    makeEdge(c);
+                    if (c.phase == Phase::beforeStep) c.late = c.cur.stepMask != 0 ? (uint16_t)(modules[module]->CH[k].CNTR - c.due) : 0;
                     due[n++] = (uint8_t)ch;
                 }
                 for (unsigned i = 0; i < n; i++) service(due[i], true);

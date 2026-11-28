@@ -31,11 +31,10 @@ void setup()
     // a group created on the fly
     StepperGroup{y, z}.moveAbs({0, 0});
 
-    // speed and acceleration of a group: those of the motor with the longest way in the move.
-    // The settings of the motors stay the upper limits.
-    xy.setMaxSpeed(2'000).setAcceleration(10'000);
-    xy.moveAbs({4'000, 1'000}); // x runs at 2000 steps/s, y at 500
-    xy.setMaxSpeed(0);          // 0: no speed of the group, as fast as the motors allow
+    // a group is as fast as its motors allow; a factor makes it slower
+    xy.overrideSpeed(0.25);
+    xy.moveAbs({4'000, 1'000}); // at a quarter of that speed: x runs at 5000 steps/s, y at 1250
+    xy.overrideSpeed(1);
 
     // non-blocking, with an early stop: the motors decelerate together and stay synchronized
     xyz.moveAbsAsync({100'000, 50'000, 10'000});

@@ -20,7 +20,7 @@ and the page of the [manual](https://luni64.github.io/TeensyStep/) that explains
 | `10_Errors` | Returned `errorCode`, error function, built-in handler (pattern of TeensyTimerTool) |
 | `11_MotorSettings` | Pull-in speed, pulse width, step polarity, inverse rotation, DIR setup time, enable pin, separate deceleration |
 | `12_EnableFunction` | An enable signal on a port extender: a function switches the driver instead of a pin |
-| `13_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; speed of a group |
+| `13_Groups` | Synchronized moves; both ways to give the targets; groups created on the fly; a group that runs slower |
 | `14_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
 | `15_RoseFunction` | A slide follows the angle of a spindle and draws a rose curve (v2: RoseFunctionFollower) |
 | `16_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |

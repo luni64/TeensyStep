@@ -30,15 +30,14 @@ The library offers
 - up to 16 motors or groups that move independently at the same time. A group counts as one, however
   many motors it has (up to 16).
 
-!!! warning "Beta version"
-    This manual describes version 3 of TeensyStep, which is a beta (3.0.0-beta.1). **The interface can
-    still change in details until version 3.0.0**; the changelog lists every change. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
+!!! info "Boards"
+    This manual describes version 3 of TeensyStep. It runs on **Teensy 4.0, 4.1 and MicroMod** and on
     **Teensy 3.5 and 3.6**. Teensy 3.0 to 3.2 and LC are not supported: the library compiles there, but
     no motor moves; use version 2.3.4 on these boards. Sketches written for version 2
     still compile, see [Upgrading from version 2](installation.md#upgrading-from-version-2).
 
 Install the library with the Library Manager of the Arduino IDE (*Tools → Manage Libraries…*, search for
-TeensyStep, version 3.0.0-beta.1 or later). [Installation and upgrading](installation.md) describes the
+TeensyStep, version 3.0.0 or later). [Installation and upgrading](installation.md) describes the
 installation for PlatformIO and from git, and what to do with sketches written for version 2.
 
 ## Connecting a motor

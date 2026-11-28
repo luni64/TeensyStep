@@ -440,9 +440,8 @@ limit for the lead motor from one member = limit of the member × (steps of the 
 ```
 
 The ramp gets the smallest of these values over all members, separately for the maximum speed, the
-acceleration, the deceleration and the pull-in speed. A member that does not move sets no limit. If the
-group has a speed or an acceleration of its own (`StepperGroup::setMaxSpeed()`, ...), that value is used
-instead, as long as it is not above what the members allow.
+acceleration, the deceleration and the pull-in speed. A member that does not move sets no limit. The
+speed factor of the group (`StepperGroup::overrideSpeed()`) is applied to the maximum speed found this way.
 
 Example: x makes 4,000 steps and y 1,000, so x is the lead motor. Both motors allow 800 steps/s. x
 allows the lead motor 800 steps/s, y allows it 800 × 4 = 3,200 steps/s. The ramp runs up to 800 steps/s;

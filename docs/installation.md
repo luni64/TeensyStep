@@ -8,14 +8,14 @@ Arduino IDE or with PlatformIO.
 === "Arduino IDE"
 
     Open the Library Manager (*Tools → Manage Libraries…*), search for TeensyStep and install version
-    3.0.0-beta.1 or later. To go back to version 2, select 2.3.4 in the same place.
+    3.0.0 or later. To go back to version 2, select 2.3.4 in the same place.
 
 === "PlatformIO"
 
-    Add the version to `platformio.ini`:
+    Add the library to `platformio.ini`:
 
     ```ini
-    lib_deps = https://github.com/luni64/TeensyStep#v3.0.0-beta.1
+    lib_deps = luni64/TeensyStep@^3.0.0
     ```
 
 === "git"
@@ -23,7 +23,7 @@ Arduino IDE or with PlatformIO.
     Clone the repository into the libraries folder of the sketchbook and check out the version:
 
     ```
-    git clone -b v3.0.0-beta.1 https://github.com/luni64/TeensyStep
+    git clone -b v3.0.0 https://github.com/luni64/TeensyStep
     ```
 
 ## Upgrading from version 2
@@ -35,6 +35,7 @@ keep working, because the controllers are still there as thin wrappers on the ne
 !!! warning "Boards"
     The new version runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Teensy 3.0 to 3.2,
     LC and STM32 are not supported by the new version (1); version 2.3.4 remains available for them.
+    Support for STM32 is planned for a later version.
     { .annotate }
 
     1.  **Why not**

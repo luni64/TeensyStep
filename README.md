@@ -1,18 +1,18 @@
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luni64/library/TeensyStep.svg)](https://registry.platformio.org/libraries/luni64/TeensyStep)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/TeensyStep.svg?)](https://www.ardu-badge.com/TeensyStep)
 [![GitHub release](https://img.shields.io/github/v/release/luni64/TeensyStep)](https://github.com/luni64/TeensyStep/releases/latest)
-[![Documentation](https://github.com/luni64/TeensyStep/actions/workflows/docs.yml/badge.svg?branch=develop)](https://luni64.github.io/TeensyStep/)
+[![Documentation](https://github.com/luni64/TeensyStep/actions/workflows/docs.yml/badge.svg?branch=master)](https://luni64.github.io/TeensyStep/)
 [![License: MIT](https://img.shields.io/github/license/luni64/TeensyStep)](LICENCE)
 
 # TeensyStep
 
 Stepper motor library for PJRC Teensy boards, for drivers with STEP and DIR inputs.
 
-**Version 3 is a beta (3.0.0-beta.1): the interface can still change in details until version 3.0.0.** It
-is a rewrite and runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Its manual is at
-[luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/). The last release of version 2 is 2.3.4
-on the branch [`master`](https://github.com/luni64/TeensyStep/tree/master); the sources of its web site are
-in the branch [`gh-pages`](https://github.com/luni64/TeensyStep/tree/gh-pages).
+Version 3 is a rewrite and runs on Teensy 4.0, 4.1 and MicroMod and on Teensy 3.5 and 3.6. Its manual is at
+[luni64.github.io/TeensyStep](https://luni64.github.io/TeensyStep/). Sketches written for version 2 still
+compile. The last release of version 2 is the tag
+[`v2.3.4`](https://github.com/luni64/TeensyStep/tree/v2.3.4); the sources of its web site are in the
+branch [`gh-pages`](https://github.com/luni64/TeensyStep/tree/gh-pages).
 
 ## A first sketch
 
@@ -52,7 +52,8 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
   without a stop.
 - **Groups:** `StepperGroup` moves motors synchronized. The motors stay within half a step of the straight
   line between start and target, also while accelerating, decelerating and when the group is stopped early.
-  A group can have a speed and an acceleration of its own, and it can rotate with a fixed speed ratio.
+  A group is as fast as its motors allow or runs at a fraction of that speed, and it can rotate with a
+  fixed speed ratio.
 - **For motion planners:** `TeensyStepAdvanced.h` adds moves of a group that follow each other without a
   stop (`advanced::GroupPath`). It is kept apart from the standard interface, which stays small.
 - **Units:** speeds in steps/s, accelerations in steps/s². Speeds below 1 step/s are possible.
@@ -70,7 +71,7 @@ smallest sketch to complete applications; [`examples/README.md`](examples/README
 | Teensy 4.0, 4.1, MicroMod | Works. Up to 16 motors or groups move independently at the same time, each on one channel of the QuadTimers (TMR1 to TMR4). A timer that makes PWM or that another library uses is not taken. |
 | Teensy 3.5, 3.6 | Works (tested on a Teensy 3.6). Up to 16 motors or groups at the same time, each on one channel of the FlexTimers (FTM0 to FTM3). PWM on the other pins keeps working, and the interval timers stay free for the sketch. |
 | Teensy 3.0, 3.1, 3.2, LC | Not supported by the new version: the library calculates in floating point, and these boards have no floating point unit. The library compiles, and every move command returns `noTimer`. Use version 2.3.4. |
-| STM32 | Not supported by the new version. Use version 2.3.x. |
+| STM32 | Not supported by version 3.0. Support for STM32 is planned for a later version; until then use version 2.3.x. |
 
 ## Layout
 

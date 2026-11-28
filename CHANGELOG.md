@@ -7,6 +7,15 @@ All notable changes to TeensyStep are documented in this file. The format follow
 
 ## Unreleased
 
+## v3.0.0 - 2026-11-28
+
+Version 3.0.0: the rewrite of the library that 3.0.0-beta.1 introduced, with the changes below. Sketches
+written for the beta need changes where they used `advanced::GroupPath`, a speed of a group
+(`StepperGroup::setMaxSpeed()` and its relatives) or a negative speed at a target. Version 3 runs on Teensy
+4.0, 4.1, MicroMod, 3.5 and 3.6. Teensy 3.0 to 3.2 and LC are not supported; version 2.3.4 remains
+available for them. STM32 is not supported by this version; support for it is planned for a later one,
+and version 2.3.x remains available until then.
+
 **Added**
 
 - An arrival function can have the motor as its parameter: `void arrived(Stepper& motor)`. It is called
@@ -61,6 +70,20 @@ All notable changes to TeensyStep are documented in this file. The format follow
   the motor goes past it, turns and comes back through it. Sketches that gave a negative speed for a
   target below the motor have to give it without the sign now; the examples `07_Follower` and
   `15_RoseFunction` do so.
+- The speed of a group is a factor. `StepperGroup::overrideSpeed(factor)` now also works for moves to
+  targets: the group runs at `factor` times the speed its motors allow (0 to 1), the factor can change
+  during a move, and 0 holds the group on its line until another factor is set. For a rotating group it
+  is the factor of the speeds given to `rotateAsync()`, as before. `setMaxSpeed()`, `setAcceleration()`
+  and `setDeceleration()` of `StepperGroup` are removed: their values were those of the motor with the
+  longest way, so the same number meant another speed for another direction. Sketches for the beta that
+  used them set the factor instead, or the limits of the motors; a program that needs a speed along the
+  line in a unit of its own gives its moves with `advanced::GroupPath`. (The functions of `Stepper` with
+  these names are unchanged.)
+- `StepperGroup::overrideSpeed()` no longer returns `notSupported` for a group that was not rotated.
+- The step pulses keep their width when a step is made late, because the interrupt of another motor was
+  being served: the end of the pulse is counted from the moment the step was made. Before, such a pulse
+  was shorter by the delay (seen: 1.4 µs instead of 5 µs on a Teensy 3.6 with four motors moving
+  independently). The pulses are now up to 0.6 µs longer than set.
 - `setEnablePin()` is now `setEnable()`, with one form for a pin and one for a function. The old name
   remains as deprecated.
 - `setPosition()` is now `setPositionCounter()`, because the old name was mistaken for a command that
@@ -154,15 +177,12 @@ can still change in details until version 3.0.0.** The manual at
 These points are under discussion. They can change the interface in details.
 
 - Groups: the way the speed and the acceleration of a group are given (`StepperGroup::setMaxSpeed()`,
-  `setAcceleration()`, `setDeceleration()`) may be simplified.
-- `setPosition()` gets a new name; the old name remains as deprecated. (Done after the beta: see
-  "Unreleased".)
-- `onArrival()` gets a way to serve several motors with one function. (Done after the beta: see
-  "Unreleased".)
-- `advanced::GroupPath` may be replaced by an interface made for motion planners. (Done after the beta: see
-  "Unreleased".)
-- `setDirSetupTime()` gets its function. (Done after the beta: see "Unreleased".)
-- The numbers of the examples may change. (Done after the beta: see "Unreleased".)
+  `setAcceleration()`, `setDeceleration()`) may be simplified. (Done in version 3.0.0.)
+- `setPosition()` gets a new name; the old name remains as deprecated. (Done in version 3.0.0.)
+- `onArrival()` gets a way to serve several motors with one function. (Done in version 3.0.0.)
+- `advanced::GroupPath` may be replaced by an interface made for motion planners. (Done in version 3.0.0.)
+- `setDirSetupTime()` gets its function. (Done in version 3.0.0.)
+- The numbers of the examples may change. (Done in version 3.0.0.)
 
 ## v2.3.4 - 2023-04-13
 

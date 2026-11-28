@@ -6,7 +6,7 @@ name: Deploy documentation to GitHub Pages
 
 on:
   push:
-    branches: [develop]   # version 3 is developed here; change to master at the release
+    branches: [master]   # the manual describes the released version
     paths:
       - "docs/**"
       - "examples/**"   # code of the examples is included in the pages

@@ -139,6 +139,13 @@ namespace TeensyStep
 
             float overrideFactor() const { return holding ? 0.0f : feed; }
 
+            /// @brief The same for the moves of moveAbs(): they run at `factor` times the speed that the
+            /// members and the group allow (0 <= factor <= 1), and 0 holds the group on its line until
+            /// another factor is set. The factor stays for the moves that follow. The moves of addMove() and
+            /// a rotation are not affected.
+            /// @return invalidArgument for another factor
+            errorCode setMoveOverride(float factor);
+
             /// @brief Current speed along the path, in the unit of the move under way.
             float pathSpeed() const;
 
@@ -239,6 +246,8 @@ namespace TeensyStep
             float moveExit  = 0;       // its speed at the targets as given, in steps of the path
             float feed      = 1;       // setOverride(), the last factor above 0
             bool holding    = false;   // setOverride(0)
+            float ownFeed   = 1;       // setMoveOverride(), the last factor above 0
+            bool ownHold    = false;   // setMoveOverride(0)
 
             float ownSpeed = 0, ownAcc = 0, ownDec = 0; // limits of the path as given for the group, 0: none
             bool separateDeceleration = false;

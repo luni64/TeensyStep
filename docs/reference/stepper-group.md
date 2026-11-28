@@ -55,38 +55,33 @@ motor.
 
 ---
 
-## Motion settings
+## Speed
 
-Chainable, and allowed at any time. The values are those of the member with the longest way in a move.
-The settings of the members stay upper limits: if a member allows less, the group is slower, and the
-warning `speedLimited` or `accelerationLimited` is reported, by the setter during a move and otherwise by
-the move command. The values belong to the group object and are used for the moves it starts. See
-[Speed and acceleration of a group](../groups.md#speed-and-acceleration-of-a-group).
+A group is as fast as its members allow: none of them exceeds its own maximum speed, acceleration,
+deceleration or pull-in speed. See [The speed of a group](../groups.md#the-speed-of-a-group).
 
-### setMaxSpeed()
+### overrideSpeed()
 
 ```cpp
-StepperGroup& setMaxSpeed(float stepsPerSec);
+errorCode overrideSpeed(float factor);
 ```
 
-The highest speed of the group. 0 (default): no value of the group; it is as fast as its members allow.
+The speed factor of the group. What it is a factor of depends on the command the group got last:
 
-### setAcceleration()
+- **Moves to targets:** the group runs at `factor` times the speed its members allow, 0 to 1; default 1.
+  Allowed at any time, also during a move. The factor belongs to the group object and stays for its
+  later moves. 0 holds the group on its line; the move is not over (`isMoving()` stays `true`), a factor
+  above 0 lets it go on, and `stop()` ends it. Another factor returns `invalidArgument`.
+- **After `rotateAsync()`:** the group runs at `factor` times the speeds given to `rotateAsync()`. A
+  negative factor reverses all members. 0 stops the group; a later factor starts it again.
+
+### getSpeed()
 
 ```cpp
-StepperGroup& setAcceleration(float stepsPerSec2);
+float getSpeed() const;
 ```
 
-How fast the speed of the group changes. 0 (default): as fast as the members allow. The value is also
-used for decelerating, until `setDeceleration()` is called.
-
-### setDeceleration()
-
-```cpp
-StepperGroup& setDeceleration(float stepsPerSec2);
-```
-
-A separate value for decelerating. 0: as fast as the members allow.
+The current speed of the group in steps/s: that of its fastest member. 0 when the group stands still.
 
 ---
 
@@ -201,15 +196,7 @@ Runs the members at these speeds (steps/s, the sign is the direction), given in 
 The ratio of the speeds is kept exactly. While the group rotates, speeds with the same ratio change the
 speed of the group; another ratio returns `notSupported`. All speeds 0: stop.
 
-### overrideSpeed()
-
-```cpp
-errorCode overrideSpeed(float factor);
-```
-
-Runs the group at `factor` times the speeds given to `rotateAsync()`. A negative factor reverses all
-members. 0 stops the group; a later factor starts it again. Returns `notSupported` if the group has not
-been rotated.
+The speed of a rotating group is changed with [`overrideSpeed()`](#overridespeed).
 
 ---
 
@@ -245,16 +232,6 @@ bool isMoving() const;
 
 `true` while the members are moving as this group. `false` if a member moves on its own or in another
 group.
-
-### getSpeed()
-
-```cpp
-float getSpeed() const;
-```
-
-The current speed of the group in steps/s: that of its fastest member. 0 when the group stands still.
-
----
 
 ## Arrival function
 

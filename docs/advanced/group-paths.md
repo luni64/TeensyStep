@@ -56,9 +56,9 @@ motors are arranged.
 | `speedAtTarget` | 0 | speed at the targets. 0: stop there |
 | `acceleration` | 0 | acceleration, also for slowing down. 0: as much as the motors allow |
 
-The maximum speed and the acceleration of the motors stay ceilings for every move. The speed and the
-acceleration of the `StepperGroup` (`setMaxSpeed()`, `setAcceleration()`) are not used for the moves of a
-path: a move brings its own.
+The maximum speed and the acceleration of the motors stay ceilings for every move. The speed factor of
+the `StepperGroup` (its `overrideSpeed()`) is not used for the moves of a path: the path has its own, see
+[Override and hold](#override-and-hold).
 
 ## Moves given ahead
 

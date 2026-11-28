@@ -99,40 +99,36 @@ For the x/y transport of the [pictures above](#synchronized) this means that the
 straight line between start and target by at most half a step, and that it stands on the line after an
 early stop.
 
-### Speed and acceleration of a group
+### The speed of a group
 
-Without further settings, the group moves as fast as possible without any member exceeding its own
-maximum speed or acceleration. The motor with the longest way sets the pace (1); the others follow in
-proportion.
-{ .annotate }
+A group moves as fast as possible without any member exceeding its own maximum speed or acceleration.
+The motor with the longest way sets the pace; the others follow in proportion. Set each motor to what
+it can do, and the group gets the most out of every move.
 
-1.  **Lead motor**
-
-    The member with the most steps to make is the *lead motor* of the move. The other members step
-    together with it, each at its share of the lead motor's steps. A member with a short way therefore
-    steps less often, but always at the same moment as the lead motor. This is
-    [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm).
-
-A group can be given a maximum speed and an acceleration of its own:
+`overrideSpeed(factor)` runs the group slower, at a fraction of that speed:
 
 ```cpp
-xy.setMaxSpeed(2'000).setAcceleration(10'000);
-xy.moveAbs({4'000, 1'000}); // x runs at 2000 steps/s, y at 500
+xy.overrideSpeed(0.25);
+xy.moveAbs({4'000, 1'000}); // at a quarter of the speed the motors allow for this move
+xy.overrideSpeed(1);        // as fast as the motors allow again
 ```
 
-- The values are those of the lead motor, in steps/s and steps/s², as for a single motor.
-  `setDeceleration()` sets a separate value for decelerating.
-- The settings of the motors stay the upper limits. If a member would have to exceed its own maximum
-  speed or acceleration, the group is slower, and the warning `speedLimited` or `accelerationLimited` is
-  reported. Set each motor to what it can do, and the group to what the move shall do.
-- 0 removes a value: the group is then again as fast as its members allow.
-- `getSpeed()` returns the current speed of the group, that of its lead motor.
+- The factor is between 0 and 1. It can be set at any time, also while the group moves; the group then
+  changes its speed as a whole. The acceleration stays that of the motors.
+- The factor belongs to the group object and stays for its later moves.
+- The factor 0 holds the group (1): it decelerates and stands on its line. A factor above 0 lets it go
+  on; `stop()` ends the move.
+- `getSpeed()` returns the current speed of the group, that of its fastest member.
+{ .annotate }
 
-The speed and the acceleration of the group and of its members can be changed while the group moves; the
-group then changes its speed as a whole.
+1.  **Hold**
 
-The values belong to the group object. A group that is created for one move takes them in the same
-statement: `StepperGroup{y, z}.setMaxSpeed(1'000).moveAbs({0, 0});`
+    The move is not over while the group is held: `isMoving()` stays `true`, and a blocking command like
+    `moveAbs()` does not return. Hold a group that was started with an `Async` command, or from an
+    interrupt.
+
+A program that needs the speed along the line in a unit of its own, for example in mm/s, gives its moves
+with the advanced class `GroupPath`, see [Paths of a group](advanced/group-paths.md).
 
 ### Groups are light objects
 
@@ -186,8 +182,9 @@ times, also while the motors accelerate, decelerate or reverse:
 
 - A further `rotateAsync()` with speeds of the same ratio changes the speed of the group. Another ratio
   is refused with `notSupported` while the group rotates.
-- `overrideSpeed(factor)` runs the group at `factor` times the speeds given to `rotateAsync()`. A negative
-  factor reverses all members; 0 stops the group, and a later factor starts it again.
+- `overrideSpeed(factor)` runs a rotating group at `factor` times the speeds given to `rotateAsync()`.
+  Here the factor is not limited to 0 to 1: a negative factor reverses all members; 0 stops the group, and
+  a later factor starts it again.
 
 For a ratio that changes while the motors run, use independent motors and adjust the speed of one of
 them, as the example `16_Winder` does.

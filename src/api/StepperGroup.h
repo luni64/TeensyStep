@@ -22,16 +22,16 @@ namespace TeensyStep
     ///
     /// @details The members of a group start together, arrive together and stay on a straight line between
     /// start and target at all times, also while accelerating and when the group is stopped early. The group
-    /// is as fast as possible without any member exceeding its own maximum speed or acceleration; it can be
-    /// given a maximum speed and an acceleration of its own (setMaxSpeed, setAcceleration).
+    /// is as fast as possible without any member exceeding its own maximum speed or acceleration;
+    /// overrideSpeed() runs it at a fraction of that speed.
     ///
     /// A group is a light object: a list of motors. It can be defined once or created where it is needed,
     /// also as a temporary (`StepperGroup{x, y}.moveAbs({100, 200});`); a move that was started goes on when
     /// the group object is gone. A motor can be a member of several groups, but it can move in only one at a
     /// time: a command for a group with a busy member returns motorBusy.
     ///
-    /// While a group moves, the maximum speed and the acceleration of its members and of the group can be
-    /// changed. New targets are accepted when the group stands still.
+    /// While a group moves, the maximum speed and the acceleration of its members and the speed factor of
+    /// the group can be changed. New targets are accepted when the group stands still.
     ///
     /// A group always stops at its targets. Moves that follow each other without a stop (a path through
     /// several points) are given with advanced::GroupPath, see TeensyStepAdvanced.h.
@@ -51,14 +51,6 @@ namespace TeensyStep
         void clear();
         unsigned size() const { return count; }
 
-        // Speed and acceleration of the group: those of the member with the longest way in a move, in
-        // steps/s and steps/s². The settings of the members stay ceilings: if a member allows less, the
-        // group is slower, and the warning speedLimited or accelerationLimited is reported. 0 (default):
-        // no value of the group, it is as fast as its members allow. Chainable, allowed at any time. The
-        // values belong to this group object and are used for the moves it starts.
-        StepperGroup& setMaxSpeed(float stepsPerSec);
-        StepperGroup& setAcceleration(float stepsPerSec2); ///< also sets the deceleration, until setDeceleration() is used
-        StepperGroup& setDeceleration(float stepsPerSec2);
         float getSpeed() const; ///< current speed of the group: that of its fastest member, steps/s; 0 at standstill
 
         // Moves on a straight line. The targets are given in the order of the members: as positions
@@ -85,8 +77,16 @@ namespace TeensyStep
         errorCode rotateAsync(std::initializer_list<float> speeds);
         errorCode rotateAsync(const float* speeds, unsigned n);
 
-        /// @brief Runs the group at `factor` times the speeds given to rotateAsync(). Negative: all members
-        /// reverse. 0: stop; a later factor starts the group again.
+        /// @brief The speed factor of the group.
+        ///
+        /// For moves to targets: the group runs at `factor` times the speed its members allow, 0 to 1
+        /// (default 1). The factor can be set at any time, also during a move; it belongs to this group
+        /// object and stays for its later moves. 0 holds the group: it decelerates and stands on its line,
+        /// the move is not over (isMoving() stays true, a blocking move does not return), and a factor
+        /// above 0 lets it go on. stop() ends a move that is held. Another factor returns invalidArgument.
+        ///
+        /// For a group that was rotated last: the group runs at `factor` times the speeds given to
+        /// rotateAsync(). Negative: all members reverse. 0: stop; a later factor starts the group again.
         errorCode overrideSpeed(float factor);
 
         errorCode stopAsync(); ///< decelerate to standstill; the members stay on the line
@@ -113,8 +113,6 @@ namespace TeensyStep
         int runningChannel() const;
         errorCode takeChannel(int& ch);
         errorCode rotate(const float* speeds, unsigned n, bool remember);
-        enum class Setting { none, speed, acceleration, deceleration };
-        void applySettings(detail::Channel& c, Setting changed);
 
         errorCode start(const int32_t* targets, unsigned n, float speedAtTarget, float speedAtStart);
         errorCode startRel(const int32_t* distances, unsigned n, float speedAtTarget, float speedAtStart);
@@ -125,8 +123,8 @@ namespace TeensyStep
         void (*arrivalGroup)(StepperGroup&) = nullptr;
         void setArrival(detail::Channel& c); // the functions and this object, for the move that starts
         void callArrival();
-        float ownSpeed = 0, ownAcc = 0, ownDec = 0; // of the group; 0: none
-        bool separateDeceleration   = false;
+        float moveFactor            = 1;     // overrideSpeed() for moves, the last factor above 0
+        bool held                   = false; // overrideSpeed(0) for moves
         float baseSpeed[maxMembers] = {}; // speeds given to rotateAsync(), for overrideSpeed()
         bool hasBaseSpeed           = false;
 

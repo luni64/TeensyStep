@@ -26,7 +26,7 @@ folder that says what it shows, what has to be connected and what to expect.
 
 | Sketch | Shows |
 |---|---|
-| `13_Groups` | synchronized moves; the ways to give the targets; groups created where they are needed; the speed of a group |
+| `13_Groups` | synchronized moves; the ways to give the targets; groups created where they are needed; a group that runs slower |
 | `14_SyncRotation` | a group rotating with a fixed speed ratio; the speed factor of a group |
 
 ## Applications

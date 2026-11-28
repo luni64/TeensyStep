@@ -108,47 +108,7 @@ namespace TeensyStep
     }
 
     //--------------------------------------------------------------------------------------------------------
-    // speed and acceleration of the group
-
-    /// Gives the values of this group object to the ramp of a channel, and reports a restriction of the
-    /// value that was changed. To be called with the lock held.
-    void StepperGroup::applySettings(Channel& c, Setting changed)
-    {
-        errorCode speed = c.group.setMaxSpeed(ownSpeed);
-        errorCode acc   = c.group.setAcceleration(ownAcc);
-        errorCode dec   = c.group.setDeceleration(separateDeceleration ? ownDec : ownAcc);
-        if (changed == Setting::speed) Engine::report(speed);
-        if (changed == Setting::acceleration) Engine::report(acc != errorCode::OK || separateDeceleration ? acc : dec);
-        if (changed == Setting::deceleration) Engine::report(dec);
-    }
-
-    StepperGroup& StepperGroup::setMaxSpeed(float stepsPerSec)
-    {
-        Lock lock;
-        ownSpeed = stepsPerSec > 0 ? stepsPerSec : 0;
-        int ch   = runningChannel();
-        if (ch >= 0) applySettings(Engine::channels[ch], Setting::speed);
-        return *this;
-    }
-
-    StepperGroup& StepperGroup::setAcceleration(float stepsPerSec2)
-    {
-        Lock lock;
-        ownAcc = stepsPerSec2 > 0 ? stepsPerSec2 : 0;
-        int ch = runningChannel();
-        if (ch >= 0) applySettings(Engine::channels[ch], Setting::acceleration);
-        return *this;
-    }
-
-    StepperGroup& StepperGroup::setDeceleration(float stepsPerSec2)
-    {
-        Lock lock;
-        ownDec               = stepsPerSec2 > 0 ? stepsPerSec2 : 0;
-        separateDeceleration = true;
-        int ch               = runningChannel();
-        if (ch >= 0) applySettings(Engine::channels[ch], Setting::deceleration);
-        return *this;
-    }
+    // speed of the group
 
     float StepperGroup::getSpeed() const
     {
@@ -180,7 +140,7 @@ namespace TeensyStep
                 if (code == errorCode::OK)
                 {
                     Channel& c = Engine::channels[ch];
-                    applySettings(c, Setting::none); // a restriction by the members is reported by the move
+                    c.group.setMoveOverride(held ? 0 : moveFactor);
                     code = c.group.moveAbs(targets, speedAtTarget, speedAtStart); // notSupported for other targets while the group is on its way
                     if (!isError(code))
                     {
@@ -192,7 +152,10 @@ namespace TeensyStep
                 }
             }
             if (!isError(code)) // the members remember the targets; a refused command changes nothing
+            {
                 for (unsigned i = 0; i < count; i++) motors[i]->setTargetAbs(targets[i]);
+                hasBaseSpeed = false; // overrideSpeed() is the factor of the moves from here on
+            }
         }
         if (alreadyThere) callArrival();
         return Engine::report(code);
@@ -321,10 +284,24 @@ namespace TeensyStep
 
     errorCode StepperGroup::overrideSpeed(float factor)
     {
-        if (!hasBaseSpeed) return Engine::report(errorCode::notSupported); // the group has not been rotated
-        float speeds[maxMembers];
-        for (unsigned i = 0; i < count; i++) speeds[i] = baseSpeed[i] * factor;
-        return rotate(speeds, count, false);
+        if (hasBaseSpeed) // the group was rotated last: the factor of the speeds given to rotateAsync()
+        {
+            float speeds[maxMembers];
+            for (unsigned i = 0; i < count; i++) speeds[i] = baseSpeed[i] * factor;
+            return rotate(speeds, count, false);
+        }
+        if (!(factor >= 0 && factor <= 1)) return Engine::report(errorCode::invalidArgument);
+        Lock lock;
+        if (factor == 0)
+            held = true;
+        else
+        {
+            held       = false;
+            moveFactor = factor;
+        }
+        int ch = runningChannel();
+        if (ch >= 0 && !Engine::channels[ch].ending && Engine::channels[ch].pathOwner == nullptr) Engine::channels[ch].group.setMoveOverride(factor);
+        return errorCode::OK;
     }
 
     //--------------------------------------------------------------------------------------------------------

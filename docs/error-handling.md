@@ -28,7 +28,7 @@ for a code.
 
 | Code | Value | Reported when |
 |---|---|---|
-| `speedLimited` | −1000 | a speed is outside the supported range, a speed at the target is above the maximum speed, or the speed of a group is above what its members allow. The limit is used |
+| `speedLimited` | −1000 | a speed is outside the supported range, a speed at the target is above the maximum speed, or the speed of a move of a path is above what its members allow. The limit is used |
 | `accelerationLimited` | −1001 | an acceleration is outside the supported range, or the acceleration of a group is above what its members allow. The limit is used |
 | `targetSpeedNotReached` | −1002 | a move of a [`GroupPath`](advanced/group-paths.md) is too short for its speeds. The group arrives as close to the speed at the targets as it can |
 

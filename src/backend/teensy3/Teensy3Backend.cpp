@@ -21,6 +21,10 @@
 // so late that the next due time has passed already (or is only a few counts away), the next action is made
 // in the same call.
 //
+// The width of the pulse. An interrupt that is served late makes its step late. The end of the pulse is
+// counted from the moment the step pins were really set, so that the pulse keeps its width; the due time of
+// the next step stays where it was.
+//
 // The setup time of DIR. Where the DIR pin of a motor changes, its step is made no earlier than the setup
 // time after the pin was written: the due time of the step is moved back if it is closer, and with it all
 // steps that follow.
@@ -120,6 +124,7 @@ namespace TeensyStep
                 int32_t minCounts     = 24;      // shortest pause between a pulse and the next step
                 int32_t pulseCounts   = 150;
                 int32_t dirCounts     = 150;     // setup time of DIR
+                int32_t late          = 0;       // counts by which the steps of the current event were made after their due time
                 float countsPerSecond = 30e6f;
                 uint32_t delayBits    = 0xFFFFFFFF; // the delay converted last, as its bit pattern
                 uint32_t delayQ16     = 0;          // and its counts, with 16 fractional bits
@@ -289,11 +294,17 @@ namespace TeensyStep
                 {
                     if (c.phase == Phase::beforeStep) // the current event is due: make its steps
                     {
-                        if (!edgeDone) makeEdge(c);
-                        edgeDone   = false;
-                        c.phase    = Phase::inPulse;
-                        bool pulse = c.cur.stepMask != 0;                                           // false: a wait, nothing to end
-                        if (pulse && !c.waitPulse) *c.cv = (uint32_t)wrapped(c, c.due + c.pulseCounts); // the end of the pulse
+                        bool pulse = c.cur.stepMask != 0; // false: a wait, nothing to end
+                        if (!edgeDone)
+                        {
+                            makeEdge(c);
+                            c.late = pulse ? elapsed(c, c.due) : 0;
+                        }
+                        edgeDone      = false;
+                        c.phase       = Phase::inPulse;
+                        int32_t width = c.late + c.pulseCounts; // of the pulse, counted from the due time
+                        if (width > c.maxCounts) width = c.maxCounts;
+                        if (pulse && !c.waitPulse) *c.cv = (uint32_t)wrapped(c, c.due + width); // the end of the pulse
 
                         if (c.cur.arrived)
                         {
@@ -308,12 +319,12 @@ namespace TeensyStep
                         {
                             if (c.waitPulse)
                             {
-                                waitFor(c, c.due, c.pulseCounts); // a short pulse: no second interrupt for its end
+                                waitFor(c, c.due, width); // a short pulse: no second interrupt for its end
                             }
                             else
                             {
-                                if (!reached(c, c.due, c.pulseCounts)) return; // wait for the end of the pulse
-                                waitFor(c, c.due, c.pulseCounts);              // it has passed already, or nearly
+                                if (!reached(c, c.due, width)) return; // wait for the end of the pulse
+                                waitFor(c, c.due, width);              // it has passed already, or nearly
                                 clearFlag(c);
                                 madeLateEvent = true;
                             }
@@ -330,6 +341,13 @@ namespace TeensyStep
                         return;
                     }
                     int32_t previous = c.due;
+                    if (c.late != 0) // the pulse ended later: the pause after it is kept
+                    {
+                        int32_t least = c.late + c.pulseCounts + c.minCounts;
+                        if (least > c.maxCounts) least = c.maxCounts;
+                        if (c.cur.stepMask != 0 && least > c.nextTotal) c.nextTotal = least;
+                        c.late = 0;
+                    }
                     c.due            = wrapped(c, previous + c.nextTotal);
                     c.cur            = c.next;
                     c.hasNext        = false;
@@ -378,7 +396,9 @@ namespace TeensyStep
                         for (uint32_t m = flags; m != 0; m &= m - 1)
                         {
                             int8_t ch = channelOfModule[module][__builtin_ctz(m)];
-                            makeEdge(chans[ch]);
+                            Chan& c   = chans[ch];
+                            makeEdge(c);
+                            if (c.phase == Phase::beforeStep) c.late = c.cur.stepMask != 0 ? elapsed(c, c.due) : 0;
                             due[n++] = (uint8_t)ch;
                         }
                         for (unsigned i = 0; i < n; i++)

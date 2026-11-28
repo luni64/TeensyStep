@@ -77,7 +77,7 @@ namespace TeensyStep
             uint32_t share[maxMembers];
             for (unsigned i = 0; i < count; i++) share[i] = m[i].share;
             bool own     = !(kind == Kind::move && pathMove); // a move of addMove() has its own values
-            PathLimits l = limitsOf(share, length, own ? ownSpeed : moveSpeed, own ? ownAcc : moveAcc, own ? ownDec : moveAcc, own ? 1.0f : feed);
+            PathLimits l = limitsOf(share, length, own ? ownSpeed : moveSpeed, own ? ownAcc : moveAcc, own ? ownDec : moveAcc, own ? ownFeed : feed);
             speedCapped  = l.speedCapped;
             accCapped    = l.accCapped;
             decCapped    = l.decCapped;
@@ -157,7 +157,7 @@ namespace TeensyStep
             unit      = 1;
             moveExit  = speedAtTarget;
             serial++;
-            path.setHold(false); // a hold is for the moves of addMove()
+            path.setHold(ownHold); // the hold of setMoveOverride(); that of setOverride() is for the moves of addMove()
 
             // A new line, from where the members are. If the group runs on behind its last targets, this
             // is the next segment: the path goes on without a stop.
@@ -362,6 +362,26 @@ namespace TeensyStep
             {
                 applyLimits();
                 if (!passed) path.moveAbs((int32_t)length, moveExit * feed);
+            }
+            return errorCode::OK;
+        }
+
+        errorCode Group::setMoveOverride(float factor)
+        {
+            if (!(factor >= 0 && factor <= 1)) return errorCode::invalidArgument;
+            bool own = path.isMoving() && kind == Kind::move && !pathMove;
+            if (factor == 0)
+            {
+                ownHold = true;
+                if (own) path.setHold(true);
+                return errorCode::OK;
+            }
+            ownHold = false;
+            ownFeed = factor;
+            if (own)
+            {
+                path.setHold(false);
+                applyLimits();
             }
             return errorCode::OK;
         }
