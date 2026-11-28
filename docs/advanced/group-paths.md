@@ -70,6 +70,9 @@ speed along the path. The sketch gives the next move while the one before it run
 --8<-- "advanced/GroupWaypoints/GroupWaypoints.ino"
 ```
 
+The sketch takes the speed at each waypoint from a table. The example `advanced/PathPlanner` calculates
+these speeds from the limits of the motors, see [Writing a motion planner](motion-planner.md).
+
 `room()` tells how many moves `add()` takes now: 2 while the group stands still, 1 while a move runs and
 none waits, 0 while one waits. The sketch above asks in `loop()`. A sketch that cannot be sure to come by
 in time sets a function with `onRoom()`; the library calls it, from its interrupt, whenever a move has
@@ -79,7 +82,8 @@ arrived and there is room again.
     Within each move the motors stay on a straight line. Where two moves meet, the direction of the line
     changes, and with it the speed of every single motor, without a ramp. The speed at these points has
     to be low enough for the motors to follow (1). The library does not plan ahead across the moves and
-    does not round corners.
+    does not round corners; the sketch cuts a corner into short moves, as the path above does with its
+    second point.
     { .annotate }
 
     1.  **How low**

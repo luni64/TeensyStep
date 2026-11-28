@@ -155,6 +155,22 @@ whole group.
 Like the [arrival function of a motor](targets-with-speed.md#the-arrival-function) it is called from an
 interrupt.
 
+The function can have the group as its parameter. One function then serves several groups:
+
+```cpp
+void arrived(StepperGroup& group)
+{
+    if (&group == &xy) { /* the table has arrived */ }
+}
+
+xy.onArrival(arrived);
+zw.onArrival(arrived);
+```
+
+The function gets the group object that gave the move. A group that was created only for a move
+(`StepperGroup{x, y}.moveAbsAsync(...)`) no longer exists when the move arrives; a function with a
+parameter is not called then.
+
 A group always stops at its targets. Programs that calculate a path through several points, which the
 group shall pass without stopping, use the advanced class `GroupPath`, see
 [Paths of a group](advanced/group-paths.md) and [Writing a motion planner](advanced/motion-planner.md).

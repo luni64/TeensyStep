@@ -1,10 +1,8 @@
 /*==========================================================================
  * 06 TargetWithSpeed: pass a position at a given speed, and chain moves
  *
- * The motor runs a speed profile along a track:
- *
- *   position      0 ... 10000 ... 40000 ... 50000
- *   speed         0     2000      12000     0
+ * The motor passes 10000 at 2000 steps/s and 40000 at 12000 steps/s, and
+ * stops at 50000.
  *==========================================================================*/
 
 #include "TeensyStep.h"

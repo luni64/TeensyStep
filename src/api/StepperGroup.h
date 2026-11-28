@@ -41,6 +41,9 @@ namespace TeensyStep
         static constexpr unsigned maxMembers = backend::maxMotors;
 
         StepperGroup() = default;
+        StepperGroup(const StepperGroup&) = default; ///< a copy is a group of its own with the same members and settings
+        StepperGroup& operator=(const StepperGroup&) = default;
+        ~StepperGroup(); ///< a move that was started goes on
         StepperGroup(std::initializer_list<std::reference_wrapper<Stepper>> motors);
 
         errorCode add(Stepper& motor); ///< invalidArgument if the group is full or has this motor already
@@ -93,8 +96,18 @@ namespace TeensyStep
         bool isMoving() const; ///< the members are moving as this group
 
         /// @brief Sets a function that is called when the group has reached its targets. It is called from
-        /// an interrupt: keep it short. nullptr removes it.
-        void onArrival(void (*callback)()) { arrival = callback; }
+        /// an interrupt: keep it short. The function can have the group as its parameter, so that one
+        /// function can serve several groups:
+        ///
+        ///     void arrived(StepperGroup& group) { ... }
+        ///     xy.onArrival(arrived);
+        ///     zw.onArrival(arrived);
+        ///
+        /// It gets the group object that gave the move. If that object is gone when the move arrives (a
+        /// group created only for the move), a function with a parameter is not called.
+        void onArrival(void (*callback)());
+        void onArrival(void (*callback)(StepperGroup& group));
+        void onArrival(std::nullptr_t); ///< removes the function
 
      private:
         int runningChannel() const;
@@ -109,6 +122,9 @@ namespace TeensyStep
         Stepper* motors[maxMembers] = {};
         unsigned count              = 0;
         void (*arrival)()           = nullptr;
+        void (*arrivalGroup)(StepperGroup&) = nullptr;
+        void setArrival(detail::Channel& c); // the functions and this object, for the move that starts
+        void callArrival();
         float ownSpeed = 0, ownAcc = 0, ownDec = 0; // of the group; 0: none
         bool separateDeceleration   = false;
         float baseSpeed[maxMembers] = {}; // speeds given to rotateAsync(), for overrideSpeed()

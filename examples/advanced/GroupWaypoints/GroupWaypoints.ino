@@ -1,23 +1,8 @@
 /*==========================================================================
  * GroupWaypoints: a group passes several points without stopping
  *
- * An example of the advanced functions (TeensyStepAdvanced.h). A group
- * always stops at its targets. advanced::GroupPath takes moves ahead: one
- * runs, one waits, and at the targets of a move the group goes on with the
- * move that waits, without a stop.
- *
- * Each move says how long it is in the unit of the sketch (here: mm). Its
- * speeds are then in that unit per second, whichever motor has the longest
- * way. The targets are positions of the motors in steps, as always.
- *
- * Within each move the motors stay on a straight line. At a waypoint the
- * direction of the line changes, so the speeds of the single motors jump
- * there. Choose the speed at the waypoints low enough for the motors to
- * follow. The library does not plan ahead across the moves, and it does
- * not round corners; cut a corner into short moves, as in this path.
- *
- * The example PathPlanner calculates these speeds from the limits of the
- * motors instead of taking them from a table.
+ * advanced::GroupPath (TeensyStepAdvanced.h) takes moves ahead: one runs and
+ * one waits. Each move says how long it is in mm; its speeds are in mm/s.
  *==========================================================================*/
 
 #include "TeensyStepAdvanced.h"

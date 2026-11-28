@@ -1,9 +1,8 @@
 /*==========================================================================
  * 07 Follower: a motor follows a calculated path
  *
- * The motor swings back and forth like a pendulum (a cosine). A timer
- * calculates every 10 ms where the motor has to be at the next call and
- * how fast it moves there.
+ * The motor swings back and forth like a pendulum (a cosine); a timer gives
+ * it a new target with a speed every 10 ms.
  *==========================================================================*/
 
 #include "TeensyStep.h"

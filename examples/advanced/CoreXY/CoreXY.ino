@@ -1,23 +1,8 @@
 /*==========================================================================
  * CoreXY: a planned path on a CoreXY machine, with override and hold
  *
- * An example of the advanced functions (TeensyStepAdvanced.h). On a CoreXY
- * machine two motors move the head together through one belt:
- *
- *   motor A = x + y        motor B = x - y
- *
- * A move along x turns both motors in the same direction, a move along y
- * in opposite directions, and on a diagonal only one of them turns. The
- * path is given in x and y, in mm. The planner in Planner.h (the same file
- * as in the example PathPlanner) gets the formulas above as its kinematics;
- * everything else is as on a machine with one motor for each axis.
- *
- * While the path runs, the serial monitor changes its speed:
- *
- *   -  slower by 10 %      h  hold: brake and stand on the path
- *   +  faster by 10 %      g  go on
- *
- * How the planner works: "Writing a motion planner" in the manual.
+ * Motor A = x + y, motor B = x - y; the planner in Planner.h gets this as its
+ * kinematics. Serial monitor:  - slower   + faster   h hold   g go on
  *==========================================================================*/
 
 #include "Planner.h" // includes TeensyStepAdvanced.h

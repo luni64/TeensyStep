@@ -10,6 +10,7 @@
 namespace TeensyStep
 {
     class Stepper;
+    class StepperGroup;
     namespace advanced
     {
         class GroupPath;
@@ -31,6 +32,8 @@ namespace TeensyStep
             core::Group group; // the ramp of a group
 
             void (*arrival)() = nullptr; // group: called when the targets are reached
+            void (*arrivalGroup)(StepperGroup&) = nullptr; // or this one, with the group object that gave the move ...
+            StepperGroup* groupObject = nullptr;           // ... as long as that object exists
             advanced::GroupPath* pathOwner = nullptr; // group: the path whose moves run in this channel
 
             // enable signals of the drivers

@@ -12,6 +12,8 @@ All notable changes to TeensyStep are documented in this file. The format follow
 - An arrival function can have the motor as its parameter: `void arrived(Stepper& motor)`. It is called
   with the motor that has arrived, so that one function can serve several motors. Functions without a
   parameter work as before.
+- The arrival function of a group can have the group as its parameter in the same way:
+  `void arrived(StepperGroup& group)`.
 - `setEnable()` also takes a function that switches the driver on and off, for an enable signal that is
   not on a pin of the board (a port extender, for example). New example `12_EnableFunction`.
 - `advanced::setInterruptPriority()` (`TeensyStepAdvanced.h`) sets the priority of the interrupts in which
@@ -34,6 +36,14 @@ All notable changes to TeensyStep are documented in this file. The format follow
   holds the path: the group brakes along the path, through the moves that follow if need be, and stands
   on it until another factor is set.
   `GroupPath::getSpeed()` returns the speed along the path.
+
+- Every example has a `README.md` that says what the sketch shows, what it needs and where the manual
+  explains it. The header comments of the sketches are short; the manual has new sections on the
+  examples `15_RoseFunction` and `16_Winder`.
+- `setDirSetupTime()` has its function: a step is made no earlier than this time after the DIR signal
+  of its motor has changed (0 to 200 µs, default 5 µs). A step that would come sooner is delayed, and
+  the steps after it with it. This matters where a group passes a point of a path at speed and one of
+  its motors reverses there; at the reversal of a single motor the time has passed anyway.
 
 **Changed**
 
@@ -138,7 +148,6 @@ can still change in details until version 3.0.0.** The manual at
 - Motors that move independently delay each other's steps slightly when their steps are due at the same
   moment: about 1 µs with three motors at 50,000 steps/s, about 6 µs with 16 motors. The delay does not
   add up, and a single motor or a single group is not affected.
-- The Teensy 3.5 is built but not tested on a board; the Teensy 3.6 is.
 
 **Planned changes until version 3.0.0**
 
@@ -152,7 +161,7 @@ These points are under discussion. They can change the interface in details.
   "Unreleased".)
 - `advanced::GroupPath` may be replaced by an interface made for motion planners. (Done after the beta: see
   "Unreleased".)
-- `setDirSetupTime()` gets its function.
+- `setDirSetupTime()` gets its function. (Done after the beta: see "Unreleased".)
 - The numbers of the examples may change. (Done after the beta: see "Unreleased".)
 
 ## v2.3.4 - 2023-04-13

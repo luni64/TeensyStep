@@ -37,6 +37,46 @@ namespace TeensyStep
         hasBaseSpeed = false;
     }
 
+    StepperGroup::~StepperGroup() // a move goes on; its arrival function no longer gets this object
+    {
+        Lock lock;
+        for (Channel& c : Engine::channels)
+            if (c.groupObject == this) c.groupObject = nullptr;
+    }
+
+    void StepperGroup::onArrival(void (*callback)())
+    {
+        arrival      = callback;
+        arrivalGroup = nullptr;
+    }
+
+    void StepperGroup::onArrival(void (*callback)(StepperGroup&))
+    {
+        arrival      = nullptr;
+        arrivalGroup = callback;
+    }
+
+    void StepperGroup::onArrival(std::nullptr_t)
+    {
+        arrival      = nullptr;
+        arrivalGroup = nullptr;
+    }
+
+    void StepperGroup::setArrival(Channel& c)
+    {
+        c.arrival      = arrival;
+        c.arrivalGroup = arrivalGroup;
+        c.groupObject  = this;
+    }
+
+    void StepperGroup::callArrival()
+    {
+        if (arrival)
+            arrival();
+        else if (arrivalGroup)
+            arrivalGroup(*this);
+    }
+
     /// The channel in which exactly these motors move as a group, or -1. To be called with the lock held.
     int StepperGroup::runningChannel() const
     {
@@ -145,7 +185,7 @@ namespace TeensyStep
                     if (!isError(code))
                     {
                         c.ending    = false;
-                        c.arrival   = arrival;
+                        setArrival(c);
                         c.pathOwner = nullptr;
                         backend::start((unsigned)ch);
                     }
@@ -154,7 +194,7 @@ namespace TeensyStep
             if (!isError(code)) // the members remember the targets; a refused command changes nothing
                 for (unsigned i = 0; i < count; i++) motors[i]->setTargetAbs(targets[i]);
         }
-        if (alreadyThere && arrival) arrival();
+        if (alreadyThere) callArrival();
         return Engine::report(code);
     }
 
@@ -254,7 +294,7 @@ namespace TeensyStep
                     if (!isError(code))
                     {
                         c.ending    = false;
-                        c.arrival   = arrival;
+                        setArrival(c);
                         c.pathOwner = nullptr;
                         backend::start((unsigned)ch);
                     }

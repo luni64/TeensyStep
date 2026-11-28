@@ -1,19 +1,8 @@
 /*==========================================================================
  * PathPlanner: an x-y table runs a path without stopping at its points
  *
- * An example of the advanced functions (TeensyStepAdvanced.h). The path is
- * a list of points in mm: a rectangle and a circle of 72 short segments.
  * The planner in Planner.h, a part of this example, decides how fast each
- * point can be passed and gives the library one move for each segment.
- *
- * With the values below, the corners of the rectangle are passed at
- * 5 mm/s and the circle is run at 55 mm/s and more, of a feed rate of
- * 80 mm/s.
- * Both follow from `maxJump`, the change of speed a motor takes without a
- * ramp, and from the angle between two segments: a higher `maxJump`, or a
- * circle of more segments, is run faster.
- *
- * How the planner works: "Writing a motion planner" in the manual.
+ * point of the path (in mm) can be passed. See the manual for how it works.
  *==========================================================================*/
 
 #include "Planner.h" // includes TeensyStepAdvanced.h

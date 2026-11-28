@@ -102,8 +102,10 @@ Stepper& setInverseRotation(bool inverse);
 Stepper& setDirSetupTime(float microseconds);
 ```
 
-Time between a change of DIR and the next step pulse. Default 5 µs. No effect in this version, see
-[Limits](../advanced/limits.md#timing-of-the-signals).
+Shortest time between a change of DIR and the next step pulse, 0 to 200 µs; larger values are limited
+to 200 µs. Default 5 µs. A step that would come sooner after a change of DIR is delayed, and the steps
+after it with it, see [Limits](../advanced/limits.md#timing-of-the-signals). A group uses the largest
+value of its members.
 
 ### setEnable()
 

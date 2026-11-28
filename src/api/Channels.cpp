@@ -291,7 +291,10 @@ namespace TeensyStep
             if (c.isGroup)
             {
                 advanced::GroupPath* path = c.pathOwner; // the arrival function may start a move that is not of the path
-                if (c.arrival) c.arrival();
+                if (c.arrival)
+                    c.arrival();
+                else if (c.arrivalGroup && c.groupObject)
+                    c.arrivalGroup(*c.groupObject);
                 if (path && c.pathOwner == path) path->moveArrived();
                 return;
             }

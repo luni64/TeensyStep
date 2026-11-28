@@ -184,8 +184,8 @@ a path that is held is given up.
 ## Another machine: CoreXY
 
 On a CoreXY machine two motors move the head together through one belt: motor A makes the sum of the
-ways in x and y, motor B their difference. A move along x turns both motors, and on a diagonal only one
-of them turns. For the planner this is another kinematics and nothing else; the points of the path stay
+ways in x and y, motor B their difference. A move along x turns both motors in the same direction, a
+move along y in opposite directions, and on a diagonal only one of them turns. For the planner this is another kinematics and nothing else; the points of the path stay
 in x and y:
 
 ```cpp
@@ -194,7 +194,8 @@ in x and y:
 
 The limits follow from the kinematics by themselves. Along x and y both motors share the work, so the
 head accelerates at 625 mm/s² with the values of the sketch (1); on a diagonal one motor does it alone,
-at 442 mm/s². The sketch also shows override and hold from the serial monitor.
+at 442 mm/s². The sketch also shows override and hold from the serial monitor: `-` and `+` change the
+speed of the path by 10 % of the planned speeds, `h` holds the path, and `g` lets it go on.
 { .annotate }
 
 1.  **Where the numbers come from**

@@ -43,7 +43,7 @@ namespace TeensyStep
                         Channel& c = Engine::channels[running];
                         if (g.runningChannel() == running && !c.ending && c.group.commitWaiting(line))
                         {
-                            c.arrival   = g.arrival;
+                            g.setArrival(c);
                             c.pathOwner = this;
                             for (unsigned i = 0; i < g.count; i++) g.motors[i]->setTargetAbs(targets[i]);
                             waits = true;
@@ -64,7 +64,7 @@ namespace TeensyStep
                     if (!isError(code))
                     {
                         c.ending    = false;
-                        c.arrival   = g.arrival;
+                        g.setArrival(c);
                         c.pathOwner = this;
                         backend::start((unsigned)ch);
                         for (unsigned i = 0; i < g.count; i++) g.motors[i]->setTargetAbs(targets[i]); // the members remember the targets

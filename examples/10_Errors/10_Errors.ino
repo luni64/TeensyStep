@@ -1,22 +1,8 @@
 /*==========================================================================
  * 10 Errors: find out when something does not work
  *
- * No command fails silently. Every command returns an errorCode:
- *   errorCode::OK   success
- *   warning         the command was executed with a restriction, e.g. a
- *                   speed above the supported range was limited
- *   error           the command was not executed; the motor is unchanged
- *
- * Typical errors:
- *   - no free hardware timer (too many motors moving at the same time)
- *   - a group is started while one of its motors is moving in another group
- *
- * Three ways to react (the same as in TeensyTimerTool):
- *   a) check the returned code
- *   b) attach a function that is called for every warning and error
- *   c) attach the built-in handler: attachErrFunc(ErrorHandler(Serial));
- *      It prints warnings and errors. At an error it stops all motors and
- *      halts the sketch with a blinking LED.
+ * Every command returns an errorCode. Two ways to react: a) check the
+ * returned code, b) attach a function that is called for every warning and error.
  *==========================================================================*/
 
 #include "TeensyStep.h"

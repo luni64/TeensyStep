@@ -1,23 +1,8 @@
 /*==========================================================================
  * 16 Winder: two motors with a ratio that can be adjusted while running
  *
- * A string or coil winder: the spindle rotates the core, the feeder moves
- * the wire along it. The pitch (mm of feeder travel per spindle turn) is
- * the ratio of the two speeds. It has to stay constant while the spindle
- * speeds up or slows down, and it shall be trimmable while winding.
- *
- * A group keeps a ratio exactly but cannot change it on the fly (example
- * 13). Here the two motors therefore run independently:
- *
- * - Spindle speed changes: both motors get their new speed at the same
- *   moment, and the feeder acceleration is set to the spindle acceleration
- *   times the ratio. Both ramps then take the same time and the pitch
- *   stays constant during the ramp.
- * - Pitch changes: only the feeder gets a new speed, with its own
- *   acceleration.
- *
- * The sketch winds at 1125 rpm, trims the pitch three times, slows down to
- * 300 rpm and stops.
+ * A coil winder: the spindle turns the core, the feeder moves the wire along
+ * it. The motors run independently, so that the pitch can be trimmed.
  *==========================================================================*/
 
 #include "TeensyStep.h"

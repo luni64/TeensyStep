@@ -15,6 +15,10 @@
 // served, a late interrupt delays one edge but nothing after it: the steps do not drift. If an interrupt comes
 // so late that the next due time has passed already, the next action is made at once.
 //
+// The setup time of DIR. Where the DIR pin of a motor changes, its step is made no earlier than the setup
+// time after the pin was written: the due time of the step is moved back if it is closer, and with it all
+// steps that follow.
+//
 // maxDelay() tells the library the longest delay the counter can time; the library hands out longer waits in
 // pieces.
 
@@ -95,6 +99,9 @@ namespace TeensyStep
                 bool started          = false;
                 bool hasNext          = false; // `next` holds a fetched event
                 bool last             = false; // fetch() has returned false: the current event is the last one
+                uint16_t dirs         = 0;     // bit i: DIR of motor i is at "count up"
+                uint16_t dirsKnown    = 0;     // bit i: `dirs` holds the level of the DIR pin of motor i
+                uint16_t dirCounts    = 750;   // setup time of DIR in timer counts
                 Event cur, next;
                 Motor motors[maxMotors];
             };
@@ -135,9 +142,16 @@ namespace TeensyStep
                 return (uint16_t)n;
             }
 
-            inline void setDirs(Chan& c, const Event& e)
+            // Sets the DIR pins of the motors that step in the event. Only pins that have to change are written.
+            // @return true if a pin was written: the step has to wait for the setup time
+            inline bool setDirs(Chan& c, const Event& e)
             {
-                for (uint32_t m = e.stepMask; m != 0; m &= m - 1)
+                uint32_t change = (uint32_t)(((e.dirMask ^ c.dirs) | ~c.dirsKnown) & e.stepMask);
+                if (change == 0) return false;
+                c.dirs       = (uint16_t)((c.dirs & ~change) | (e.dirMask & change));
+                c.dirsKnown  = (uint16_t)(c.dirsKnown | change);
+                bool written = false;
+                for (uint32_t m = change; m != 0; m &= m - 1)
                 {
                     unsigned i     = (unsigned)__builtin_ctz(m);
                     const Motor& k = c.motors[i];
@@ -146,7 +160,9 @@ namespace TeensyStep
                         *k.dirUp = k.dirBit;
                     else
                         *k.dirDown = k.dirBit;
+                    written = true;
                 }
+                return written;
             }
 
             // The enable register is shared by the four channels of a module.
@@ -253,7 +269,16 @@ namespace TeensyStep
                     c.cur             = c.next;
                     c.hasNext         = false;
                     c.phase           = Phase::beforeStep;
-                    setDirs(c, c.cur);
+                    if (setDirs(c, c.cur)) // the step no earlier than the setup time from now
+                    {
+                        uint32_t least = (uint32_t)(uint16_t)(tmr->CNTR - previous) + c.dirCounts;
+                        if (least > 65000) least = 65000;
+                        if (least > c.nextTotal)
+                        {
+                            c.nextTotal = (uint16_t)least;
+                            c.due       = (uint16_t)(previous + c.nextTotal);
+                        }
+                    }
                     tmr->COMP1 = c.due;
                     if ((uint16_t)(tmr->CNTR - previous) < c.nextTotal) return; // the next event is still ahead
                     // it is due already (the interrupt was served late): make it now
@@ -368,6 +393,8 @@ namespace TeensyStep
             c.countsPerSecond  = (float)F_BUS_ACTUAL;
             float pulse        = setup.pulseWidth * 1e-6f * c.countsPerSecond;
             c.pulseCounts      = pulse < minCounts ? minCounts : pulse > 30000 ? 30000 : (uint16_t)pulse;
+            float dirSetup     = setup.dirSetup * 1e-6f * c.countsPerSecond;
+            c.dirCounts        = dirSetup > 30000 ? 30000 : dirSetup > 0 ? (uint16_t)(dirSetup + 1) : 0;
             for (unsigned i = 0; i < setup.count; i++)
             {
                 const MotorPins& p = setup.motors[i];
@@ -446,9 +473,10 @@ namespace TeensyStep
             c.last    = false;
             c.hasNext = false;
             c.phase   = Phase::beforeStep;
-            setDirs(c, c.cur);
+            bool dirWritten = setDirs(c, c.cur);
 
-            c.due         = toCounts(c, c.cur, false);
+            c.due = toCounts(c, c.cur, false);
+            if (dirWritten && c.due < c.dirCounts) c.due = c.dirCounts;
             c.tmr->CNTR   = 0;
             c.tmr->LOAD   = 0;
             c.tmr->COMP1  = c.due;

@@ -1,22 +1,8 @@
 /*==========================================================================
  * 15 RoseFunction: a slide follows the angle of a spindle and draws a rose curve
  *
- * A spindle rotates at constant speed. A slide moves in and out depending
- * on the angle of the spindle:  r = amplitude * cos(k * angle).
- * A pen on the slide then draws a rose curve on the rotating disk.
- *
- * Every 25 ms a timer calculates where the slide has to be 25 ms later and
- * how fast it has to move there, and gives both to the slide:
- *
- *     slide.moveAbsAsync(position, speed);
- *
- * Because the target includes the speed, the slide does not stop at each
- * point but runs through the points smoothly. The speed is given without a
- * sign: the slide passes each point in the direction in which it comes to it.
- *
- * The commands of the library may be called from a timer interrupt, as it
- * is done here. Give such a timer a low priority, so that it does not
- * delay the step pulses.
+ * The spindle rotates at constant speed. Every 25 ms a timer gives the slide
+ * its next position and the speed there:  r = amplitude * cos(k * angle).
  *==========================================================================*/
 
 #include "TeensyStep.h"

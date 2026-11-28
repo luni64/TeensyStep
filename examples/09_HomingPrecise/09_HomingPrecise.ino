@@ -1,9 +1,8 @@
 /*==========================================================================
  * 09 HomingPrecise: the reference position is where the switch opens
  *
- * Reference switch on pin 8, LOW while it is active. Best is a switch the
- * mechanics can move through (for example a light barrier), not one they
- * run into.
+ * Reference switch on pin 8, LOW while it is active (best a switch the
+ * mechanics can move through, for example a light barrier).
  *==========================================================================*/
 
 #include "TeensyStep.h"

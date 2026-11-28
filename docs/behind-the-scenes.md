@@ -377,7 +377,9 @@ A step pulse has two edges. Both are made by the same compare channel; no second
   calculation instead of being waited for. If the calculation takes longer than the pulse, the pulse is
   ended right after it, in the same call.
 - **DIR changes at the end of a pulse**, for the motors that step in the next event. The driver has the
-  pause until the next step to take over the new direction.
+  pause until the next step to take over the new direction. Where a DIR pin really changes, the interrupt
+  checks that pause against the setup time of the motor (`setDirSetupTime()`) and moves the due time of
+  the next event back if it is too short; all later due times are counted from there.
 - **The pause after a pulse** is at least 0.8 µs. Pulse and pause together limit the step rate: about
   170,000 steps/s with the default pulse of 5 µs.
 - **Short pulses on Teensy 3.5 and 3.6.** A pulse of up to 2 µs is not worth a second interrupt there:

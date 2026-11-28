@@ -1,12 +1,8 @@
 /*==========================================================================
  * 12 EnableFunction: an enable signal that is not on a pin of the board
  *
- * The enable input of the driver is connected to a port extender (MCP23017,
- * I2C address 0x20, pin GPA0, active low). Instead of a pin, the library
- * gets a function that switches the driver.
- *
- * The library calls the function from an interrupt: it must not wait, and
- * no motor gets a step while it runs (here about 0.3 ms for the transfer).
+ * The enable input of the driver is on a port extender (MCP23017, I2C address
+ * 0x20, pin GPA0, active low). A function of the sketch switches the driver.
  *==========================================================================*/
 
 #include "TeensyStep.h"

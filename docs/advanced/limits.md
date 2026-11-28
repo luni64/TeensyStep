@@ -41,23 +41,28 @@ rotates for longer and needs the position can set it back with `setPositionCount
 
 ## Number of motors
 
-| | Teensy 4.x |
+| | All boards |
 |---|---|
 | `Stepper` and `StepperGroup` objects | not limited by the library |
 | Members of a group | 16 |
-| Motors or groups moving independently at the same time | 16, less if QuadTimer channels are in use for PWM or by other libraries ([Timers and interrupts](timers.md)) |
+| Motors or groups moving independently at the same time | 16, less if timer channels are in use for PWM or by other libraries ([Timers and interrupts](timers.md)) |
 
 ## Timing of the signals
 
 | | Range | Default |
 |---|---|---|
 | Width of the step pulse | 0.8 to 200 µs | 5 µs |
-| Time between a change of DIR and the next step | see below | 5 µs |
+| Time between a change of DIR and the next step | 0 to 200 µs | 5 µs |
 
 The DIR signal of a motor changes at the end of the step pulse before the first step in the
-new direction. The time to that step is the step period minus the pulse width; at a reversal the motor
-runs at its pull-in speed, so this time is long (10 ms at 100 steps/s). The value of `setDirSetupTime()`
-has no effect in this version.
+new direction. The time to that step is normally the step period minus the pulse width; at a reversal
+the motor runs at its pull-in speed, so this time is long (10 ms at 100 steps/s). It is short where a
+group passes a point of a [path](group-paths.md) at speed and one of its members reverses there.
+
+If the step would come sooner than the time set with `setDirSetupTime()`, it is delayed until that time
+has passed. The steps that follow keep their distances to it: the move is later by the delay (at most
+the setup time for each reversal), and no step is made faster to catch up. In a group all members are
+delayed together, so the group stays on its line. Steps without a change of DIR are not affected.
 
 ## Ramps
 
@@ -68,7 +73,8 @@ Up to the pull-in speed a motor starts, stops and reverses without a ramp.
 
 ## Not in this version
 
-- Groups cannot pass a target at a speed; a group stops at its targets.
+- A `StepperGroup` cannot pass a target at a speed; it stops at its targets. Moves of a group that
+  follow each other without a stop are given with [`advanced::GroupPath`](group-paths.md).
 - The targets of a group cannot be changed while it moves.
 - The timers the library may use cannot be selected by the sketch yet.
 - Teensy 3.0 to 3.2 and LC: not supported, because these boards have no floating point unit. Use

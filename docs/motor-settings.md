@@ -39,7 +39,7 @@ move they are refused, and the error `notSupported` is reported to the
 | `setPulseWidth(us)` | 5 µs | width of the step pulse in microseconds; see the data sheet of the driver |
 | `setStepPinPolarity(level)` | `HIGH` | `HIGH`: the step pulse is a positive pulse; `LOW`: a negative pulse |
 | `setInverseRotation(inverse)` | `false` | `true` swaps the direction of the motor |
-| `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse (no effect in this version, see [Limits](advanced/limits.md#timing-of-the-signals)) |
+| `setDirSetupTime(us)` | 5 µs | the time the driver needs between a change of DIR and the next step pulse, 0 to 200 µs; see the data sheet of the driver and [Limits](advanced/limits.md#timing-of-the-signals) |
 | `setEnable(pin, ...)` | none | the enable input of the driver, see below |
 | `setEnable(function, ...)` | none | the same with a function that switches the driver, for an enable signal that is not on a pin |
 

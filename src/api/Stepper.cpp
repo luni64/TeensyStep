@@ -138,7 +138,7 @@ namespace TeensyStep
 
     Stepper& Stepper::setDirSetupTime(float microseconds)
     {
-        if (hardwareSetting()) dirSetup = microseconds > 0 ? microseconds : 0;
+        if (hardwareSetting()) dirSetup = microseconds > 200 ? 200 : microseconds > 0 ? microseconds : 0;
         return *this;
     }
 

@@ -1,7 +1,10 @@
 # Examples
 
 Sketches that show how the library is used, from the smallest one to complete applications. They compile
-for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do not move a motor.
+for all Teensy boards; on boards that have no backend (Teensy 3.0 to 3.2, LC) they do not move a motor.
+
+Every sketch has a `README.md` in its folder: what it shows, what has to be connected, what to expect,
+and the page of the [manual](https://luni64.github.io/TeensyStep/) that explains it.
 
 | Sketch | Concept |
 |---|---|
@@ -21,7 +24,7 @@ for all Teensy boards; on boards that have no backend (Teensy 3.x, LC) they do n
 | `14_SyncRotation` | A group rotates with a fixed speed ratio; speed factor for the group |
 | `15_RoseFunction` | A slide follows the angle of a spindle and draws a rose curve (v2: RoseFunctionFollower) |
 | `16_Winder` | Two independent motors with a ratio that is adjusted while running (v2: Winder) |
-| `17_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers, with a translation table |
+| `17_LegacyV2` | An unchanged version 2 sketch on the deprecated wrappers; its README has a translation table |
 
 ## Advanced
 

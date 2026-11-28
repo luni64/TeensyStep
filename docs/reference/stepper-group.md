@@ -262,7 +262,11 @@ The current speed of the group in steps/s: that of its fastest member. 0 when th
 
 ```cpp
 void onArrival(void (*callback)());
+void onArrival(void (*callback)(StepperGroup& group));
+void onArrival(std::nullptr_t);
 ```
 
 Sets a function that is called when the group has reached its targets. It is called from an interrupt.
-`nullptr` removes it.
+The second form is called with the group object that gave the move, so that one function can serve
+several groups; it is not called if that object no longer exists when the move arrives. The last
+function set is the one called. `nullptr` removes it.
